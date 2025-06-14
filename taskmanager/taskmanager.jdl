@@ -1,0 +1,75 @@
+// Enums
+enum Priority {
+  LOW, NORMAL, HIGH
+}
+
+enum TaskStatus {
+  NOT_STARTED, WORKING_ON_IT, DONE
+}
+
+enum GroupRole {
+  OWNER, MODERATOR, MEMBER
+}
+
+// Entidades
+entity WorkGroup {
+  name String required,
+  description String
+}
+
+entity WorkGroupMembership {
+  role GroupRole required
+}
+
+entity Task {
+  title String required,
+  description TextBlob required,
+  priority Priority required,
+  status TaskStatus required,
+  createTime Instant required,
+  updateTime Instant required,
+  archived Boolean
+}
+
+entity Comment {
+  content TextBlob required,
+  createdDate Instant required
+}
+
+entity Project {
+  title String required,
+  description TextBlob required
+}
+
+// Relaciones con User
+relationship ManyToOne {
+  WorkGroupMembership{user(login)} to User with builtInEntity,
+  WorkGroupMembership{workGroup(name)} to WorkGroup,
+
+  Task{creator(login)} to User with builtInEntity,
+  Task{workGroup(name)} to WorkGroup,
+
+  Comment{author(login)} to User with builtInEntity,
+  Comment{task(title)} to Task,                   // ← propiedad task
+  Comment{project(title)} to Project,
+
+  Project{creator(login)} to User with builtInEntity,
+  Project{workGroup(name)} to WorkGroup
+}
+
+relationship ManyToMany {
+  Task{assignedTo(login)} to User with builtInEntity,
+  Project{members(login)} to User with builtInEntity
+}
+
+relationship OneToMany {
+  Task{comments} to Comment{taskRef},          // ← renombrada la propiedad inversa a taskRef
+  Project{subTasks} to Task{parentProject}
+}
+
+// Opciones
+dto * with mapstruct
+service * with serviceClass
+paginate Task, Project, WorkGroup, Comment, WorkGroupMembership with pagination
+filter Task, Project
+microservice * with taskmanager
