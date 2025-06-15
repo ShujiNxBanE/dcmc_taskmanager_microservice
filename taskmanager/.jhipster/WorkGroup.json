@@ -15,6 +15,11 @@
     {
       "fieldName": "description",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "isActive",
+      "fieldType": "Boolean",
+      "fieldValidateRules": []
     }
   ],
   "microserviceName": "taskmanager",

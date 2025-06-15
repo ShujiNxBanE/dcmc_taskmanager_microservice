@@ -17,6 +17,8 @@ public class WorkGroupDTO implements Serializable {
 
     private String description;
 
+    private Boolean isActive;
+
     public Long getId() {
         return id;
     }
@@ -39,6 +41,14 @@ public class WorkGroupDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     @Override
@@ -69,6 +79,7 @@ public class WorkGroupDTO implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
+            ", isActive='" + getIsActive() + "'" +
             "}";
     }
 }

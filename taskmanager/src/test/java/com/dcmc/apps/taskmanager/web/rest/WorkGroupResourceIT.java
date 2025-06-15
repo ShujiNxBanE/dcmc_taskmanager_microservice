@@ -41,6 +41,9 @@ class WorkGroupResourceIT {
     private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
 
+    private static final Boolean DEFAULT_IS_ACTIVE = false;
+    private static final Boolean UPDATED_IS_ACTIVE = true;
+
     private static final String ENTITY_API_URL = "/api/work-groups";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
@@ -73,7 +76,7 @@ class WorkGroupResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static WorkGroup createEntity() {
-        return new WorkGroup().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
+        return new WorkGroup().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION).isActive(DEFAULT_IS_ACTIVE);
     }
 
     /**
@@ -83,7 +86,7 @@ class WorkGroupResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static WorkGroup createUpdatedEntity() {
-        return new WorkGroup().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        return new WorkGroup().name(UPDATED_NAME).description(UPDATED_DESCRIPTION).isActive(UPDATED_IS_ACTIVE);
     }
 
     @BeforeEach
@@ -173,7 +176,8 @@ class WorkGroupResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(workGroup.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].isActive").value(hasItem(DEFAULT_IS_ACTIVE)));
     }
 
     @Test
@@ -189,7 +193,8 @@ class WorkGroupResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(workGroup.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
+            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.isActive").value(DEFAULT_IS_ACTIVE));
     }
 
     @Test
@@ -211,7 +216,7 @@ class WorkGroupResourceIT {
         WorkGroup updatedWorkGroup = workGroupRepository.findById(workGroup.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedWorkGroup are not directly saved in db
         em.detach(updatedWorkGroup);
-        updatedWorkGroup.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        updatedWorkGroup.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).isActive(UPDATED_IS_ACTIVE);
         WorkGroupDTO workGroupDTO = workGroupMapper.toDto(updatedWorkGroup);
 
         restWorkGroupMockMvc
@@ -304,6 +309,8 @@ class WorkGroupResourceIT {
         WorkGroup partialUpdatedWorkGroup = new WorkGroup();
         partialUpdatedWorkGroup.setId(workGroup.getId());
 
+        partialUpdatedWorkGroup.isActive(UPDATED_IS_ACTIVE);
+
         restWorkGroupMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedWorkGroup.getId())
@@ -334,7 +341,7 @@ class WorkGroupResourceIT {
         WorkGroup partialUpdatedWorkGroup = new WorkGroup();
         partialUpdatedWorkGroup.setId(workGroup.getId());
 
-        partialUpdatedWorkGroup.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        partialUpdatedWorkGroup.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).isActive(UPDATED_IS_ACTIVE);
 
         restWorkGroupMockMvc
             .perform(

@@ -138,16 +138,15 @@ public class WorkGroupResource {
     /**
      * {@code GET  /work-groups} : get all the workGroups.
      *
-     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of workGroups in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<WorkGroupDTO>> getAllWorkGroups(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of WorkGroups");
-        Page<WorkGroupDTO> page = workGroupService.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    public ResponseEntity<List<WorkGroupDTO>> getAllWorkGroups() {
+        LOG.debug("REST request to get all WorkGroups");
+        List<WorkGroupDTO> list = workGroupService.findAll();
+        return ResponseEntity.ok().body(list);
     }
+
 
     /**
      * {@code GET  /work-groups/:id} : get the "id" workGroup.

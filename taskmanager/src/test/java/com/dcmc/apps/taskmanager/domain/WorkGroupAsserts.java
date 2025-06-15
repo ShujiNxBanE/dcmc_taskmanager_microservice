@@ -48,7 +48,8 @@ public class WorkGroupAsserts {
         assertThat(actual)
             .as("Verify WorkGroup relevant properties")
             .satisfies(a -> assertThat(a.getName()).as("check name").isEqualTo(expected.getName()))
-            .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()));
+            .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))
+            .satisfies(a -> assertThat(a.getIsActive()).as("check isActive").isEqualTo(expected.getIsActive()));
     }
 
     /**

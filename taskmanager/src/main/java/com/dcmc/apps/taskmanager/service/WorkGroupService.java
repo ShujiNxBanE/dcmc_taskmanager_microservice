@@ -4,6 +4,8 @@ import com.dcmc.apps.taskmanager.domain.WorkGroup;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMapper;
+
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,16 +78,11 @@ public class WorkGroupService {
             .map(workGroupMapper::toDto);
     }
 
-    /**
-     * Get all the workGroups.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
+
     @Transactional(readOnly = true)
-    public Page<WorkGroupDTO> findAll(Pageable pageable) {
+    public List<WorkGroupDTO> findAll() {
         LOG.debug("Request to get all WorkGroups");
-        return workGroupRepository.findAll(pageable).map(workGroupMapper::toDto);
+        return workGroupMapper.toDto(workGroupRepository.findAllByIsActiveTrue());
     }
 
     /**
@@ -106,7 +103,10 @@ public class WorkGroupService {
      * @param id the id of the entity.
      */
     public void delete(Long id) {
-        LOG.debug("Request to delete WorkGroup : {}", id);
-        workGroupRepository.deleteById(id);
+        LOG.debug("Request to logically delete WorkGroup : {}", id);
+        workGroupRepository.findById(id).ifPresent(workGroup -> {
+            workGroup.setIsActive(false);
+            workGroupRepository.save(workGroup);
+        });
     }
 }

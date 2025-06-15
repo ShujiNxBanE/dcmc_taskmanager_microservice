@@ -27,6 +27,9 @@ public class WorkGroup implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -68,6 +71,19 @@ public class WorkGroup implements Serializable {
         this.description = description;
     }
 
+    public Boolean getIsActive() {
+        return this.isActive;
+    }
+
+    public WorkGroup isActive(Boolean isActive) {
+        this.setIsActive(isActive);
+        return this;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -94,6 +110,7 @@ public class WorkGroup implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
+            ", isActive='" + getIsActive() + "'" +
             "}";
     }
 }

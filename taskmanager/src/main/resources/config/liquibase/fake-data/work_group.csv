@@ -1,11 +1,11 @@
-id;name;description
-1;statement;prohibition pull
-2;downshift banish;modulo own
-3;challenge;partial after scuttle
-4;scheme forenenst;knowledgeably
-5;fiddle phew antique;amend
-6;twine excepting;geez sleepily
-7;scent and splendid;nor
-8;scratchy valley;internalize
-9;how cram;aha
-10;meaty;how microchip plus
+id;name;description;is_active
+1;statement;prohibition pull;false
+2;the perfectly;or;false
+3;frankly how;near ah;true
+4;exalted unabashedly;wearily foolish;true
+5;forswear vice;afterwards obnoxiously round;false
+6;boo;huzzah braid irritably;true
+7;moisten awkwardly;noted frightened oof;false
+8;puny alb better;um cow;false
+9;boo upon;far even;false
+10;which;catalyst;true
