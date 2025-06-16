@@ -2,6 +2,7 @@ package com.dcmc.apps.taskmanager.web.rest;
 
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.service.WorkGroupMembershipService;
+import com.dcmc.apps.taskmanager.service.dto.OwnershipTransferDto;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -190,4 +191,15 @@ public class WorkGroupMembershipResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PostMapping("/{groupId}")
+    public ResponseEntity<Void> transferOwnership(
+        @PathVariable Long groupId,
+        @Valid @RequestBody OwnershipTransferDto dto
+    ) {
+        LOG.debug("REST request to transfer ownership of group {} to {}", groupId, dto.getNewOwnerUsername());
+        workGroupMembershipService.transferOwnership(groupId, dto.getNewOwnerUsername());
+        return ResponseEntity.ok().build();
+    }
+
 }

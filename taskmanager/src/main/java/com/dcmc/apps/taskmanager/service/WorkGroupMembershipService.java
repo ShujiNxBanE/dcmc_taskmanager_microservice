@@ -13,9 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service Implementation for managing {@link com.dcmc.apps.taskmanager.domain.WorkGroupMembership}.
@@ -135,21 +135,28 @@ public class WorkGroupMembershipService {
             .orElse(false);
     }
 
-    public void removeModerator(Long groupId, String targetUsername) {
-        if (!isOwner(groupId)) {
-            throw new AccessDeniedException("Only the OWNER can remove moderators");
-        }
-
-        WorkGroupMembership membership = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(targetUsername, groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
-
-        if (membership.getRole() == GroupRole.MODERATOR) {
-            workGroupMembershipRepository.delete(membership);
-        } else {
-            throw new IllegalStateException("Only moderators can be removed");
-        }
+    private String getCurrentUsername() {
+        return SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new AccessDeniedException("Unauthenticated user"));
     }
 
+    public void transferOwnership(Long groupId, String newOwnerUsername) {
+        if (!isOwner(groupId)) {
+            throw new AccessDeniedException("Only the OWNER can transfer ownership.");
+        }
+
+        WorkGroupMembership currentOwner = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Current owner not found"));
+
+        WorkGroupMembership newOwner = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(newOwnerUsername, groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"New user not found in group"));
+
+        currentOwner.setRole(GroupRole.MODERATOR);
+        newOwner.setRole(GroupRole.OWNER);
+
+        workGroupMembershipRepository.save(currentOwner);
+        workGroupMembershipRepository.save(newOwner);
+    }
 
 }
