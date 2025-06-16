@@ -1,7 +1,9 @@
 package com.dcmc.apps.taskmanager.service;
 
 import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
+import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
+import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
 import java.util.Optional;
@@ -9,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,4 +126,30 @@ public class WorkGroupMembershipService {
         LOG.debug("Request to delete WorkGroupMembership : {}", id);
         workGroupMembershipRepository.deleteById(id);
     }
+
+    public boolean isOwner(Long groupId) {
+        String username = SecurityUtils.getCurrentUserLogin().orElseThrow();
+        return workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(username, groupId)
+            .map(membership -> membership.getRole() == GroupRole.OWNER)
+            .orElse(false);
+    }
+
+    public void removeModerator(Long groupId, String targetUsername) {
+        if (!isOwner(groupId)) {
+            throw new AccessDeniedException("Only the OWNER can remove moderators");
+        }
+
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(targetUsername, groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
+
+        if (membership.getRole() == GroupRole.MODERATOR) {
+            workGroupMembershipRepository.delete(membership);
+        } else {
+            throw new IllegalStateException("Only moderators can be removed");
+        }
+    }
+
+
 }

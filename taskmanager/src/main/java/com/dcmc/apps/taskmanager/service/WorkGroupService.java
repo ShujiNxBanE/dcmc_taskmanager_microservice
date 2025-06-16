@@ -1,7 +1,13 @@
 package com.dcmc.apps.taskmanager.service;
 
+import com.dcmc.apps.taskmanager.domain.User;
 import com.dcmc.apps.taskmanager.domain.WorkGroup;
+import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
+import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
+import com.dcmc.apps.taskmanager.repository.UserRepository;
+import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMapper;
 
@@ -26,10 +32,14 @@ public class WorkGroupService {
     private final WorkGroupRepository workGroupRepository;
 
     private final WorkGroupMapper workGroupMapper;
+    private final UserRepository userRepository;
+    private final WorkGroupMembershipRepository workGroupMembershipRepository;
 
-    public WorkGroupService(WorkGroupRepository workGroupRepository, WorkGroupMapper workGroupMapper) {
+    public WorkGroupService(WorkGroupRepository workGroupRepository, WorkGroupMapper workGroupMapper, UserRepository userRepository, WorkGroupMembershipRepository workGroupMembershipRepository) {
         this.workGroupRepository = workGroupRepository;
         this.workGroupMapper = workGroupMapper;
+        this.userRepository = userRepository;
+        this.workGroupMembershipRepository = workGroupMembershipRepository;
     }
 
     /**
@@ -42,6 +52,16 @@ public class WorkGroupService {
         LOG.debug("Request to save WorkGroup : {}", workGroupDTO);
         WorkGroup workGroup = workGroupMapper.toEntity(workGroupDTO);
         workGroup = workGroupRepository.save(workGroup);
+
+        String currentUserName = SecurityUtils.getCurrentUserLogin().orElseThrow();
+        User user = userRepository.findOneByLogin(currentUserName).orElseThrow();
+
+        WorkGroupMembership membership = new WorkGroupMembership();
+        membership.setUser(user);
+        membership.setWorkGroup(workGroup);
+        membership.setRole(GroupRole.OWNER);
+        workGroupMembershipRepository.save(membership);
+
         return workGroupMapper.toDto(workGroup);
     }
 

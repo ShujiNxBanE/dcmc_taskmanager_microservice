@@ -3,6 +3,8 @@ package com.dcmc.apps.taskmanager.repository;
 import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
 import java.util.List;
 import java.util.Optional;
+
+import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -46,4 +48,16 @@ public interface WorkGroupMembershipRepository extends JpaRepository<WorkGroupMe
         "select workGroupMembership from WorkGroupMembership workGroupMembership left join fetch workGroupMembership.user left join fetch workGroupMembership.workGroup where workGroupMembership.id =:id"
     )
     Optional<WorkGroupMembership> findOneWithToOneRelationships(@Param("id") Long id);
+
+    // Buscar la membresía de un usuario en un grupo específico
+    Optional<WorkGroupMembership> findByUser_LoginAndWorkGroup_Id(String login, Long groupId);
+
+    // Obtener todas las membresías de un grupo
+    List<WorkGroupMembership> findByWorkGroup_Id(Long groupId);
+
+    // Verificar si un grupo tiene un OWNER
+    boolean existsByWorkGroup_IdAndRole(Long groupId, GroupRole role);
+
+    // Obtener todos los usuarios con cierto rol en un grupo
+    List<WorkGroupMembership> findByWorkGroup_IdAndRole(Long groupId, GroupRole role);
 }
