@@ -2,7 +2,7 @@ package com.dcmc.apps.taskmanager.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class OwnershipTransferDto {
+public class OwnershipTransferDTO {
     @NotBlank
     private String newOwnerUsername;
 

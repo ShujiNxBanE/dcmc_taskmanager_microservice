@@ -2,7 +2,8 @@ package com.dcmc.apps.taskmanager.web.rest;
 
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.service.WorkGroupMembershipService;
-import com.dcmc.apps.taskmanager.service.dto.OwnershipTransferDto;
+import com.dcmc.apps.taskmanager.service.dto.OwnershipTransferDTO;
+import com.dcmc.apps.taskmanager.service.dto.PromotionRequestDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -195,11 +196,40 @@ public class WorkGroupMembershipResource {
     @PostMapping("/{groupId}")
     public ResponseEntity<Void> transferOwnership(
         @PathVariable Long groupId,
-        @Valid @RequestBody OwnershipTransferDto dto
+        @Valid @RequestBody OwnershipTransferDTO dto
     ) {
         LOG.debug("REST request to transfer ownership of group {} to {}", groupId, dto.getNewOwnerUsername());
         workGroupMembershipService.transferOwnership(groupId, dto.getNewOwnerUsername());
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/promote-to-moderator/{groupId}")
+    public ResponseEntity<Void> promoteToModerator(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to promote user {} to moderator in group {}", dto.getUsername(), groupId);
+        workGroupMembershipService.promoteToModerator(groupId, dto.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/demote-moderator/{groupId}")
+    public ResponseEntity<Void> demoteModerator(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to demote user {} from moderator in group {}", dto.getUsername(), groupId);
+        workGroupMembershipService.demoteModerator(groupId, dto.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/add-member/{groupId}")
+    public ResponseEntity<Void> addMember(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to add user {} to group {}", dto.getUsername(), groupId);
+        workGroupMembershipService.addMember(groupId, dto.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

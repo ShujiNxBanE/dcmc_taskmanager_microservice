@@ -1,8 +1,12 @@
 package com.dcmc.apps.taskmanager.service;
 
+import com.dcmc.apps.taskmanager.domain.User;
+import com.dcmc.apps.taskmanager.domain.WorkGroup;
 import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
 import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
+import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
+import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
 import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
@@ -29,13 +33,17 @@ public class WorkGroupMembershipService {
     private final WorkGroupMembershipRepository workGroupMembershipRepository;
 
     private final WorkGroupMembershipMapper workGroupMembershipMapper;
+    private final UserRepository userRepository;
+    private final WorkGroupRepository workGroupRepository;
 
     public WorkGroupMembershipService(
         WorkGroupMembershipRepository workGroupMembershipRepository,
-        WorkGroupMembershipMapper workGroupMembershipMapper
-    ) {
+        WorkGroupMembershipMapper workGroupMembershipMapper,
+        UserRepository userRepository, WorkGroupRepository workGroupRepository) {
         this.workGroupMembershipRepository = workGroupMembershipRepository;
         this.workGroupMembershipMapper = workGroupMembershipMapper;
+        this.userRepository = userRepository;
+        this.workGroupRepository = workGroupRepository;
     }
 
     /**
@@ -159,4 +167,54 @@ public class WorkGroupMembershipService {
         workGroupMembershipRepository.save(newOwner);
     }
 
+    public void promoteToModerator(Long groupId, String username) {
+        if (!isOwner(groupId)) {
+            throw new AccessDeniedException("Only the OWNER can promote to moderator.");
+        }
+
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(username, groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
+
+        membership.setRole(GroupRole.MODERATOR);
+        workGroupMembershipRepository.save(membership);
+    }
+
+    public void demoteModerator(Long groupId, String username) {
+        if (!isOwner(groupId)) {
+            throw new AccessDeniedException("Only the OWNER can remove moderators.");
+        }
+
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(username, groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
+
+        if (membership.getRole() == GroupRole.MODERATOR) {
+            membership.setRole(GroupRole.MEMBER);
+            workGroupMembershipRepository.save(membership);
+        } else {
+            throw new IllegalStateException("Only moderators can be removed.");
+        }
+    }
+
+    public void addMember(Long groupId, String username) {
+        if (!isOwner(groupId)) {
+            throw new AccessDeniedException("Only the OWNER can add members.");
+        }
+
+        Optional<User> user = userRepository.findOneByLogin(username);
+        WorkGroup group = workGroupRepository.findById(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Group not found"));
+
+        if (workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId).isPresent()) {
+            throw new IllegalStateException("User already belongs to the group.");
+        }
+
+        WorkGroupMembership membership = new WorkGroupMembership();
+        membership.setUser(user.get());
+        membership.setWorkGroup(group);
+        membership.setRole(GroupRole.MEMBER);
+
+        workGroupMembershipRepository.save(membership);
+    }
 }
