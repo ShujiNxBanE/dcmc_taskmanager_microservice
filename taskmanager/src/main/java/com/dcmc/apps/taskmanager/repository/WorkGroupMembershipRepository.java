@@ -60,4 +60,7 @@ public interface WorkGroupMembershipRepository extends JpaRepository<WorkGroupMe
 
     // Obtener todos los usuarios con cierto rol en un grupo
     List<WorkGroupMembership> findByWorkGroup_IdAndRole(Long groupId, GroupRole role);
+
+    Optional<WorkGroupMembership> findByUser_LoginAndWorkGroupIsNull(String login);
+
 }

@@ -11,6 +11,8 @@ import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
 import java.util.Optional;
+
+import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -143,6 +145,17 @@ public class WorkGroupMembershipService {
             .orElse(false);
     }
 
+    private void assertOwnerOrModerator(Long groupId) {
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .orElseThrow(() -> new AccessDeniedException("You are not a member of this group."));
+
+        if (membership.getRole() != GroupRole.OWNER && membership.getRole() != GroupRole.MODERATOR) {
+            throw new AccessDeniedException("Only OWNER or MODERATOR can perform this action.");
+        }
+    }
+
+
     private String getCurrentUsername() {
         return SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new AccessDeniedException("Unauthenticated user"));
     }
@@ -167,18 +180,27 @@ public class WorkGroupMembershipService {
         workGroupMembershipRepository.save(newOwner);
     }
 
+    @Transactional
     public void promoteToModerator(Long groupId, String username) {
-        if (!isOwner(groupId)) {
-            throw new AccessDeniedException("Only the OWNER can promote to moderator.");
+        // Verifica si el actual es OWNER o MODERATOR
+        WorkGroupMembership currentMembership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .orElseThrow(() -> new AccessDeniedException("You are not a member of this group."));
+
+        if (!(currentMembership.getRole() == GroupRole.OWNER || currentMembership.getRole() == GroupRole.MODERATOR)) {
+            throw new AccessDeniedException("Only the OWNER or MODERATOR can promote to moderator.");
         }
 
+        // Verifica que el target user esté en el grupo
         WorkGroupMembership membership = workGroupMembershipRepository
             .findByUser_LoginAndWorkGroup_Id(username, groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in group"));
 
+        // Promover a MODERATOR
         membership.setRole(GroupRole.MODERATOR);
         workGroupMembershipRepository.save(membership);
     }
+
 
     public void demoteModerator(Long groupId, String username) {
         if (!isOwner(groupId)) {
@@ -197,24 +219,68 @@ public class WorkGroupMembershipService {
         }
     }
 
+    @Transactional
     public void addMember(Long groupId, String username) {
-        if (!isOwner(groupId)) {
-            throw new AccessDeniedException("Only the OWNER can add members.");
-        }
+        assertOwnerOrModerator(groupId);
 
-        Optional<User> user = userRepository.findOneByLogin(username);
+        User user = userRepository.findOneByLogin(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
         WorkGroup group = workGroupRepository.findById(groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Group not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
 
         if (workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId).isPresent()) {
             throw new IllegalStateException("User already belongs to the group.");
         }
 
-        WorkGroupMembership membership = new WorkGroupMembership();
-        membership.setUser(user.get());
-        membership.setWorkGroup(group);
-        membership.setRole(GroupRole.MEMBER);
+        Optional<WorkGroupMembership> oldMembership = workGroupMembershipRepository.findByUser_LoginAndWorkGroupIsNull(username);
 
+        if (oldMembership.isPresent()) {
+            WorkGroupMembership membership = oldMembership.get();
+            membership.setWorkGroup(group);
+            membership.setRole(GroupRole.MEMBER);
+            workGroupMembershipRepository.save(membership);
+        } else {
+            WorkGroupMembership membership = new WorkGroupMembership();
+            membership.setUser(user);
+            membership.setWorkGroup(group);
+            membership.setRole(GroupRole.MEMBER);
+            workGroupMembershipRepository.save(membership);
+        }
+    }
+    @Transactional
+    public void removeMember(Long groupId, String username) {
+        assertOwnerOrModerator(groupId);
+
+        Optional<WorkGroupMembership> membershipOpt = workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId);
+
+        if (membershipOpt.isEmpty()) {
+            throw new BadRequestAlertException("Membership not found", "workGroupMembership", "membershipnotfound");
+        }
+
+        WorkGroupMembership membership = membershipOpt.get();
+
+        if (membership.getRole() == GroupRole.OWNER) {
+            throw new BadRequestAlertException("Cannot remove the group owner", "workGroupMembership", "cannotremoveowner");
+        }
+
+        membership.setWorkGroup(null);
         workGroupMembershipRepository.save(membership);
     }
+
+    @Transactional
+    public void leaveGroup(Long groupId) {
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "You are not a member of this group."));
+
+        if (membership.getRole() != GroupRole.MEMBER) {
+            throw new AccessDeniedException("Only MEMBERS can leave the group themselves.");
+        }
+
+        membership.setWorkGroup(null);
+        workGroupMembershipRepository.save(membership);
+    }
+
+
 }

@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -232,4 +233,22 @@ public class WorkGroupMembershipResource {
         workGroupMembershipService.addMember(groupId, dto.getUsername());
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/remove-member/{groupId}")
+    public ResponseEntity<Void> removeMember(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to remove user {} from group {}", dto.getUsername(), groupId);
+        workGroupMembershipService.removeMember(groupId, dto.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/leave-group/{groupId}")
+    public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
+        LOG.debug("REST request to leave group {}", groupId);
+        workGroupMembershipService.leaveGroup(groupId);
+        return ResponseEntity.ok().build();
+    }
+
 }
