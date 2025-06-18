@@ -8,6 +8,7 @@ import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
 import com.dcmc.apps.taskmanager.security.SecurityUtils;
+import com.dcmc.apps.taskmanager.service.dto.UserDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMapper;
 
@@ -154,18 +155,28 @@ public class WorkGroupService {
         WorkGroup group = workGroupRepository.findById(groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
 
-        if (workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId).isPresent()) {
+        // Verificar si ya está activo
+        Optional<WorkGroupMembership> existingActiveMembership =
+            workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId);
+
+        if (existingActiveMembership.isPresent() && Boolean.TRUE.equals(existingActiveMembership.get().getInGroup())) {
             throw new IllegalStateException("User already belongs to the group.");
         }
 
-        Optional<WorkGroupMembership> oldMembership = workGroupMembershipRepository.findByUser_LoginAndWorkGroupIsNull(username);
+        // Buscar membresía inactiva en ese grupo
+        Optional<WorkGroupMembership> oldMembership =
+            workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId);
 
         WorkGroupMembership membership = oldMembership.orElseGet(WorkGroupMembership::new);
+
         membership.setUser(user);
         membership.setWorkGroup(group);
         membership.setRole(GroupRole.MEMBER);
+        membership.setInGroup(true);
+
         workGroupMembershipRepository.save(membership);
     }
+
 
     @Transactional
     public void removeMember(Long groupId, String username) {
@@ -179,9 +190,10 @@ public class WorkGroupService {
             throw new BadRequestAlertException("Cannot remove the group owner", "workGroupMembership", "cannotremoveowner");
         }
 
-        membership.setWorkGroup(null);
+        membership.setInGroup(false);
         workGroupMembershipRepository.save(membership);
     }
+
 
     @Transactional
     public void leaveGroup(Long groupId) {
@@ -193,8 +205,17 @@ public class WorkGroupService {
             throw new AccessDeniedException("Only MEMBERS can leave the group themselves.");
         }
 
-        membership.setWorkGroup(null);
+        membership.setInGroup(false);
         workGroupMembershipRepository.save(membership);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDTO> getActiveMemberByGroup(Long groupId) {
+        return workGroupMembershipRepository.findByWorkGroup_IdAndIsInGroupTrue(groupId)
+            .stream()
+            .map(WorkGroupMembership::getUser)
+            .map(UserDTO::new)
+            .toList();
     }
 
 }

@@ -32,6 +32,10 @@ public class WorkGroupMembership implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkGroup workGroup;
 
+    @Column(name = "is_in_group", nullable = false)
+    private Boolean isInGroup = true;
+
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -85,6 +89,10 @@ public class WorkGroupMembership implements Serializable {
         this.setWorkGroup(workGroup);
         return this;
     }
+
+    public Boolean getInGroup() { return isInGroup; }
+
+    public void setInGroup(Boolean inGroup) { isInGroup = inGroup; }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 

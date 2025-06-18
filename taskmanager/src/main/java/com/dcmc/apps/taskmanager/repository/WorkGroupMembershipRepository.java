@@ -63,4 +63,7 @@ public interface WorkGroupMembershipRepository extends JpaRepository<WorkGroupMe
 
     Optional<WorkGroupMembership> findByUser_LoginAndWorkGroupIsNull(String login);
 
+    List<WorkGroupMembership> findByWorkGroup_IdAndIsInGroupTrue(Long workGroupId);
+
+
 }

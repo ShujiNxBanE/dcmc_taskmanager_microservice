@@ -4,6 +4,7 @@ import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
 import com.dcmc.apps.taskmanager.service.SecurityUtilsService;
 import com.dcmc.apps.taskmanager.service.WorkGroupService;
 import com.dcmc.apps.taskmanager.service.dto.PromotionRequestDTO;
+import com.dcmc.apps.taskmanager.service.dto.UserDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -213,5 +214,10 @@ public class WorkGroupResource {
         return ResponseEntity.ok().build();
     }
 
-
+    @GetMapping("group/{groupId}/members")
+    public ResponseEntity<List<UserDTO>> getActiveMemberDTOs(@PathVariable("groupId") Long groupId) {
+        LOG.debug("REST request to get active members (DTO) of group {}", groupId);
+        List<UserDTO> users = workGroupService.getActiveMemberByGroup(groupId);
+        return ResponseEntity.ok(users);
+    }
 }
