@@ -182,7 +182,7 @@ public class WorkGroupMembershipService {
 
     @Transactional
     public void promoteToModerator(Long groupId, String username) {
-        // Verifica si el actual es OWNER o MODERATOR
+        // Verifica si el usuario actual es OWNER o MODERATOR
         WorkGroupMembership currentMembership = workGroupMembershipRepository
             .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
             .orElseThrow(() -> new AccessDeniedException("You are not a member of this group."));
@@ -191,16 +191,18 @@ public class WorkGroupMembershipService {
             throw new AccessDeniedException("Only the OWNER or MODERATOR can promote to moderator.");
         }
 
-        // Verifica que el target user esté en el grupo
-        WorkGroupMembership membership = workGroupMembershipRepository
+        // Verifica que el usuario objetivo esté en el grupo
+        WorkGroupMembership targetMembership = workGroupMembershipRepository
             .findByUser_LoginAndWorkGroup_Id(username, groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in group"));
 
-        // Promover a MODERATOR
-        membership.setRole(GroupRole.MODERATOR);
-        workGroupMembershipRepository.save(membership);
-    }
+        if (targetMembership.getRole() == GroupRole.OWNER) {
+            throw new AccessDeniedException("Cannot promote the OWNER to MODERATOR.");
+        }
 
+        targetMembership.setRole(GroupRole.MODERATOR);
+        workGroupMembershipRepository.save(targetMembership);
+    }
 
     public void demoteModerator(Long groupId, String username) {
         if (!isOwner(groupId)) {
@@ -248,6 +250,7 @@ public class WorkGroupMembershipService {
             workGroupMembershipRepository.save(membership);
         }
     }
+
     @Transactional
     public void removeMember(Long groupId, String username) {
         assertOwnerOrModerator(groupId);
