@@ -194,7 +194,7 @@ public class WorkGroupMembershipResource {
             .build();
     }
 
-    @PostMapping("/{groupId}")
+    @PostMapping("/transfer-ownership/{groupId}")
     public ResponseEntity<Void> transferOwnership(
         @PathVariable Long groupId,
         @Valid @RequestBody OwnershipTransferDTO dto
@@ -221,33 +221,6 @@ public class WorkGroupMembershipResource {
     ) {
         LOG.debug("REST request to demote user {} from moderator in group {}", dto.getUsername(), groupId);
         workGroupMembershipService.demoteModerator(groupId, dto.getUsername());
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/add-member/{groupId}")
-    public ResponseEntity<Void> addMember(
-        @PathVariable Long groupId,
-        @Valid @RequestBody PromotionRequestDTO dto
-    ) {
-        LOG.debug("REST request to add user {} to group {}", dto.getUsername(), groupId);
-        workGroupMembershipService.addMember(groupId, dto.getUsername());
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/remove-member/{groupId}")
-    public ResponseEntity<Void> removeMember(
-        @PathVariable Long groupId,
-        @Valid @RequestBody PromotionRequestDTO dto
-    ) {
-        LOG.debug("REST request to remove user {} from group {}", dto.getUsername(), groupId);
-        workGroupMembershipService.removeMember(groupId, dto.getUsername());
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/leave-group/{groupId}")
-    public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
-        LOG.debug("REST request to leave group {}", groupId);
-        workGroupMembershipService.leaveGroup(groupId);
         return ResponseEntity.ok().build();
     }
 

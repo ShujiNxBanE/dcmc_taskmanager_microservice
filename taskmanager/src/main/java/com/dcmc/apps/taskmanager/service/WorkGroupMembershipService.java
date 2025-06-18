@@ -7,7 +7,6 @@ import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
-import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
 import java.util.Optional;
@@ -37,15 +36,18 @@ public class WorkGroupMembershipService {
     private final WorkGroupMembershipMapper workGroupMembershipMapper;
     private final UserRepository userRepository;
     private final WorkGroupRepository workGroupRepository;
+    private final SecurityUtilsService securityUtilsService;
 
     public WorkGroupMembershipService(
         WorkGroupMembershipRepository workGroupMembershipRepository,
         WorkGroupMembershipMapper workGroupMembershipMapper,
-        UserRepository userRepository, WorkGroupRepository workGroupRepository) {
+        UserRepository userRepository, WorkGroupRepository workGroupRepository,
+        SecurityUtilsService securityUtilsService) {
         this.workGroupMembershipRepository = workGroupMembershipRepository;
         this.workGroupMembershipMapper = workGroupMembershipMapper;
         this.userRepository = userRepository;
         this.workGroupRepository = workGroupRepository;
+        this.securityUtilsService = securityUtilsService;
     }
 
     /**
@@ -137,36 +139,13 @@ public class WorkGroupMembershipService {
         workGroupMembershipRepository.deleteById(id);
     }
 
-    public boolean isOwner(Long groupId) {
-        String username = SecurityUtils.getCurrentUserLogin().orElseThrow();
-        return workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(username, groupId)
-            .map(membership -> membership.getRole() == GroupRole.OWNER)
-            .orElse(false);
-    }
-
-    private void assertOwnerOrModerator(Long groupId) {
-        WorkGroupMembership membership = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
-            .orElseThrow(() -> new AccessDeniedException("You are not a member of this group."));
-
-        if (membership.getRole() != GroupRole.OWNER && membership.getRole() != GroupRole.MODERATOR) {
-            throw new AccessDeniedException("Only OWNER or MODERATOR can perform this action.");
-        }
-    }
-
-
-    private String getCurrentUsername() {
-        return SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new AccessDeniedException("Unauthenticated user"));
-    }
-
     public void transferOwnership(Long groupId, String newOwnerUsername) {
-        if (!isOwner(groupId)) {
+        if (!securityUtilsService.isOwner(groupId)) {
             throw new AccessDeniedException("Only the OWNER can transfer ownership.");
         }
 
         WorkGroupMembership currentOwner = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .findByUser_LoginAndWorkGroup_Id(securityUtilsService.getCurrentUser(), groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Current owner not found"));
 
         WorkGroupMembership newOwner = workGroupMembershipRepository
@@ -184,7 +163,7 @@ public class WorkGroupMembershipService {
     public void promoteToModerator(Long groupId, String username) {
         // Verifica si el usuario actual es OWNER o MODERATOR
         WorkGroupMembership currentMembership = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
+            .findByUser_LoginAndWorkGroup_Id(securityUtilsService.getCurrentUser(), groupId)
             .orElseThrow(() -> new AccessDeniedException("You are not a member of this group."));
 
         if (!(currentMembership.getRole() == GroupRole.OWNER || currentMembership.getRole() == GroupRole.MODERATOR)) {
@@ -205,85 +184,20 @@ public class WorkGroupMembershipService {
     }
 
     public void demoteModerator(Long groupId, String username) {
-        if (!isOwner(groupId)) {
+        if (!securityUtilsService.isOwner(groupId)) {
             throw new AccessDeniedException("Only the OWNER can remove moderators.");
         }
 
         WorkGroupMembership membership = workGroupMembershipRepository
             .findByUser_LoginAndWorkGroup_Id(username, groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found in group"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in group"));
 
-        if (membership.getRole() == GroupRole.MODERATOR) {
-            membership.setRole(GroupRole.MEMBER);
-            workGroupMembershipRepository.save(membership);
-        } else {
-            throw new IllegalStateException("Only moderators can be removed.");
-        }
-    }
-
-    @Transactional
-    public void addMember(Long groupId, String username) {
-        assertOwnerOrModerator(groupId);
-
-        User user = userRepository.findOneByLogin(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        WorkGroup group = workGroupRepository.findById(groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
-
-        if (workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId).isPresent()) {
-            throw new IllegalStateException("User already belongs to the group.");
+        if (membership.getRole() != GroupRole.MODERATOR) {
+            throw new BadRequestAlertException("The user is not a moderator", "workGroupMembership", "notamoderator");
         }
 
-        Optional<WorkGroupMembership> oldMembership = workGroupMembershipRepository.findByUser_LoginAndWorkGroupIsNull(username);
-
-        if (oldMembership.isPresent()) {
-            WorkGroupMembership membership = oldMembership.get();
-            membership.setWorkGroup(group);
-            membership.setRole(GroupRole.MEMBER);
-            workGroupMembershipRepository.save(membership);
-        } else {
-            WorkGroupMembership membership = new WorkGroupMembership();
-            membership.setUser(user);
-            membership.setWorkGroup(group);
-            membership.setRole(GroupRole.MEMBER);
-            workGroupMembershipRepository.save(membership);
-        }
-    }
-
-    @Transactional
-    public void removeMember(Long groupId, String username) {
-        assertOwnerOrModerator(groupId);
-
-        Optional<WorkGroupMembership> membershipOpt = workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId);
-
-        if (membershipOpt.isEmpty()) {
-            throw new BadRequestAlertException("Membership not found", "workGroupMembership", "membershipnotfound");
-        }
-
-        WorkGroupMembership membership = membershipOpt.get();
-
-        if (membership.getRole() == GroupRole.OWNER) {
-            throw new BadRequestAlertException("Cannot remove the group owner", "workGroupMembership", "cannotremoveowner");
-        }
-
-        membership.setWorkGroup(null);
+        membership.setRole(GroupRole.MEMBER);
         workGroupMembershipRepository.save(membership);
     }
-
-    @Transactional
-    public void leaveGroup(Long groupId) {
-        WorkGroupMembership membership = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(getCurrentUsername(), groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "You are not a member of this group."));
-
-        if (membership.getRole() != GroupRole.MEMBER) {
-            throw new AccessDeniedException("Only MEMBERS can leave the group themselves.");
-        }
-
-        membership.setWorkGroup(null);
-        workGroupMembershipRepository.save(membership);
-    }
-
 
 }

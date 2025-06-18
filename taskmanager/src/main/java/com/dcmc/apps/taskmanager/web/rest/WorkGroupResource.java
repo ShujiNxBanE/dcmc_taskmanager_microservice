@@ -1,7 +1,9 @@
 package com.dcmc.apps.taskmanager.web.rest;
 
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.service.SecurityUtilsService;
 import com.dcmc.apps.taskmanager.service.WorkGroupService;
+import com.dcmc.apps.taskmanager.service.dto.PromotionRequestDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -42,10 +44,18 @@ public class WorkGroupResource {
 
     private final WorkGroupRepository workGroupRepository;
 
-    public WorkGroupResource(WorkGroupService workGroupService, WorkGroupRepository workGroupRepository) {
+    private final SecurityUtilsService securityUtilsService;
+
+    public WorkGroupResource(
+        WorkGroupService workGroupService,
+        WorkGroupRepository workGroupRepository,
+        SecurityUtilsService securityUtilsService
+    ) {
         this.workGroupService = workGroupService;
         this.workGroupRepository = workGroupRepository;
+        this.securityUtilsService = securityUtilsService;
     }
+
 
     /**
      * {@code POST  /work-groups} : Create a new workGroup.
@@ -54,7 +64,7 @@ public class WorkGroupResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new workGroupDTO, or with status {@code 400 (Bad Request)} if the workGroup has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
+    @PostMapping("/create-group")
     public ResponseEntity<WorkGroupDTO> createWorkGroup(@Valid @RequestBody WorkGroupDTO workGroupDTO) throws URISyntaxException {
         LOG.debug("REST request to save WorkGroup : {}", workGroupDTO);
         if (workGroupDTO.getId() != null) {
@@ -175,4 +185,33 @@ public class WorkGroupResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PostMapping("/{groupId}/add-member")
+    public ResponseEntity<Void> addMember(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to add user {} to group {}", dto.getUsername(), groupId);
+        workGroupService.addMember(groupId, dto.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{groupId}/remove-member")
+    public ResponseEntity<Void> removeMember(
+        @PathVariable Long groupId,
+        @Valid @RequestBody PromotionRequestDTO dto
+    ) {
+        LOG.debug("REST request to remove user {} from group {}", dto.getUsername(), groupId);
+        workGroupService.removeMember(groupId, dto.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{groupId}/leave")
+    public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
+        LOG.debug("REST request to leave group {}", groupId);
+        workGroupService.leaveGroup(groupId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

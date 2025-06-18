@@ -1,0 +1,7 @@
+<changeSet id="20250618212921-1" author="roger">
+  <addColumn tableName="work_group_membership">
+    <column name="is_in_group" type="boolean" defaultValueBoolean="true">
+      <constraints nullable="false"/>
+    </column>
+  </addColumn>
+</changeSet>

@@ -13,10 +13,15 @@ import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMapper;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,11 +40,20 @@ public class WorkGroupService {
     private final UserRepository userRepository;
     private final WorkGroupMembershipRepository workGroupMembershipRepository;
 
-    public WorkGroupService(WorkGroupRepository workGroupRepository, WorkGroupMapper workGroupMapper, UserRepository userRepository, WorkGroupMembershipRepository workGroupMembershipRepository) {
+    private final SecurityUtilsService securityUtilsService;
+
+    public WorkGroupService(
+        WorkGroupRepository workGroupRepository,
+        WorkGroupMapper workGroupMapper,
+        UserRepository userRepository,
+        WorkGroupMembershipRepository workGroupMembershipRepository,
+        SecurityUtilsService securityUtilsService
+    ) {
         this.workGroupRepository = workGroupRepository;
         this.workGroupMapper = workGroupMapper;
         this.userRepository = userRepository;
         this.workGroupMembershipRepository = workGroupMembershipRepository;
+        this.securityUtilsService = securityUtilsService;
     }
 
     /**
@@ -129,4 +143,58 @@ public class WorkGroupService {
             workGroupRepository.save(workGroup);
         });
     }
+
+    @Transactional
+    public void addMember(Long groupId, String username) {
+        securityUtilsService.assertOwnerOrModerator(groupId);
+
+        User user = userRepository.findOneByLogin(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        WorkGroup group = workGroupRepository.findById(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+        if (workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId).isPresent()) {
+            throw new IllegalStateException("User already belongs to the group.");
+        }
+
+        Optional<WorkGroupMembership> oldMembership = workGroupMembershipRepository.findByUser_LoginAndWorkGroupIsNull(username);
+
+        WorkGroupMembership membership = oldMembership.orElseGet(WorkGroupMembership::new);
+        membership.setUser(user);
+        membership.setWorkGroup(group);
+        membership.setRole(GroupRole.MEMBER);
+        workGroupMembershipRepository.save(membership);
+    }
+
+    @Transactional
+    public void removeMember(Long groupId, String username) {
+        securityUtilsService.assertOwnerOrModerator(groupId);
+
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(username, groupId)
+            .orElseThrow(() -> new BadRequestAlertException("Membership not found", "workGroupMembership", "membershipnotfound"));
+
+        if (membership.getRole() == GroupRole.OWNER) {
+            throw new BadRequestAlertException("Cannot remove the group owner", "workGroupMembership", "cannotremoveowner");
+        }
+
+        membership.setWorkGroup(null);
+        workGroupMembershipRepository.save(membership);
+    }
+
+    @Transactional
+    public void leaveGroup(Long groupId) {
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(securityUtilsService.getCurrentUser(), groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "You are not a member of this group."));
+
+        if (membership.getRole() != GroupRole.MEMBER) {
+            throw new AccessDeniedException("Only MEMBERS can leave the group themselves.");
+        }
+
+        membership.setWorkGroup(null);
+        workGroupMembershipRepository.save(membership);
+    }
+
 }
