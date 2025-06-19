@@ -3,18 +3,25 @@ package com.dcmc.apps.taskmanager.service;
 import com.dcmc.apps.taskmanager.domain.Task;
 import com.dcmc.apps.taskmanager.domain.User;
 import com.dcmc.apps.taskmanager.domain.WorkGroup;
+import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
 import com.dcmc.apps.taskmanager.repository.TaskRepository;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
+import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
-import com.dcmc.apps.taskmanager.service.dto.TaskCreateDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskSimpleDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskUpdateDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.service.mapper.TaskMapper;
 
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -42,14 +49,18 @@ public class TaskService {
 
     private final WorkGroupRepository workGroupRepository;
 
+    private final WorkGroupMembershipRepository workGroupMembershipRepository;
+
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
                        SecurityUtilsService securityUtilsService,
-                       UserRepository userRepository, WorkGroupRepository workGroupRepository) {
+                       UserRepository userRepository, WorkGroupRepository workGroupRepository,
+                       WorkGroupMembershipRepository workGroupMembershipRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.securityUtilsService = securityUtilsService;
         this.userRepository = userRepository;
         this.workGroupRepository = workGroupRepository;
+        this.workGroupMembershipRepository = workGroupMembershipRepository;
     }
 
     /**
@@ -211,5 +222,49 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    @Transactional
+    public void assignUsersToTask(Long groupId, TaskAssignmentDTO dto) {
+        Task task = taskRepository.findById(dto.getTaskId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
+        // Verificar que los usuarios pertenezcan al grupo
+        List<WorkGroupMembership> memberships = workGroupMembershipRepository
+            .findByWorkGroup_IdAndIsInGroupTrue(groupId);
+
+        Set<String> validUserIds = memberships.stream()
+            .map(m -> m.getUser().getId())
+            .collect(Collectors.toSet());
+
+        for (String id : dto.getUserIds()) {
+            if (!validUserIds.contains(id)) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "User with ID " + id + " is not a member of the group"
+                );
+            }
+        }
+
+        // Obtener los usuarios a agregar
+        Set<User> usersToAdd = new HashSet<>(userRepository.findAllById(dto.getUserIds()));
+
+        if (usersToAdd.size() != dto.getUserIds().size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Some user IDs do not exist");
+        }
+
+        // Verificar si ya están asignados
+        Set<User> currentUsers = task.getAssignedTos();
+        for (User user : usersToAdd) {
+            if (currentUsers.contains(user)) {
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "User with ID " + user.getId() + " is already assigned to the task"
+                );
+            }
+        }
+
+        // Asignar usuarios nuevos
+        currentUsers.addAll(usersToAdd);
+        task.setUpdateTime(Instant.now());
+        taskRepository.save(task);
+    }
 }

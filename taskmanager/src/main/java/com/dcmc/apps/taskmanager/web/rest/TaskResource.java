@@ -4,10 +4,7 @@ import com.dcmc.apps.taskmanager.repository.TaskRepository;
 import com.dcmc.apps.taskmanager.service.TaskQueryService;
 import com.dcmc.apps.taskmanager.service.TaskService;
 import com.dcmc.apps.taskmanager.service.criteria.TaskCriteria;
-import com.dcmc.apps.taskmanager.service.dto.TaskCreateDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskSimpleDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskUpdateDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -159,6 +156,15 @@ public class TaskResource {
     public ResponseEntity<Void> deleteTask(@PathVariable("id") Long id) {
         taskService.softDeleteTask(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/group/{groupId}/assign-member")
+    public ResponseEntity<Void> assignUsersToTaskInGroup(
+        @PathVariable Long groupId,
+        @RequestBody TaskAssignmentDTO dto
+    ) {
+        taskService.assignUsersToTask(groupId, dto);
+        return ResponseEntity.ok().build();
     }
 
 }
