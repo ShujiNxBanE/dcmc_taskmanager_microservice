@@ -55,6 +55,17 @@ public class Task implements Serializable {
     @Column(name = "archived")
     private Boolean archived;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "taskRef")
     @JsonIgnoreProperties(value = { "author", "task", "project", "taskRef" }, allowSetters = true)
     private Set<Comment> comments = new HashSet<>();

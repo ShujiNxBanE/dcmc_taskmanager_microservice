@@ -136,6 +136,7 @@ public class TaskService {
         task.setPriority(dto.getPriority());
         task.setStatus(dto.getStatus());
         task.setArchived(false);
+        task.setActive(true);
 
         task.setCreateTime(Instant.now());
         task.setUpdateTime(Instant.now());
@@ -185,10 +186,30 @@ public class TaskService {
         List<Task> tasks = taskRepository.findByWorkGroup_IdAndArchivedFalse(workGroupId);
         return taskMapper.toSimpleDto(tasks);
     }
-    
+
     public List<TaskSimpleDTO> getAllTasks() {
         List<Task> tasks = taskRepository.findByArchivedFalse();
         return taskMapper.toSimpleDto(tasks);
     }
+
+    @Transactional
+    public void softDeleteTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        if (!task.getCreator().getLogin().equals(currentUserLogin)) {
+            throw new AccessDeniedException("Only the creator of the task can delete it");
+        }
+
+        if (Boolean.FALSE.equals(task.getActive())) {
+            throw new IllegalStateException("Task is already deactivated");
+        }
+
+        task.setActive(false);
+        task.setUpdateTime(Instant.now());
+        taskRepository.save(task);
+    }
+
 
 }

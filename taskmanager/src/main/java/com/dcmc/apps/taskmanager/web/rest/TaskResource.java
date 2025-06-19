@@ -116,21 +116,6 @@ public class TaskResource {
         return ResponseUtil.wrapOrNotFound(taskDTO);
     }
 
-    /**
-     * {@code DELETE  /tasks/:id} : delete the "id" task.
-     *
-     * @param id the id of the taskDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete Task : {}", id);
-        taskService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
-            .build();
-    }
-
     @PostMapping("/workgroup/{workGroupId}/create-task")
     public ResponseEntity<TaskDTO> createTaskAtWorkGroup(
         @PathVariable Long workGroupId,
@@ -168,6 +153,12 @@ public class TaskResource {
     public ResponseEntity<List<TaskSimpleDTO>> getAllTasks() {
         List<TaskSimpleDTO> tasks = taskService.getAllTasks();
         return ResponseEntity.ok(tasks);
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<Void> deleteTask(@PathVariable("id") Long id) {
+        taskService.softDeleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
