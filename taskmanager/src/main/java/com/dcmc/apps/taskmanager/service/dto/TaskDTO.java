@@ -21,7 +21,6 @@ public class TaskDTO implements Serializable {
     @NotNull
     private String title;
 
-    @Lob
     private String description;
 
     @NotNull

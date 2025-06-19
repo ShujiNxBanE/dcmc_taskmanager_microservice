@@ -4,7 +4,10 @@ import com.dcmc.apps.taskmanager.repository.TaskRepository;
 import com.dcmc.apps.taskmanager.service.TaskQueryService;
 import com.dcmc.apps.taskmanager.service.TaskService;
 import com.dcmc.apps.taskmanager.service.criteria.TaskCriteria;
+import com.dcmc.apps.taskmanager.service.dto.TaskCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.TaskDTO;
+import com.dcmc.apps.taskmanager.service.dto.TaskSimpleDTO;
+import com.dcmc.apps.taskmanager.service.dto.TaskUpdateDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -53,58 +56,6 @@ public class TaskResource {
     }
 
     /**
-     * {@code POST  /tasks} : Create a new task.
-     *
-     * @param taskDTO the taskDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new taskDTO, or with status {@code 400 (Bad Request)} if the task has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("")
-    public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
-        LOG.debug("REST request to save Task : {}", taskDTO);
-        if (taskDTO.getId() != null) {
-            throw new BadRequestAlertException("A new task cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        taskDTO = taskService.save(taskDTO);
-        return ResponseEntity.created(new URI("/api/tasks/" + taskDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, taskDTO.getId().toString()))
-            .body(taskDTO);
-    }
-
-    /**
-     * {@code PUT  /tasks/:id} : Updates an existing task.
-     *
-     * @param id the id of the taskDTO to save.
-     * @param taskDTO the taskDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated taskDTO,
-     * or with status {@code 400 (Bad Request)} if the taskDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the taskDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<TaskDTO> updateTask(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody TaskDTO taskDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to update Task : {}, {}", id, taskDTO);
-        if (taskDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, taskDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!taskRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        taskDTO = taskService.update(taskDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, taskDTO.getId().toString()))
-            .body(taskDTO);
-    }
-
-    /**
      * {@code PATCH  /tasks/:id} : Partial updates given fields of an existing task, field will ignore if it is null
      *
      * @param id the id of the taskDTO to save.
@@ -138,25 +89,6 @@ public class TaskResource {
             result,
             HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, taskDTO.getId().toString())
         );
-    }
-
-    /**
-     * {@code GET  /tasks} : get all the tasks.
-     *
-     * @param pageable the pagination information.
-     * @param criteria the criteria which the requested entities should match.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of tasks in body.
-     */
-    @GetMapping("")
-    public ResponseEntity<List<TaskDTO>> getAllTasks(
-        TaskCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
-        LOG.debug("REST request to get Tasks by criteria: {}", criteria);
-
-        Page<TaskDTO> page = taskQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -198,4 +130,44 @@ public class TaskResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PostMapping("/workgroup/{workGroupId}/create-task")
+    public ResponseEntity<TaskDTO> createTaskAtWorkGroup(
+        @PathVariable Long workGroupId,
+        @Valid @RequestBody TaskCreateDTO dto
+    ) throws URISyntaxException {
+        LOG.debug("REST request to create task at WorkGroup {}: {}", workGroupId, dto);
+
+        TaskDTO result = taskService.createTaskAtWorkGroup(workGroupId, dto);
+
+        return ResponseEntity.created(new URI("/api/workgroups/" + workGroupId + "/tasks/" + result.getId()))
+            .body(result);
+    }
+
+    @PostMapping("/{taskId}/update")
+    public ResponseEntity<TaskDTO> updateTaskAtWorkGroup(
+        @PathVariable Long taskId,
+        @Valid @RequestBody TaskUpdateDTO dto
+    ) {
+        LOG.debug("REST request to update Task with id: {}", taskId);
+
+        TaskDTO updatedTask = taskService.updateTaskAtWorkGroup(taskId, dto);
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, "task", updatedTask.getId().toString()))
+            .body(updatedTask);
+    }
+
+    @GetMapping("/work-group/{workGroupId}/tasks")
+    public ResponseEntity<List<TaskSimpleDTO>> getTasksByWorkGroup(@PathVariable Long workGroupId) {
+        List<TaskSimpleDTO> tasks = taskService.getTasksByWorkGroupId(workGroupId);
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<TaskSimpleDTO>> getAllTasks() {
+        List<TaskSimpleDTO> tasks = taskService.getAllTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
 }

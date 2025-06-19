@@ -1,14 +1,25 @@
 package com.dcmc.apps.taskmanager.service;
 
 import com.dcmc.apps.taskmanager.domain.Task;
+import com.dcmc.apps.taskmanager.domain.User;
+import com.dcmc.apps.taskmanager.domain.WorkGroup;
 import com.dcmc.apps.taskmanager.repository.TaskRepository;
+import com.dcmc.apps.taskmanager.repository.UserRepository;
+import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.service.dto.TaskCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.TaskDTO;
+import com.dcmc.apps.taskmanager.service.dto.TaskSimpleDTO;
+import com.dcmc.apps.taskmanager.service.dto.TaskUpdateDTO;
 import com.dcmc.apps.taskmanager.service.mapper.TaskMapper;
+
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +36,20 @@ public class TaskService {
 
     private final TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper) {
+    private final SecurityUtilsService securityUtilsService;
+
+    private final UserRepository userRepository;
+
+    private final WorkGroupRepository workGroupRepository;
+
+    public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
+                       SecurityUtilsService securityUtilsService,
+                       UserRepository userRepository, WorkGroupRepository workGroupRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.securityUtilsService = securityUtilsService;
+        this.userRepository = userRepository;
+        this.workGroupRepository = workGroupRepository;
     }
 
     /**
@@ -106,4 +128,67 @@ public class TaskService {
         LOG.debug("Request to delete Task : {}", id);
         taskRepository.deleteById(id);
     }
+
+    public TaskDTO createTaskAtWorkGroup(Long workGroupId, TaskCreateDTO dto) {
+        Task task = new Task();
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setPriority(dto.getPriority());
+        task.setStatus(dto.getStatus());
+        task.setArchived(false);
+
+        task.setCreateTime(Instant.now());
+        task.setUpdateTime(Instant.now());
+
+        // Asignar creador desde usuario autenticado
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        User creator = userRepository.findOneByLogin(currentUserLogin)
+            .orElseThrow(() -> new IllegalArgumentException("Creator user not found"));
+        task.setCreator(creator);
+
+        // Asignar WorkGroup desde parámetro
+        WorkGroup wg = workGroupRepository.findById(workGroupId)
+            .orElseThrow(() -> new IllegalArgumentException("WorkGroup not found"));
+        task.setWorkGroup(wg);
+
+        // No parentProject: tarea a nivel WorkGroup
+        task.setParentProject(null);
+
+        task = taskRepository.save(task);
+        return taskMapper.toDto(task);
+    }
+
+    public TaskDTO updateTaskAtWorkGroup(Long taskId, TaskUpdateDTO dto) {
+        // Buscar la tarea
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        // Validar que el usuario actual es el creador de la tarea
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        if (!task.getCreator().getLogin().equals(currentUserLogin)) {
+            throw new AccessDeniedException("Only the creator of the task can update it");
+        }
+
+        // Actualizar campos permitidos
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setPriority(dto.getPriority());
+        task.setStatus(dto.getStatus());
+        task.setArchived(dto.getArchived());
+        task.setUpdateTime(Instant.now());
+
+        task = taskRepository.save(task);
+        return taskMapper.toDto(task);
+    }
+
+    public List<TaskSimpleDTO> getTasksByWorkGroupId(Long workGroupId) {
+        List<Task> tasks = taskRepository.findByWorkGroup_Id(workGroupId);
+        return taskMapper.toSimpleDto(tasks);
+    }
+
+    public List<TaskSimpleDTO> getAllTasks() {
+        List<Task> tasks = taskRepository.findByArchivedFalse();
+        return taskMapper.toSimpleDto(tasks);
+    }
+
 }

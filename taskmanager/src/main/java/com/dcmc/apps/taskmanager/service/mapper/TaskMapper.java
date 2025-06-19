@@ -4,10 +4,9 @@ import com.dcmc.apps.taskmanager.domain.Project;
 import com.dcmc.apps.taskmanager.domain.Task;
 import com.dcmc.apps.taskmanager.domain.User;
 import com.dcmc.apps.taskmanager.domain.WorkGroup;
-import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
-import com.dcmc.apps.taskmanager.service.dto.TaskDTO;
-import com.dcmc.apps.taskmanager.service.dto.UserDTO;
-import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
+
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.mapstruct.*;
@@ -31,6 +30,13 @@ public interface TaskMapper extends EntityMapper<TaskDTO, Task> {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "login", source = "login")
     UserDTO toDtoUserLogin(User user);
+
+    @Mapping(target = "creatorLogin", source = "creator.login")
+    @Mapping(target = "workGroupId", source = "workGroup.id")
+    TaskSimpleDTO toSimpleDto(Task task);
+
+    List<TaskSimpleDTO> toSimpleDto(List<Task> tasks);
+
 
     @Named("userLoginSet")
     default Set<UserDTO> toDtoUserLoginSet(Set<User> user) {

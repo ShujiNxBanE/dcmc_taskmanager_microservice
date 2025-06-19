@@ -43,4 +43,9 @@ public interface TaskRepository extends TaskRepositoryWithBagRelationships, JpaR
 
     @Query("select task from Task task left join fetch task.creator left join fetch task.workGroup where task.id =:id")
     Optional<Task> findOneWithToOneRelationships(@Param("id") Long id);
+
+    List<Task> findByWorkGroup_Id(Long workGroupId);
+
+    List<Task> findByArchivedFalse();
+
 }
