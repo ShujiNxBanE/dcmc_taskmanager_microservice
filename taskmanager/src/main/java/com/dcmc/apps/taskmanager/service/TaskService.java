@@ -182,10 +182,10 @@ public class TaskService {
     }
 
     public List<TaskSimpleDTO> getTasksByWorkGroupId(Long workGroupId) {
-        List<Task> tasks = taskRepository.findByWorkGroup_Id(workGroupId);
+        List<Task> tasks = taskRepository.findByWorkGroup_IdAndArchivedFalse(workGroupId);
         return taskMapper.toSimpleDto(tasks);
     }
-
+    
     public List<TaskSimpleDTO> getAllTasks() {
         List<Task> tasks = taskRepository.findByArchivedFalse();
         return taskMapper.toSimpleDto(tasks);
