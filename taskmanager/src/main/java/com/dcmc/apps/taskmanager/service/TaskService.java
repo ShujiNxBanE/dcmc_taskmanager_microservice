@@ -1,13 +1,8 @@
 package com.dcmc.apps.taskmanager.service;
 
-import com.dcmc.apps.taskmanager.domain.Task;
-import com.dcmc.apps.taskmanager.domain.User;
-import com.dcmc.apps.taskmanager.domain.WorkGroup;
-import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
-import com.dcmc.apps.taskmanager.repository.TaskRepository;
-import com.dcmc.apps.taskmanager.repository.UserRepository;
-import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
-import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.domain.*;
+import com.dcmc.apps.taskmanager.domain.enumeration.TaskStatus;
+import com.dcmc.apps.taskmanager.repository.*;
 import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.service.mapper.TaskMapper;
 
@@ -49,18 +44,22 @@ public class TaskService {
 
     private final WorkGroupRepository workGroupRepository;
 
+    private final ProjectRepository projectRepository;
+
     private final WorkGroupMembershipRepository workGroupMembershipRepository;
 
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
                        SecurityUtilsService securityUtilsService,
                        UserRepository userRepository, WorkGroupRepository workGroupRepository,
-                       WorkGroupMembershipRepository workGroupMembershipRepository) {
+                       WorkGroupMembershipRepository workGroupMembershipRepository,
+                       ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.securityUtilsService = securityUtilsService;
         this.userRepository = userRepository;
         this.workGroupRepository = workGroupRepository;
         this.workGroupMembershipRepository = workGroupMembershipRepository;
+        this.projectRepository = projectRepository;
     }
 
     /**
@@ -140,27 +139,28 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
+    @Transactional
     public TaskDTO createTaskAtWorkGroup(Long workGroupId, TaskCreateDTO dto) {
         Task task = new Task();
+
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
         task.setPriority(dto.getPriority());
         task.setStatus(dto.getStatus());
         task.setArchived(false);
         task.setActive(true);
-
         task.setCreateTime(Instant.now());
         task.setUpdateTime(Instant.now());
 
         // Asignar creador desde usuario autenticado
         String currentUserLogin = securityUtilsService.getCurrentUser();
         User creator = userRepository.findOneByLogin(currentUserLogin)
-            .orElseThrow(() -> new IllegalArgumentException("Creator user not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
         task.setCreator(creator);
 
-        // Asignar WorkGroup desde parámetro
-        WorkGroup wg = workGroupRepository.findById(workGroupId)
-            .orElseThrow(() -> new IllegalArgumentException("WorkGroup not found"));
+        // Obtener y validar que el WorkGroup existe y está activo
+        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(workGroupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
         task.setWorkGroup(wg);
 
         // No parentProject: tarea a nivel WorkGroup
@@ -267,4 +267,45 @@ public class TaskService {
         task.setUpdateTime(Instant.now());
         taskRepository.save(task);
     }
+
+    @Transactional
+    public TaskDTO createProjectLevelTask(Long groupId, Long projectId, TaskCreateDTO dto) {
+        Task task = new Task();
+
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setPriority(dto.getPriority());
+        task.setStatus(dto.getStatus());
+        task.setArchived(false);
+        task.setActive(true);
+        task.setCreateTime(Instant.now());
+        task.setUpdateTime(Instant.now());
+
+        // Asignar creador desde usuario autenticado
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        User creator = userRepository.findOneByLogin(currentUserLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
+        task.setCreator(creator);
+
+        // Obtener y validar que el WorkGroup existe y está activo
+        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
+        task.setWorkGroup(wg);
+
+        // Obtener y validar que el proyecto existe y está activo
+        Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
+
+        // Validar que el proyecto pertenece al grupo
+        if (!project.getWorkGroup().getId().equals(groupId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
+        }
+
+        task.setParentProject(project);
+
+        task = taskRepository.save(task);
+        return taskMapper.toDto(task);
+    }
+
+
 }

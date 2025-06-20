@@ -47,4 +47,6 @@ public interface ProjectRepository
 
     List<Project> findByWorkGroup_IdAndIsActiveTrue(Long workGroupId);
 
+    Optional<Project> findByIdAndIsActiveTrue(Long id);
+
 }

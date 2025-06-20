@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -166,5 +167,16 @@ public class TaskResource {
         taskService.assignUsersToTask(groupId, dto);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/work-group/{groupId}/project/{projectId}/create-subtask")
+    public ResponseEntity<TaskDTO> createProjectLevelTask(
+        @PathVariable Long groupId,
+        @PathVariable Long projectId,
+        @Valid @RequestBody TaskCreateDTO dto
+    ) {
+        TaskDTO created = taskService.createProjectLevelTask(groupId, projectId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
 
 }

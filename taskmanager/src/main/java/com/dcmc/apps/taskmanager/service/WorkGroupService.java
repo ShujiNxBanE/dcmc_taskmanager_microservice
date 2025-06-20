@@ -1,12 +1,8 @@
 package com.dcmc.apps.taskmanager.service;
 
-import com.dcmc.apps.taskmanager.domain.User;
-import com.dcmc.apps.taskmanager.domain.WorkGroup;
-import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
+import com.dcmc.apps.taskmanager.domain.*;
 import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
-import com.dcmc.apps.taskmanager.repository.UserRepository;
-import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
-import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.repository.*;
 import com.dcmc.apps.taskmanager.security.SecurityUtils;
 import com.dcmc.apps.taskmanager.service.dto.UserDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupDTO;
@@ -18,8 +14,6 @@ import java.util.Optional;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.access.AccessDeniedException;
@@ -48,8 +42,7 @@ public class WorkGroupService {
         WorkGroupMapper workGroupMapper,
         UserRepository userRepository,
         WorkGroupMembershipRepository workGroupMembershipRepository,
-        SecurityUtilsService securityUtilsService
-    ) {
+        SecurityUtilsService securityUtilsService) {
         this.workGroupRepository = workGroupRepository;
         this.workGroupMapper = workGroupMapper;
         this.userRepository = userRepository;
@@ -217,5 +210,4 @@ public class WorkGroupService {
             .map(UserDTO::new)
             .toList();
     }
-
 }

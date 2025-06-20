@@ -5,6 +5,7 @@
     import org.springframework.stereotype.Repository;
 
     import java.util.List;
+    import java.util.Optional;
 
     /**
      * Spring Data JPA repository for the WorkGroup entity.
@@ -13,4 +14,5 @@
     @Repository
     public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
         List<WorkGroup> findAllByIsActiveTrue();
+        Optional<WorkGroup> findByIdAndIsActiveTrue(Long id);
     }
