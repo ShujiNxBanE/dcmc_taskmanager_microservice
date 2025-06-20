@@ -27,9 +27,19 @@ public class Project implements Serializable {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Lob
     @Column(name = "description", nullable = false)
     private String description;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentProject")
     @JsonIgnoreProperties(value = { "comments", "creator", "workGroup", "assignedTos", "parentProject" }, allowSetters = true)
