@@ -307,5 +307,25 @@ public class TaskService {
         return taskMapper.toDto(task);
     }
 
+    @Transactional
+    public void archiveTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        // Verificar que la tarea tenga status DONE
+        if (task.getStatus() != TaskStatus.DONE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only tasks with status DONE can be archived");
+        }
+
+        // Verificar que el usuario tenga permisos (OWNER o MODERATOR)
+        Long workGroupId = task.getWorkGroup().getId();
+        securityUtilsService.assertOwnerOrModerator(workGroupId);
+
+        // Marcar la tarea como archivada
+        task.setArchived(true);
+        task.setUpdateTime(Instant.now());
+
+        taskRepository.save(task);
+    }
 
 }

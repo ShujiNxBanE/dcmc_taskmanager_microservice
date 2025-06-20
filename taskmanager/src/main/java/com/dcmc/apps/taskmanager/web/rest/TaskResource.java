@@ -178,5 +178,9 @@ public class TaskResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-
+    @PostMapping("/{id}/archive")
+    public ResponseEntity<Void> archiveTask(@PathVariable Long id) {
+        taskService.archiveTask(id);
+        return ResponseEntity.noContent().build();
+    }
 }
