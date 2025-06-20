@@ -17,7 +17,7 @@ public class ProjectDTO implements Serializable {
 
     @NotNull
     private String title;
-    
+
     private String description;
 
     private UserDTO creator;

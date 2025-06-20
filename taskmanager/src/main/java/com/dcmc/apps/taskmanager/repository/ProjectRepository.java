@@ -44,4 +44,7 @@ public interface ProjectRepository
 
     @Query("select project from Project project left join fetch project.creator left join fetch project.workGroup where project.id =:id")
     Optional<Project> findOneWithToOneRelationships(@Param("id") Long id);
+
+    List<Project> findByWorkGroup_IdAndIsActiveTrue(Long workGroupId);
+
 }

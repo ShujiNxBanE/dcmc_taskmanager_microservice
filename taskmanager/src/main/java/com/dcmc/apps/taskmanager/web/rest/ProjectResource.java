@@ -4,7 +4,9 @@ import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.service.ProjectQueryService;
 import com.dcmc.apps.taskmanager.service.ProjectService;
 import com.dcmc.apps.taskmanager.service.criteria.ProjectCriteria;
+import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
+import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -68,39 +70,6 @@ public class ProjectResource {
         projectDTO = projectService.save(projectDTO);
         return ResponseEntity.created(new URI("/api/projects/" + projectDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, projectDTO.getId().toString()))
-            .body(projectDTO);
-    }
-
-    /**
-     * {@code PUT  /projects/:id} : Updates an existing project.
-     *
-     * @param id the id of the projectDTO to save.
-     * @param projectDTO the projectDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated projectDTO,
-     * or with status {@code 400 (Bad Request)} if the projectDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the projectDTO couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<ProjectDTO> updateProject(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody ProjectDTO projectDTO
-    ) throws URISyntaxException {
-        LOG.debug("REST request to update Project : {}, {}", id, projectDTO);
-        if (projectDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, projectDTO.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!projectRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        projectDTO = projectService.update(projectDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, projectDTO.getId().toString()))
             .body(projectDTO);
     }
 
@@ -184,18 +153,37 @@ public class ProjectResource {
         return ResponseUtil.wrapOrNotFound(projectDTO);
     }
 
-    /**
-     * {@code DELETE  /projects/:id} : delete the "id" project.
-     *
-     * @param id the id of the projectDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete Project : {}", id);
-        projectService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
-            .build();
+    @PostMapping("/create-in/work-group/{workGroupId}")
+    public ResponseEntity<ProjectDTO> createProjectCustom(
+        @PathVariable Long workGroupId,
+        @Valid @RequestBody ProjectCreateDTO dto
+    ) throws URISyntaxException {
+        LOG.debug("REST request to create Project in WorkGroup {}: {}", workGroupId, dto);
+        ProjectDTO result = projectService.createProject(dto, workGroupId);
+        return ResponseEntity.created(new URI("/api/projects/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, "project", result.getId().toString()))
+            .body(result);
     }
+
+    @PostMapping("/{id}/update")
+    public ResponseEntity<ProjectDTO> updateProject(
+        @PathVariable("id") Long id,
+        @Valid @RequestBody ProjectUpdateDTO projectUpdateDTO
+    ) {
+        ProjectDTO updated = projectService.updateProject(id, projectUpdateDTO);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        projectService.deleteProject(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/in-work-group/{workGroupId}")
+    public ResponseEntity<List<ProjectDTO>> getActiveProjectsByWorkGroup(@PathVariable Long workGroupId) {
+        List<ProjectDTO> projects = projectService.findActiveProjectsByWorkGroup(workGroupId);
+        return ResponseEntity.ok(projects);
+    }
+
 }
