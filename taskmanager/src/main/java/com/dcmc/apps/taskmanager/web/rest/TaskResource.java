@@ -183,4 +183,10 @@ public class TaskResource {
         taskService.archiveTask(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/work-group/{groupId}/tasks/archived")
+    public List<TaskSimpleDTO> getArchivedTasks(@PathVariable Long groupId) {
+        return taskService.getArchivedTasksByWorkGroup(groupId);
+    }
+
 }

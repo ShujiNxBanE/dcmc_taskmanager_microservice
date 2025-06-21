@@ -173,12 +173,17 @@ public class TaskService {
     public TaskDTO updateTaskAtWorkGroup(Long taskId, TaskUpdateDTO dto) {
         // Buscar la tarea
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        // Validar que la tarea no esté archivada
+        if (Boolean.TRUE.equals(task.getArchived())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Archived tasks cannot be edited");
+        }
 
         // Validar que el usuario actual es el creador de la tarea
         String currentUserLogin = securityUtilsService.getCurrentUser();
         if (!task.getCreator().getLogin().equals(currentUserLogin)) {
-            throw new AccessDeniedException("Only the creator of the task can update it");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the creator of the task can update it");
         }
 
         // Actualizar campos permitidos
@@ -193,6 +198,7 @@ public class TaskService {
         return taskMapper.toDto(task);
     }
 
+
     public List<TaskSimpleDTO> getTasksByWorkGroupId(Long workGroupId) {
         List<Task> tasks = taskRepository.findByWorkGroup_IdAndArchivedFalse(workGroupId);
         return taskMapper.toSimpleDto(tasks);
@@ -206,21 +212,30 @@ public class TaskService {
     @Transactional
     public void softDeleteTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-            .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         String currentUserLogin = securityUtilsService.getCurrentUser();
-        if (!task.getCreator().getLogin().equals(currentUserLogin)) {
-            throw new AccessDeniedException("Only the creator of the task can delete it");
+
+        // Si la tarea está archivada, solo OWNER o MODERATOR pueden eliminarla
+        if (Boolean.TRUE.equals(task.getArchived())) {
+            Long groupId = task.getWorkGroup().getId();
+            securityUtilsService.assertOwnerOrModerator(groupId);
+        } else {
+            // Si NO está archivada, solo el creador puede eliminarla
+            if (!task.getCreator().getLogin().equals(currentUserLogin)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the creator of the task can delete it");
+            }
         }
 
         if (Boolean.FALSE.equals(task.getActive())) {
-            throw new IllegalStateException("Task is already deactivated");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is already deactivated");
         }
 
         task.setActive(false);
         task.setUpdateTime(Instant.now());
         taskRepository.save(task);
     }
+
 
     @Transactional
     public void assignUsersToTask(Long groupId, TaskAssignmentDTO dto) {
@@ -327,5 +342,19 @@ public class TaskService {
 
         taskRepository.save(task);
     }
+
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getArchivedTasksByWorkGroup(Long workGroupId) {
+        // Validar que el grupo existe y está activo
+        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(workGroupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
+
+        // Obtener tareas archivadas de ese grupo
+        List<Task> archivedTasks = taskRepository.findByWorkGroup_IdAndArchivedTrue(workGroupId);
+
+        // Mapear a DTO
+        return taskMapper.toSimpleDto(archivedTasks);
+    }
+
 
 }
