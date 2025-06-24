@@ -1,0 +1,23 @@
+{
+  "annotations": {
+    "changelogDate": "20250624212021"
+  },
+  "clientRootFolder": "taskmanager",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": []
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "taskmanager",
+  "name": "Priority",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

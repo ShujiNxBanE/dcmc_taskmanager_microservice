@@ -11,7 +11,16 @@ enum GroupRole {
   OWNER, MODERATOR, MEMBER
 }
 
-// Entidades
+// Nuevas entidades para CRUD de prioridad y estado de tareas
+entity Priority {
+  name String required
+}
+
+entity Status {
+  name String required
+}
+
+// Entidades existentes
 entity WorkGroup {
   name String required,
   description String
@@ -50,7 +59,7 @@ relationship ManyToOne {
   Task{workGroup(name)} to WorkGroup,
 
   Comment{author(login)} to User with builtInEntity,
-  Comment{task(title)} to Task,                   // ← propiedad task
+  Comment{task(title)} to Task,
   Comment{project(title)} to Project,
 
   Project{creator(login)} to User with builtInEntity,
@@ -63,13 +72,13 @@ relationship ManyToMany {
 }
 
 relationship OneToMany {
-  Task{comments} to Comment{taskRef},          // ← renombrada la propiedad inversa a taskRef
+  Task{comments} to Comment{taskRef},
   Project{subTasks} to Task{parentProject}
 }
 
 // Opciones
 dto * with mapstruct
 service * with serviceClass
-paginate Task, Project, WorkGroup, Comment, WorkGroupMembership with pagination
+paginate Task, Project, WorkGroup, Comment, WorkGroupMembership, Priority, Status with pagination
 filter Task, Project
 microservice * with taskmanager

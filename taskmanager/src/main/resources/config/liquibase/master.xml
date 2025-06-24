@@ -17,6 +17,7 @@
     <include file="config/liquibase/changelog/20250614212918_added_entity_Task.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250614212919_added_entity_Comment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250614212920_added_entity_Project.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250624212021_added_entity_Priority.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20250614212917_added_entity_constraints_WorkGroupMembership.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250614212918_added_entity_constraints_Task.xml" relativeToChangelogFile="false"/>
