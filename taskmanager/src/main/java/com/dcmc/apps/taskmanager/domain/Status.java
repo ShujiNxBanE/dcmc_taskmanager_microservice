@@ -2,24 +2,35 @@ package com.dcmc.apps.taskmanager.domain;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
+/**
+ * A Status.
+ */
 @Entity
 @Table(name = "status")
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Status implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name")
     private String name;
 
-    // Getters y Setters
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Status id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -27,32 +38,43 @@ public class Status implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
+    }
+
+    public Status name(String name) {
+        this.setName(name);
+        return this;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    // equals y hashCode basados en id
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Status)) return false;
-        return id != null && id.equals(((Status) o).id);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Status)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((Status) o).getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
-    // toString
+    // prettier-ignore
     @Override
     public String toString() {
         return "Status{" +
-            "id=" + id +
-            ", name='" + name + '\'' +
-            '}';
+            "id=" + getId() +
+            ", name='" + getName() + "'" +
+            "}";
     }
 }
