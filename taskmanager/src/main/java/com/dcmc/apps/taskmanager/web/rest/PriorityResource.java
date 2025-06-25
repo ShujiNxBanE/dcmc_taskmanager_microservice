@@ -166,4 +166,19 @@ public class PriorityResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PostMapping("/{id}/hide")
+    public ResponseEntity<PriorityDTO> hidePriority(@PathVariable Long id) {
+        LOG.debug("REST request to hide Priority : {}", id);
+        PriorityDTO result = priorityService.hide(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/unhide")
+    public ResponseEntity<PriorityDTO> unhidePriority(@PathVariable Long id) {
+        LOG.debug("REST request to unhide Priority : {}", id);
+        PriorityDTO result = priorityService.unhide(id);
+        return ResponseEntity.ok(result);
+    }
+
 }

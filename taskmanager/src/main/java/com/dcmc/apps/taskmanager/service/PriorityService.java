@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
@@ -100,9 +102,6 @@ public class PriorityService {
      */
     @Transactional(readOnly = true)
     public List<PriorityDTO> findAll() {
-        if (!securityUtilsService.isCurrentUserAdmin()) {
-            throw new AccessDeniedException("Only admins can obtain all priorities.");
-        }
         LOG.debug("Request to get all Priorities");
         return priorityRepository.findAll().stream().map(priorityMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
@@ -115,9 +114,6 @@ public class PriorityService {
      */
     @Transactional(readOnly = true)
     public Optional<PriorityDTO> findOne(Long id) {
-        if (!securityUtilsService.isCurrentUserAdmin()) {
-            throw new AccessDeniedException("Only admins can find priorities.");
-        }
         LOG.debug("Request to get Priority : {}", id);
         return priorityRepository.findById(id).map(priorityMapper::toDto);
     }
@@ -134,4 +130,35 @@ public class PriorityService {
         LOG.debug("Request to delete Priority : {}", id);
         priorityRepository.deleteById(id);
     }
+
+    public PriorityDTO hide(Long id) {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can hide priorities.");
+        }
+
+        Priority priority = priorityRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Priority not found with id: " + id));
+
+        priority.setIsHidden(true);
+        priority = priorityRepository.save(priority);
+        return priorityMapper.toDto(priority);
+    }
+
+    public PriorityDTO unhide(Long id) {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can unhide priorities.");
+        }
+
+        Priority priority = priorityRepository.findById(id)
+            .orElseThrow(() -> new BadRequestAlertException("Priority not found", "priority", "notfound"));
+
+        if (!Boolean.TRUE.equals(priority.getIsHidden())) {
+            throw new BadRequestAlertException("Priority is not hidden", "priority", "notHidden");
+        }
+
+        priority.setIsHidden(false);
+        priority = priorityRepository.save(priority);
+        return priorityMapper.toDto(priority);
+    }
+
 }
