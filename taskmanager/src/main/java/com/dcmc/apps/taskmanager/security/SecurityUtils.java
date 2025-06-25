@@ -119,4 +119,10 @@ public final class SecurityUtils {
     private static List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
         return roles.stream().filter(role -> role.startsWith("ROLE_")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
+
+    public static boolean isCurrentUserInRole(String role) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null &&
+            getAuthorities(authentication).anyMatch(auth -> auth.equals(role));
+    }
 }

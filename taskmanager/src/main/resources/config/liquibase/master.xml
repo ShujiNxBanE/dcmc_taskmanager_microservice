@@ -29,4 +29,5 @@
   <include file="config/liquibase/changelog/20250618212921_add_is_in_group_to_work_group_membership.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250619212922_add_is_active_to_task.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250619212923_add_is_active_to_project.xml" relativeToChangelogFile="false"/>
+  <include file="config/liquibase/changelog/20250624212924_add_is_hidden_to_priority.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

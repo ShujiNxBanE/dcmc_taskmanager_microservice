@@ -13,6 +13,8 @@ public class PriorityDTO implements Serializable {
 
     private String name;
 
+    private Boolean isHidden;
+
     public Long getId() {
         return id;
     }
@@ -28,6 +30,15 @@ public class PriorityDTO implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Boolean getIsHidden() {
+        return isHidden;
+    }
+
+    public void setIsHidden(Boolean isHidden) {
+        this.isHidden = isHidden;
+    }
+
 
     @Override
     public boolean equals(Object o) {

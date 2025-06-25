@@ -22,7 +22,19 @@ public class Priority implements Serializable {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "is_hidden", nullable = false)
+    private Boolean isHidden;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
+
+
+    public Boolean getIsHidden() {
+        return isHidden;
+    }
+
+    public void setIsHidden(Boolean isHidden) {
+        this.isHidden = isHidden;
+    }
 
     public Long getId() {
         return this.id;

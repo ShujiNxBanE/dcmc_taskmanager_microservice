@@ -16,6 +16,10 @@ public class SecurityUtilsService {
         this.workGroupMembershipRepository = workGroupMembershipRepository;
     }
 
+    public boolean isCurrentUserAdmin() {
+        return SecurityUtils.isCurrentUserInRole("ROLE_ADMIN");
+    }
+
     public boolean isOwner(Long groupId) {
         String username = getCurrentUser();
         return workGroupMembershipRepository

@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,14 @@ public class PriorityService {
 
     private final PriorityMapper priorityMapper;
 
-    public PriorityService(PriorityRepository priorityRepository, PriorityMapper priorityMapper) {
+    private final SecurityUtilsService securityUtilsService;
+
+    public PriorityService(PriorityRepository priorityRepository,
+                           PriorityMapper priorityMapper,
+                           SecurityUtilsService securityUtilsService) {
         this.priorityRepository = priorityRepository;
         this.priorityMapper = priorityMapper;
+        this.securityUtilsService = securityUtilsService;
     }
 
     /**
@@ -38,7 +44,14 @@ public class PriorityService {
      * @return the persisted entity.
      */
     public PriorityDTO save(PriorityDTO priorityDTO) {
+
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can create priorities.");
+        }
         LOG.debug("Request to save Priority : {}", priorityDTO);
+        if (priorityDTO.getIsHidden() == null) {
+            priorityDTO.setIsHidden(false);
+        }
         Priority priority = priorityMapper.toEntity(priorityDTO);
         priority = priorityRepository.save(priority);
         return priorityMapper.toDto(priority);
@@ -51,6 +64,9 @@ public class PriorityService {
      * @return the persisted entity.
      */
     public PriorityDTO update(PriorityDTO priorityDTO) {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can update priorities.");
+        }
         LOG.debug("Request to update Priority : {}", priorityDTO);
         Priority priority = priorityMapper.toEntity(priorityDTO);
         priority = priorityRepository.save(priority);
@@ -84,6 +100,9 @@ public class PriorityService {
      */
     @Transactional(readOnly = true)
     public List<PriorityDTO> findAll() {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can obtain all priorities.");
+        }
         LOG.debug("Request to get all Priorities");
         return priorityRepository.findAll().stream().map(priorityMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
@@ -96,6 +115,9 @@ public class PriorityService {
      */
     @Transactional(readOnly = true)
     public Optional<PriorityDTO> findOne(Long id) {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can find priorities.");
+        }
         LOG.debug("Request to get Priority : {}", id);
         return priorityRepository.findById(id).map(priorityMapper::toDto);
     }
@@ -106,6 +128,9 @@ public class PriorityService {
      * @param id the id of the entity.
      */
     public void delete(Long id) {
+        if (!securityUtilsService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only admins can delete priorities.");
+        }
         LOG.debug("Request to delete Priority : {}", id);
         priorityRepository.deleteById(id);
     }
