@@ -4,6 +4,7 @@ import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.service.ProjectQueryService;
 import com.dcmc.apps.taskmanager.service.ProjectService;
 import com.dcmc.apps.taskmanager.service.criteria.ProjectCriteria;
+import com.dcmc.apps.taskmanager.service.dto.ProjectAssignUsersDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
@@ -186,4 +187,12 @@ public class ProjectResource {
         return ResponseEntity.ok(projects);
     }
 
+    @PostMapping("/{id}/assign-users")
+    public ResponseEntity<Void> assignUsersToProject(
+        @PathVariable("id") Long projectId,
+        @RequestBody ProjectAssignUsersDTO assignUsersDTO) {
+
+        projectService.assignUsersToProject(projectId, assignUsersDTO.getUserIds());
+        return ResponseEntity.noContent().build();
+    }
 }

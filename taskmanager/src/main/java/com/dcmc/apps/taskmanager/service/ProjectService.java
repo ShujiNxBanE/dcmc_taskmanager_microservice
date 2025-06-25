@@ -3,16 +3,22 @@ package com.dcmc.apps.taskmanager.service;
 import com.dcmc.apps.taskmanager.domain.Project;
 import com.dcmc.apps.taskmanager.domain.User;
 import com.dcmc.apps.taskmanager.domain.WorkGroup;
+import com.dcmc.apps.taskmanager.domain.WorkGroupMembership;
 import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
+import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
 import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
 import com.dcmc.apps.taskmanager.service.mapper.ProjectMapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -42,14 +48,18 @@ public class ProjectService {
 
     private final SecurityUtilsService securityUtilsService;
 
+    private final WorkGroupMembershipRepository workGroupMembershipRepository;
+
     public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper
     , UserRepository userRepository, WorkGroupRepository workGroupRepository,
-                          SecurityUtilsService securityUtilsService) {
+                          SecurityUtilsService securityUtilsService,
+                          WorkGroupMembershipRepository workGroupMembershipRepository) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.userRepository = userRepository;
         this.workGroupRepository = workGroupRepository;
         this.securityUtilsService = securityUtilsService;
+        this.workGroupMembershipRepository = workGroupMembershipRepository;
     }
 
     /**
@@ -192,6 +202,54 @@ public class ProjectService {
     public List<ProjectDTO> findActiveProjectsByWorkGroup(Long workGroupId) {
         List<Project> projects = projectRepository.findByWorkGroup_IdAndIsActiveTrue(workGroupId);
         return projects.stream().map(projectMapper::toDto).toList();
+    }
+
+    @Transactional
+    public void assignUsersToProject(Long projectId, Set<String> userIds) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+
+        // Obtener usuarios válidos que pertenezcan al WorkGroup del proyecto
+        Long workGroupId = project.getWorkGroup().getId();
+
+        List<WorkGroupMembership> memberships = workGroupMembershipRepository
+            .findByWorkGroup_IdAndIsInGroupTrue(workGroupId);
+
+        Set<String> validUserIds = memberships.stream()
+            .map(m -> m.getUser().getId())
+            .collect(Collectors.toSet());
+
+        for (String id : userIds) {
+            if (!validUserIds.contains(id)) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "User with ID " + id + " is not a member of the project's work group"
+                );
+            }
+        }
+
+        // Obtener usuarios a agregar
+        Set<User> usersToAdd = new HashSet<>(userRepository.findAllById(userIds));
+
+        if (usersToAdd.size() != userIds.size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Some user IDs do not exist");
+        }
+
+        // Verificar si ya están asignados
+        Set<User> currentUsers = project.getMembers();
+        for (User user : usersToAdd) {
+            if (currentUsers.contains(user)) {
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "User with ID " + user.getId() + " is already assigned to the project"
+                );
+            }
+        }
+
+        // Asignar usuarios nuevos
+        currentUsers.addAll(usersToAdd);
+        project.setMembers(currentUsers);
+        projectRepository.save(project);
     }
 
 }
