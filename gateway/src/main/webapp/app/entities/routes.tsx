@@ -8,6 +8,7 @@ import { ReducersMapObject, combineReducers } from '@reduxjs/toolkit';
 import getStore from 'app/config/store';
 
 import entitiesReducers from './reducers';
+import WorkGroup from 'app/modules/work-group';
 
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
@@ -19,6 +20,7 @@ export default () => {
       <ErrorBoundaryRoutes>
         {/* prettier-ignore */}
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
+        <Route path="work-group/*" element={<WorkGroup />} />
       </ErrorBoundaryRoutes>
     </div>
   );

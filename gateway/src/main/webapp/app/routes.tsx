@@ -11,6 +11,7 @@ import PrivateRoute from 'app/shared/auth/private-route';
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import PageNotFound from 'app/shared/error/page-not-found';
 import { AUTHORITIES } from 'app/config/constants';
+import WorkGroup from './modules/work-group';
 
 const loading = <div>loading ...</div>;
 
@@ -38,6 +39,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
               <EntitiesRoutes />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="work-group/*"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
+              <WorkGroup />
             </PrivateRoute>
           }
         />

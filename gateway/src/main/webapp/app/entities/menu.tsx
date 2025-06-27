@@ -6,6 +6,9 @@ import MenuItem from 'app/shared/layout/menus/menu-item'; // eslint-disable-line
 const EntitiesMenu = () => {
   return (
     <>
+      <MenuItem icon="asterisk" to="/work-group">
+        Work Group
+      </MenuItem>
       {/* prettier-ignore */}
       {/* jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here */}
     </>

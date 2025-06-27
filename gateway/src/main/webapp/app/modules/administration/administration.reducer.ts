@@ -5,7 +5,7 @@ import { serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 
 const initialState = {
   loading: false,
-  errorMessage: null,
+  errorMessage: null as string | null,
   gateway: {
     routes: [],
   },
@@ -36,7 +36,7 @@ export const AdministrationSlice = createSlice({
         state.loading = true;
       })
       .addMatcher(isRejected(getGatewayRoutes), (state, action) => {
-        state.errorMessage = action.error.message;
+        state.errorMessage = action.error.message ?? null;
         state.loading = false;
       });
   },

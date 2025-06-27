@@ -57,6 +57,10 @@ public class WorkGroupResource {
         this.securityUtilsService = securityUtilsService;
     }
 
+    @GetMapping("/hello")
+    public ResponseEntity<String> sayHello() {
+        return ResponseEntity.ok("Hola desde el microservicio TaskManager!");
+    }
 
     /**
      * {@code POST  /work-groups} : Create a new workGroup.

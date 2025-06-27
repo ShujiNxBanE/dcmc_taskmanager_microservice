@@ -1,0 +1,35 @@
+// rest/WorkGroupClientApi.ts
+
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { WorkGroupDTO } from './dto';
+
+/**
+ * Servicio para interactuar con la API de WorkGroup.
+ * Centraliza las llamadas a la API y mejora la organización del código.
+ */
+class WorkGroupClientApi {
+  private api: AxiosInstance;
+
+  constructor() {
+    // Inicializa la instancia de Axios con la base URL para work-groups.
+    this.api = axios.create({
+      baseURL: '/services/taskmanager',
+    });
+  }
+
+  /**
+   * Obtiene la lista de grupos de trabajo.
+   * @returns {Promise<AxiosResponse<WorkGroupDTO[]>>} Una promesa con la respuesta de la API.
+   */
+  public getAllWorkGroups(): Promise<AxiosResponse<WorkGroupDTO[]>> {
+    // La ruta es '/' porque la baseURL ya termina en /api/work-groups
+    return this.api.get<WorkGroupDTO[]>('/api/work-groups');
+  }
+
+  // Aquí puedes añadir más métodos en el futuro (create, update, delete, etc.)
+}
+
+// Exporta una única instancia del servicio (patrón Singleton)
+const workGroupClientApi = new WorkGroupClientApi();
+
+export default workGroupClientApi;

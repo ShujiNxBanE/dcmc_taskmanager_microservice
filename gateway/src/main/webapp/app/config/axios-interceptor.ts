@@ -4,11 +4,11 @@ const TIMEOUT = 1 * 60 * 1000;
 axios.defaults.timeout = TIMEOUT;
 axios.defaults.baseURL = SERVER_API_URL;
 
-const setupAxiosInterceptors = onUnauthenticated => {
-  const onRequestSuccess = config => {
+const setupAxiosInterceptors = (onUnauthenticated: () => void) => {
+  const onRequestSuccess = (config: any) => {
     return config;
   };
-  const onResponseSuccess = response => response;
+  const onResponseSuccess = (response: any) => response;
   const onResponseError = (err: AxiosError) => {
     const status = err.status || (err.response ? err.response.status : 0);
     if (status === 401) {
