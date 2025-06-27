@@ -45,7 +45,7 @@ const AppRoutes = () => {
         <Route
           path="work-group/*"
           element={
-            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
               <WorkGroup />
             </PrivateRoute>
           }
