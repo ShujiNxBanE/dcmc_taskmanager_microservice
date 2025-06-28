@@ -100,6 +100,18 @@ class WorkGroupClientApi {
     return this.api.post<void>(`/api/work-groups/${groupId}/leave`);
   }
 
+  /**
+   * Transfiere la propiedad del grupo de trabajo a otro usuario.
+   * @param groupId - El ID del grupo de trabajo.
+   * @param newOwnerUsername - El nombre de usuario del nuevo propietario.
+   * @returns {Promise<AxiosResponse<void>>}
+   */
+  public transferOwnership(groupId: number, newOwnerUsername: string): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/work-group-memberships/transfer-ownership/${groupId}`, {
+      newOwnerUsername,
+    });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

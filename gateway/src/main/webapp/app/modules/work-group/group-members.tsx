@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, Modal, Input } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined, SwapOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { useAppSelector } from 'app/config/store';
 import './work-group-modal.scss';
@@ -23,6 +23,9 @@ const GroupMembers = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [adding, setAdding] = useState(false);
+  const [transferModalVisible, setTransferModalVisible] = useState(false);
+  const [newOwnerUsername, setNewOwnerUsername] = useState('');
+  const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -99,6 +102,15 @@ const GroupMembers = () => {
     return user && user.role?.toUpperCase() === 'MEMBER';
   };
 
+  // Verifica si el usuario autenticado puede transferir propiedad (OWNER o ROLE_ADMIN)
+  const canTransferOwnership = () => {
+    const user = members.find(m => m.login === currentUser?.login);
+    return (
+      (user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO')) ||
+      currentUser?.authorities?.some((auth: string) => auth === 'ROLE_ADMIN')
+    );
+  };
+
   const handleAddMember = async () => {
     if (!groupId || !newUsername) return;
     setAdding(true);
@@ -153,6 +165,22 @@ const GroupMembers = () => {
         }
       },
     });
+  };
+
+  const handleTransferOwnership = async () => {
+    if (!groupId || !newOwnerUsername) return;
+    setTransferring(true);
+    try {
+      await WorkGroupClientApi.transferOwnership(Number(groupId), newOwnerUsername);
+      message.success('Propiedad del grupo transferida exitosamente');
+      setTransferModalVisible(false);
+      setNewOwnerUsername('');
+      loadMembers(Number(groupId));
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || 'Error al transferir la propiedad del grupo');
+    } finally {
+      setTransferring(false);
+    }
   };
 
   const columns = [
@@ -254,7 +282,7 @@ const GroupMembers = () => {
 
         <Card
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
             border: 'none',
             borderRadius: 16,
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
@@ -264,23 +292,13 @@ const GroupMembers = () => {
             <Col span={12}>
               <div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: 16 }}>
                 <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700 }}>Miembros del Grupo</h1>
-                {canAddMember() && (
-                  <Button type="primary" icon={<PlusOutlined />} style={{ marginLeft: 16 }} onClick={() => setAddModalVisible(true)}>
-                    Añadir miembro
-                  </Button>
-                )}
-                {canLeaveGroup() && (
-                  <Button danger style={{ marginLeft: 16 }} onClick={handleLeaveGroup}>
-                    Salir del grupo
-                  </Button>
-                )}
               </div>
-              <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: 16 }}>{groupInfo?.name}</p>
+              <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: 16, color: '#e2e8f0' }}>{groupInfo?.name}</p>
             </Col>
             <Col span={12}>
               <div style={{ textAlign: 'right' }}>
                 <Statistic
-                  title="Total de miembros"
+                  title={<span style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 500 }}>Total de miembros</span>}
                   value={members.length}
                   valueStyle={{ color: 'white', fontSize: 32, fontWeight: 700 }}
                   suffix={members.length === 1 ? 'miembro' : 'miembros'}
@@ -288,6 +306,68 @@ const GroupMembers = () => {
               </div>
             </Col>
           </Row>
+        </Card>
+
+        {/* Área de botones con nuevo diseño */}
+        <Card
+          style={{
+            marginTop: 16,
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            border: '1px solid #cbd5e1',
+            borderRadius: 12,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {canAddMember() && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                style={{
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+                  border: 'none',
+                }}
+                onClick={() => setAddModalVisible(true)}
+              >
+                Añadir miembro
+              </Button>
+            )}
+            {canTransferOwnership() && (
+              <Button
+                type="primary"
+                icon={<SwapOutlined />}
+                style={{
+                  backgroundColor: '#f59e0b',
+                  borderColor: '#f59e0b',
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
+                  border: 'none',
+                }}
+                onClick={() => setTransferModalVisible(true)}
+              >
+                Transferir propiedad
+              </Button>
+            )}
+            {canLeaveGroup() && (
+              <Button
+                type="primary"
+                danger
+                style={{
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+                  border: 'none',
+                  backgroundColor: '#ef4444',
+                }}
+                onClick={handleLeaveGroup}
+              >
+                Salir del grupo
+              </Button>
+            )}
+          </div>
         </Card>
       </div>
 
@@ -329,6 +409,35 @@ const GroupMembers = () => {
           onChange={e => setNewUsername(e.target.value)}
           onPressEnter={handleAddMember}
           disabled={adding}
+        />
+      </Modal>
+
+      <Modal
+        title="Transferir propiedad del grupo"
+        open={transferModalVisible}
+        onCancel={() => setTransferModalVisible(false)}
+        onOk={handleTransferOwnership}
+        confirmLoading={transferring}
+        okText="Transferir"
+        cancelText="Cancelar"
+        okButtonProps={{
+          danger: true,
+          style: { backgroundColor: '#f59e0b', borderColor: '#f59e0b' },
+        }}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ color: '#6b7280', marginBottom: 8 }}>
+            Al transferir la propiedad del grupo, perderás tus privilegios de propietario y se los otorgarás al nuevo propietario.
+          </p>
+          <p style={{ color: '#ef4444', fontWeight: 500 }}>Esta acción no se puede deshacer.</p>
+        </div>
+        <Input
+          placeholder="Nombre de usuario del nuevo propietario"
+          value={newOwnerUsername}
+          onChange={e => setNewOwnerUsername(e.target.value)}
+          onPressEnter={handleTransferOwnership}
+          disabled={transferring}
+          prefix={<SwapOutlined style={{ color: '#f59e0b' }} />}
         />
       </Modal>
     </div>
