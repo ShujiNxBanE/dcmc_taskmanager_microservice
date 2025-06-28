@@ -34,7 +34,16 @@ class WorkGroupClientApi {
     return this.api.get<UserGroupViewDTO[]>('/api/work-group-memberships/my-active-groups');
   }
 
-  // Aquí puedes añadir más métodos en el futuro (create, update, delete, etc.)
+  /**
+   * Crea un nuevo grupo de trabajo.
+   * @param workGroupDTO - Los datos del grupo de trabajo a crear.
+   * @returns {Promise<AxiosResponse<WorkGroupDTO>>} Una promesa con la respuesta de la API.
+   */
+  public createWorkGroup(workGroupDTO: WorkGroupDTO): Promise<AxiosResponse<WorkGroupDTO>> {
+    return this.api.post<WorkGroupDTO>('/api/work-groups/create-group', workGroupDTO);
+  }
+
+  // Aquí puedes añadir más métodos en el futuro (update, delete, etc.)
 }
 
 // Exporta una única instancia del servicio (patrón Singleton)

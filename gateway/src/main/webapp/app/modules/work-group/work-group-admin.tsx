@@ -1,15 +1,19 @@
 // modules/work-group/work-group-admin.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Table, message, Tabs } from 'antd';
+import { Table, message, Tabs, Button, Space } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { WorkGroupDTO, UserGroupViewDTO } from 'app/rest/dto';
+import CreateWorkGroupModal from './create-work-group-modal';
+import './work-group-modal.scss';
 
 const WorkGroupAdmin = () => {
   const [allWorkGroups, setAllWorkGroups] = useState<WorkGroupDTO[]>([]);
   const [myWorkGroups, setMyWorkGroups] = useState<UserGroupViewDTO[]>([]);
   const [loadingAll, setLoadingAll] = useState(false);
   const [loadingMy, setLoadingMy] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const loadAllWorkGroups = async () => {
     setLoadingAll(true);
@@ -37,6 +41,11 @@ const WorkGroupAdmin = () => {
     }
   };
 
+  const handleCreateSuccess = () => {
+    loadAllWorkGroups();
+    loadMyWorkGroups();
+  };
+
   useEffect(() => {
     loadAllWorkGroups();
     loadMyWorkGroups();
@@ -57,16 +66,39 @@ const WorkGroupAdmin = () => {
     {
       key: 'all',
       label: 'Todos los Grupos',
-      children: <Table rowKey="id" dataSource={allWorkGroups} columns={allColumns} loading={loadingAll} />,
+      children: (
+        <div className="work-group-tables">
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)} className="create-group-button">
+              Crear Grupo
+            </Button>
+          </div>
+          <Table rowKey="id" dataSource={allWorkGroups} columns={allColumns} loading={loadingAll} />
+        </div>
+      ),
     },
     {
       key: 'my',
       label: 'Mis Grupos',
-      children: <Table rowKey="groupId" dataSource={myWorkGroups} columns={myColumns} loading={loadingMy} />,
+      children: (
+        <div className="work-group-tables">
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)} className="create-group-button">
+              Crear Grupo
+            </Button>
+          </div>
+          <Table rowKey="groupId" dataSource={myWorkGroups} columns={myColumns} loading={loadingMy} />
+        </div>
+      ),
     },
   ];
 
-  return <Tabs items={tabItems} />;
+  return (
+    <div className="work-group-container">
+      <Tabs items={tabItems} />
+      <CreateWorkGroupModal visible={modalVisible} onCancel={() => setModalVisible(false)} onSuccess={handleCreateSuccess} />
+    </div>
+  );
 };
 
 export default WorkGroupAdmin;

@@ -6,6 +6,7 @@ import { hasAnyAuthority } from 'app/shared/auth/private-route';
 import { AUTHORITIES } from 'app/config/constants';
 import WorkGroupAdmin from './work-group-admin';
 import WorkGroupUser from './work-group-user';
+import './work-group-modal.scss';
 
 const WorkGroup = () => {
   const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
