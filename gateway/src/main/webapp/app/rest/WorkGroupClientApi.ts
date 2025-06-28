@@ -81,6 +81,16 @@ class WorkGroupClientApi {
     return this.api.post<void>(`/api/work-groups/${groupId}/add-member`, { username });
   }
 
+  /**
+   * Elimina un miembro de un grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @param username - El nombre de usuario a eliminar.
+   * @returns {Promise<AxiosResponse<void>>}
+   */
+  public removeMember(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.delete<void>(`/api/work-groups/${groupId}/remove-member`, { data: { username } });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

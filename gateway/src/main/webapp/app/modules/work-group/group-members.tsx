@@ -109,6 +109,26 @@ const GroupMembers = () => {
     }
   };
 
+  const handleRemoveMember = (username: string) => {
+    if (!groupId || !username) return;
+    Modal.confirm({
+      title: '¿Estás seguro de que quieres eliminar este miembro?',
+      content: `Esta acción no se puede deshacer. Usuario: ${username}`,
+      okText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      async onOk() {
+        try {
+          await WorkGroupClientApi.removeMember(Number(groupId), username);
+          message.success('Miembro eliminado exitosamente');
+          loadMembers(Number(groupId));
+        } catch (error: any) {
+          message.error(error?.response?.data?.message || 'Error al eliminar miembro');
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: 'Usuario',
@@ -177,7 +197,25 @@ const GroupMembers = () => {
     {
       title: 'Acciones',
       key: 'actions',
-      render: () => <Space size="small">{/* Espacio reservado para futuras acciones */}</Space>,
+      render(_: any, record: GroupMemberDTO) {
+        // Solo OWNER, ADMIN o PROPIETARIO pueden eliminar miembros (y nunca al OWNER ni a sí mismos)
+        const user = members.find(m => m.login === currentUser?.login);
+        const canRemove =
+          user &&
+          (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'ADMIN' || user.role?.toUpperCase() === 'PROPIETARIO') &&
+          record.role?.toUpperCase() !== 'OWNER' &&
+          record.login !== currentUser?.login;
+
+        return (
+          <Space size="small">
+            {canRemove && (
+              <Button danger type="text" onClick={() => handleRemoveMember(record.login)} title="Eliminar miembro">
+                Eliminar
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
