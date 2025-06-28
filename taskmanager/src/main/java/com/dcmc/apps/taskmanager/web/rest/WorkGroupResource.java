@@ -91,7 +91,7 @@ public class WorkGroupResource {
      * or with status {@code 500 (Internal Server Error)} if the workGroupDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<WorkGroupDTO> updateWorkGroup(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody WorkGroupDTO workGroupDTO

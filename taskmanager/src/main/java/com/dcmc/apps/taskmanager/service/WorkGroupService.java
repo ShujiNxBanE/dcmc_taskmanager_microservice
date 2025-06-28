@@ -81,10 +81,17 @@ public class WorkGroupService {
      */
     public WorkGroupDTO update(WorkGroupDTO workGroupDTO) {
         LOG.debug("Request to update WorkGroup : {}", workGroupDTO);
+
+        // Asegura que solo el OWNER pueda actualizar
+        if (!securityUtilsService.isOwner(workGroupDTO.getId())) {
+            throw new AccessDeniedException("Only the OWNER can update the WorkGroup.");
+        }
+
         WorkGroup workGroup = workGroupMapper.toEntity(workGroupDTO);
         workGroup = workGroupRepository.save(workGroup);
         return workGroupMapper.toDto(workGroup);
     }
+
 
     /**
      * Partially update a workGroup.

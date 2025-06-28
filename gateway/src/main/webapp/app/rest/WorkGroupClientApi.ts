@@ -43,7 +43,26 @@ class WorkGroupClientApi {
     return this.api.post<WorkGroupDTO>('/api/work-groups/create-group', workGroupDTO);
   }
 
-  // Aquí puedes añadir más métodos en el futuro (update, delete, etc.)
+  /**
+   * Actualiza un grupo de trabajo existente.
+   * @param id - El ID del grupo de trabajo a actualizar.
+   * @param workGroupDTO - Los datos actualizados del grupo de trabajo.
+   * @returns {Promise<AxiosResponse<WorkGroupDTO>>} Una promesa con la respuesta de la API.
+   */
+  public updateWorkGroup(id: number, workGroupDTO: WorkGroupDTO): Promise<AxiosResponse<WorkGroupDTO>> {
+    return this.api.post<WorkGroupDTO>(`/api/work-groups/${id}`, workGroupDTO);
+  }
+
+  /**
+   * Elimina un grupo de trabajo.
+   * @param id - El ID del grupo de trabajo a eliminar.
+   * @returns {Promise<AxiosResponse<void>>} Una promesa con la respuesta de la API.
+   */
+  public deleteWorkGroup(id: number): Promise<AxiosResponse<void>> {
+    return this.api.delete<void>(`/api/work-groups/${id}`);
+  }
+
+  // Aquí puedes añadir más métodos en el futuro
 }
 
 // Exporta una única instancia del servicio (patrón Singleton)

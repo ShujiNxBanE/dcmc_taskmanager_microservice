@@ -1,0 +1,106 @@
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, Button, message } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import { WorkGroupDTO } from 'app/rest/dto';
+import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
+import './work-group-modal.scss';
+
+interface EditWorkGroupModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  onSuccess: () => void;
+  workGroup: WorkGroupDTO | null;
+}
+
+const EditWorkGroupModal: React.FC<EditWorkGroupModalProps> = ({ visible, onCancel, onSuccess, workGroup }) => {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (visible && workGroup) {
+      form.setFieldsValue({
+        name: workGroup.name,
+        description: workGroup.description,
+      });
+    }
+  }, [visible, workGroup, form]);
+
+  const handleSubmit = async (values: any) => {
+    if (!workGroup?.id) return;
+
+    setLoading(true);
+    try {
+      const workGroupData: WorkGroupDTO = {
+        id: workGroup.id,
+        name: values.name,
+        description: values.description,
+        isActive: workGroup.isActive,
+      };
+
+      await WorkGroupClientApi.updateWorkGroup(workGroup.id, workGroupData);
+      message.success('Grupo de trabajo actualizado exitosamente');
+      form.resetFields();
+      onSuccess();
+      onCancel();
+    } catch (error) {
+      console.error('Error al actualizar el grupo de trabajo:', error);
+      message.error('Error al actualizar el grupo de trabajo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    onCancel();
+  };
+
+  return (
+    <Modal
+      title="Editar Grupo de Trabajo"
+      open={visible}
+      onCancel={handleCancel}
+      footer={null}
+      width={500}
+      className="work-group-modal"
+      destroyOnClose
+    >
+      <Form form={form} layout="vertical" onFinish={handleSubmit} autoComplete="off">
+        <div className="form-group">
+          <Form.Item
+            label="Nombre del Grupo"
+            name="name"
+            rules={[
+              { required: true, message: 'Por favor ingresa el nombre del grupo' },
+              { min: 3, message: 'El nombre debe tener al menos 3 caracteres' },
+              { max: 50, message: 'El nombre no puede exceder 50 caracteres' },
+            ]}
+          >
+            <Input placeholder="Ingresa el nombre del grupo" />
+          </Form.Item>
+        </div>
+
+        <div className="form-group">
+          <Form.Item
+            label="Descripción"
+            name="description"
+            rules={[{ max: 200, message: 'La descripción no puede exceder 200 caracteres' }]}
+          >
+            <Input.TextArea placeholder="Describe el propósito del grupo (opcional)" rows={4} />
+          </Form.Item>
+        </div>
+
+        <div className="modal-actions">
+          <Button onClick={handleCancel} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading} icon={<EditOutlined />}>
+            Actualizar Grupo
+          </Button>
+        </div>
+      </Form>
+    </Modal>
+  );
+};
+
+export default EditWorkGroupModal;

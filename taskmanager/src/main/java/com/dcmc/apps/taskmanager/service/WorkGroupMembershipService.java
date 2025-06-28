@@ -207,8 +207,8 @@ public class WorkGroupMembershipService {
     public List<UserGroupViewDTO> findActiveGroupsForCurrentUser() {
         String login = securityUtilsService.getCurrentUser();
 
-        List<WorkGroupMembership> memberships = workGroupMembershipRepository
-            .findByUser_LoginAndIsInGroupTrue(login);
+        List<WorkGroupMembership> memberships =
+            workGroupMembershipRepository.findByUser_LoginAndIsInGroupTrueAndWorkGroup_IsActiveTrue(login);
 
         return memberships.stream().map(m -> {
             WorkGroup wg = m.getWorkGroup();
@@ -222,6 +222,7 @@ public class WorkGroupMembershipService {
             return dto;
         }).toList();
     }
+
 
 
 

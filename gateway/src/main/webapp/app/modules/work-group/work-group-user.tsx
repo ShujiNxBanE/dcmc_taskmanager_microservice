@@ -3,14 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { WorkGroupDTO, UserGroupViewDTO } from 'app/rest/dto';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
-import { message, Table, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { message, Table, Button, Space, Popconfirm } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import CreateWorkGroupModal from './create-work-group-modal';
+import EditWorkGroupModal from './edit-work-group-modal';
 import './work-group-modal.scss';
 
 const WorkGroupUser = () => {
   const [workGroups, setWorkGroups] = useState<UserGroupViewDTO[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedWorkGroup, setSelectedWorkGroup] = useState<WorkGroupDTO | null>(null);
 
   const loadWorkGroups = async () => {
     try {
@@ -26,6 +29,39 @@ const WorkGroupUser = () => {
     loadWorkGroups();
   };
 
+  const handleEditSuccess = () => {
+    loadWorkGroups();
+  };
+
+  const handleEdit = (record: UserGroupViewDTO) => {
+    // Convertir UserGroupViewDTO a WorkGroupDTO para el modal
+    const workGroupData: WorkGroupDTO = {
+      id: record.groupId,
+      name: record.groupName,
+      description: record.groupDescription,
+      isActive: record.isActive,
+    };
+    setSelectedWorkGroup(workGroupData);
+    setEditModalVisible(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await WorkGroupClientApi.deleteWorkGroup(id);
+      message.success('Grupo de trabajo eliminado exitosamente');
+      loadWorkGroups();
+    } catch (error) {
+      console.error('Error al eliminar el grupo de trabajo:', error);
+      message.error('Error al eliminar el grupo de trabajo');
+    }
+  };
+
+  const isOwner = (record: UserGroupViewDTO) => {
+    // Verificar si el usuario es propietario del grupo
+    // Asumiendo que el rol "OWNER" o "ADMIN" indica propiedad
+    return record.role === 'OWNER' || record.role === 'ADMIN' || record.role === 'PROPIETARIO';
+  };
+
   useEffect(() => {
     loadWorkGroups();
   }, []);
@@ -34,6 +70,31 @@ const WorkGroupUser = () => {
     { title: 'Nombre', dataIndex: 'groupName', key: 'groupName' },
     { title: 'Descripción', dataIndex: 'groupDescription', key: 'groupDescription' },
     { title: 'Rol', dataIndex: 'role', key: 'role' },
+    {
+      title: 'Acciones',
+      key: 'actions',
+      render(_: any, record: UserGroupViewDTO) {
+        if (!isOwner(record)) {
+          return null; // No mostrar acciones si no es propietario
+        }
+
+        return (
+          <Space size="small">
+            <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ color: '#3b82f6' }} />
+            <Popconfirm
+              title="¿Estás seguro de que quieres eliminar este grupo?"
+              description="Esta acción no se puede deshacer."
+              onConfirm={() => handleDelete(record.groupId)}
+              okText="Sí, eliminar"
+              cancelText="Cancelar"
+              okButtonProps={{ danger: true }}
+            >
+              <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} />
+            </Popconfirm>
+          </Space>
+        );
+      },
+    },
   ];
 
   return (
@@ -47,6 +108,12 @@ const WorkGroupUser = () => {
         <Table rowKey="groupId" dataSource={workGroups} columns={columns} />
       </div>
       <CreateWorkGroupModal visible={modalVisible} onCancel={() => setModalVisible(false)} onSuccess={handleCreateSuccess} />
+      <EditWorkGroupModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onSuccess={handleEditSuccess}
+        workGroup={selectedWorkGroup}
+      />
     </div>
   );
 };
