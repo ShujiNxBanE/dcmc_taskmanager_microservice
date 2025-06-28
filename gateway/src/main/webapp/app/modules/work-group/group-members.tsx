@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, Modal, Input } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined, SwapOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined, SwapOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { useAppSelector } from 'app/config/store';
 import './work-group-modal.scss';
@@ -60,6 +60,9 @@ const GroupMembers = () => {
       case 'ADMIN':
       case 'PROPIETARIO':
         return 'gold';
+      case 'MODERATOR':
+      case 'MODERADOR':
+        return 'green';
       case 'MEMBER':
       case 'MIEMBRO':
         return 'blue';
@@ -74,6 +77,9 @@ const GroupMembers = () => {
       case 'ADMIN':
       case 'PROPIETARIO':
         return <CrownOutlined />;
+      case 'MODERATOR':
+      case 'MODERADOR':
+        return <SafetyCertificateOutlined />;
       default:
         return null;
     }
@@ -109,6 +115,28 @@ const GroupMembers = () => {
       (user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO')) ||
       currentUser?.authorities?.some((auth: string) => auth === 'ROLE_ADMIN')
     );
+  };
+
+  // Verifica si el usuario autenticado puede promover a moderador (OWNER o MODERATOR)
+  const canPromoteToModerator = () => {
+    const user = members.find(m => m.login === currentUser?.login);
+    return (
+      user &&
+      (user.role?.toUpperCase() === 'OWNER' ||
+        user.role?.toUpperCase() === 'PROPIETARIO' ||
+        user.role?.toUpperCase() === 'MODERATOR' ||
+        user.role?.toUpperCase() === 'ADMIN')
+    );
+  };
+
+  // Verifica si un usuario específico puede ser promovido a moderador
+  const canPromoteUser = (member: GroupMemberDTO) => {
+    // No se puede promover al OWNER ni a sí mismo
+    if (member.role?.toUpperCase() === 'OWNER' || member.role?.toUpperCase() === 'PROPIETARIO' || member.login === currentUser?.login) {
+      return false;
+    }
+    // Solo se puede promover a usuarios con rol MEMBER
+    return member.role?.toUpperCase() === 'MEMBER' || member.role?.toUpperCase() === 'MIEMBRO';
   };
 
   const handleAddMember = async () => {
@@ -181,6 +209,28 @@ const GroupMembers = () => {
     } finally {
       setTransferring(false);
     }
+  };
+
+  const handlePromoteToModerator = (username: string) => {
+    if (!groupId || !username) return;
+    Modal.confirm({
+      title: '¿Promover a moderador?',
+      content: `¿Estás seguro de que quieres promover a @${username} a moderador del grupo?`,
+      okText: 'Sí, promover',
+      cancelText: 'Cancelar',
+      okButtonProps: {
+        style: { backgroundColor: '#10b981', borderColor: '#10b981' },
+      },
+      async onOk() {
+        try {
+          await WorkGroupClientApi.promoteToModerator(Number(groupId), username);
+          message.success('Usuario promovido a moderador exitosamente');
+          loadMembers(Number(groupId));
+        } catch (error: any) {
+          message.error(error?.response?.data?.message || 'Error al promover usuario');
+        }
+      },
+    });
   };
 
   const columns = [
@@ -262,6 +312,16 @@ const GroupMembers = () => {
 
         return (
           <Space size="small">
+            {canPromoteToModerator() && canPromoteUser(record) && (
+              <Button
+                type="text"
+                onClick={() => handlePromoteToModerator(record.login)}
+                title="Promover a moderador"
+                style={{ color: '#10b981' }}
+              >
+                Promover
+              </Button>
+            )}
             {canRemove && (
               <Button danger type="text" onClick={() => handleRemoveMember(record.login)} title="Eliminar miembro">
                 Eliminar

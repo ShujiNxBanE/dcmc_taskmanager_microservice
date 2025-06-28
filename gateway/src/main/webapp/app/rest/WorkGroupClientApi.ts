@@ -112,6 +112,18 @@ class WorkGroupClientApi {
     });
   }
 
+  /**
+   * Promueve a un usuario a moderador del grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @param username - El nombre de usuario a promover.
+   * @returns {Promise<AxiosResponse<void>>}
+   */
+  public promoteToModerator(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/work-group-memberships/promote-to-moderator/${groupId}`, {
+      username,
+    });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
