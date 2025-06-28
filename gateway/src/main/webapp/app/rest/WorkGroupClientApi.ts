@@ -91,6 +91,15 @@ class WorkGroupClientApi {
     return this.api.delete<void>(`/api/work-groups/${groupId}/remove-member`, { data: { username } });
   }
 
+  /**
+   * Permite que un usuario con rol MEMBER salga del grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @returns {Promise<AxiosResponse<void>>}
+   */
+  public leaveGroup(groupId: number): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/work-groups/${groupId}/leave`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

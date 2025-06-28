@@ -93,6 +93,12 @@ const GroupMembers = () => {
     );
   };
 
+  // Verifica si el usuario autenticado es MEMBER
+  const canLeaveGroup = () => {
+    const user = members.find(m => m.login === currentUser?.login);
+    return user && user.role?.toUpperCase() === 'MEMBER';
+  };
+
   const handleAddMember = async () => {
     if (!groupId || !newUsername) return;
     setAdding(true);
@@ -124,6 +130,26 @@ const GroupMembers = () => {
           loadMembers(Number(groupId));
         } catch (error: any) {
           message.error(error?.response?.data?.message || 'Error al eliminar miembro');
+        }
+      },
+    });
+  };
+
+  const handleLeaveGroup = () => {
+    if (!groupId) return;
+    Modal.confirm({
+      title: '¿Estás seguro de que quieres salir del grupo?',
+      content: 'Perderás acceso a este grupo de trabajo.',
+      okText: 'Sí, salir',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      async onOk() {
+        try {
+          await WorkGroupClientApi.leaveGroup(Number(groupId));
+          message.success('Has salido del grupo exitosamente');
+          navigate('/work-group');
+        } catch (error: any) {
+          message.error(error?.response?.data?.message || 'Error al salir del grupo');
         }
       },
     });
@@ -241,6 +267,11 @@ const GroupMembers = () => {
                 {canAddMember() && (
                   <Button type="primary" icon={<PlusOutlined />} style={{ marginLeft: 16 }} onClick={() => setAddModalVisible(true)}>
                     Añadir miembro
+                  </Button>
+                )}
+                {canLeaveGroup() && (
+                  <Button danger style={{ marginLeft: 16 }} onClick={handleLeaveGroup}>
+                    Salir del grupo
                   </Button>
                 )}
               </div>
