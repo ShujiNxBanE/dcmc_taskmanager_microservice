@@ -1,38 +1,72 @@
 // modules/work-group/work-group-admin.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Table, message } from 'antd';
+import { Table, message, Tabs } from 'antd';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
-import { WorkGroupDTO } from 'app/rest/dto';
+import { WorkGroupDTO, UserGroupViewDTO } from 'app/rest/dto';
 
 const WorkGroupAdmin = () => {
-  const [workGroups, setWorkGroups] = useState<WorkGroupDTO[]>([]);
+  const [allWorkGroups, setAllWorkGroups] = useState<WorkGroupDTO[]>([]);
+  const [myWorkGroups, setMyWorkGroups] = useState<UserGroupViewDTO[]>([]);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [loadingMy, setLoadingMy] = useState(false);
 
-  const loadWorkGroups = async () => {
+  const loadAllWorkGroups = async () => {
+    setLoadingAll(true);
     try {
       const response = await WorkGroupClientApi.getAllWorkGroups();
-      setWorkGroups(response.data);
+      setAllWorkGroups(response.data);
     } catch (err) {
-      message.error('Error al cargar los grupos de trabajo');
+      console.error('Error al cargar todos los grupos de trabajo:', err);
+      message.error('Error al cargar todos los grupos de trabajo');
+    } finally {
+      setLoadingAll(false);
+    }
+  };
+
+  const loadMyWorkGroups = async () => {
+    setLoadingMy(true);
+    try {
+      const response = await WorkGroupClientApi.getMyActiveGroups();
+      setMyWorkGroups(response.data);
+    } catch (err) {
+      console.error('Error al cargar mis grupos de trabajo:', err);
+      message.error('Error al cargar mis grupos de trabajo');
+    } finally {
+      setLoadingMy(false);
     }
   };
 
   useEffect(() => {
-    loadWorkGroups();
+    loadAllWorkGroups();
+    loadMyWorkGroups();
   }, []);
 
-  const columns = [
+  const allColumns = [
     { title: 'Nombre', dataIndex: 'name', key: 'name' },
     { title: 'Descripción', dataIndex: 'description', key: 'description' },
+  ];
+
+  const myColumns = [
+    { title: 'Nombre', dataIndex: 'groupName', key: 'groupName' },
+    { title: 'Descripción', dataIndex: 'groupDescription', key: 'groupDescription' },
+    { title: 'Rol', dataIndex: 'role', key: 'role' },
+  ];
+
+  const tabItems = [
     {
-      title: 'Activo',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      render: (val: boolean) => (val ? 'Sí' : 'No'),
+      key: 'all',
+      label: 'Todos los Grupos',
+      children: <Table rowKey="id" dataSource={allWorkGroups} columns={allColumns} loading={loadingAll} />,
+    },
+    {
+      key: 'my',
+      label: 'Mis Grupos',
+      children: <Table rowKey="groupId" dataSource={myWorkGroups} columns={myColumns} loading={loadingMy} />,
     },
   ];
 
-  return <Table rowKey="id" dataSource={workGroups} columns={columns} />;
+  return <Tabs items={tabItems} />;
 };
 
 export default WorkGroupAdmin;

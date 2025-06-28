@@ -1,7 +1,7 @@
 // rest/WorkGroupClientApi.ts
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { WorkGroupDTO } from './dto';
+import { WorkGroupDTO, UserGroupViewDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de WorkGroup.
@@ -24,6 +24,14 @@ class WorkGroupClientApi {
   public getAllWorkGroups(): Promise<AxiosResponse<WorkGroupDTO[]>> {
     // La ruta es '/' porque la baseURL ya termina en /api/work-groups
     return this.api.get<WorkGroupDTO[]>('/api/work-groups');
+  }
+
+  /**
+   * Obtiene los grupos de trabajo activos del usuario actual.
+   * @returns {Promise<AxiosResponse<UserGroupViewDTO[]>>} Una promesa con la respuesta de la API.
+   */
+  public getMyActiveGroups(): Promise<AxiosResponse<UserGroupViewDTO[]>> {
+    return this.api.get<UserGroupViewDTO[]>('/api/work-group-memberships/my-active-groups');
   }
 
   // Aquí puedes añadir más métodos en el futuro (create, update, delete, etc.)

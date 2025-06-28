@@ -7,8 +7,11 @@ import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.service.dto.UserGroupViewDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
+
+import java.util.List;
 import java.util.Optional;
 
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
@@ -199,5 +202,27 @@ public class WorkGroupMembershipService {
         membership.setRole(GroupRole.MEMBER);
         workGroupMembershipRepository.save(membership);
     }
+
+    @Transactional(readOnly = true)
+    public List<UserGroupViewDTO> findActiveGroupsForCurrentUser() {
+        String login = securityUtilsService.getCurrentUser();
+
+        List<WorkGroupMembership> memberships = workGroupMembershipRepository
+            .findByUser_LoginAndIsInGroupTrue(login);
+
+        return memberships.stream().map(m -> {
+            WorkGroup wg = m.getWorkGroup();
+            UserGroupViewDTO dto = new UserGroupViewDTO();
+            dto.setGroupId(wg.getId());
+            dto.setGroupName(wg.getName());
+            dto.setGroupDescription(wg.getDescription());
+            dto.setIsActive(wg.getIsActive());
+            dto.setIsInGroup(m.getInGroup());
+            dto.setRole(m.getRole());
+            return dto;
+        }).toList();
+    }
+
+
 
 }

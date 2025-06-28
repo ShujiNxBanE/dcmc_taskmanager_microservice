@@ -4,6 +4,7 @@ import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.service.WorkGroupMembershipService;
 import com.dcmc.apps.taskmanager.service.dto.OwnershipTransferDTO;
 import com.dcmc.apps.taskmanager.service.dto.PromotionRequestDTO;
+import com.dcmc.apps.taskmanager.service.dto.UserGroupViewDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -222,6 +223,12 @@ public class WorkGroupMembershipResource {
         LOG.debug("REST request to demote user {} from moderator in group {}", dto.getUsername(), groupId);
         workGroupMembershipService.demoteModerator(groupId, dto.getUsername());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/my-active-groups")
+    public ResponseEntity<List<UserGroupViewDTO>> getMyActiveGroups() {
+        List<UserGroupViewDTO> list = workGroupMembershipService.findActiveGroupsForCurrentUser();
+        return ResponseEntity.ok(list);
     }
 
 }
