@@ -71,6 +71,16 @@ class WorkGroupClientApi {
     return this.api.get<any[]>(`/api/work-group-memberships/${groupId}/active-members`);
   }
 
+  /**
+   * Añade un miembro a un grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @param username - El nombre de usuario a añadir.
+   * @returns {Promise<AxiosResponse<void>>} Una promesa con la respuesta de la API.
+   */
+  public addMember(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/work-groups/${groupId}/add-member`, { username });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, CrownOutlined } from '@ant-design/icons';
+import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, Modal, Input } from 'antd';
+import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { useAppSelector } from 'app/config/store';
 import './work-group-modal.scss';
@@ -20,6 +20,9 @@ const GroupMembers = () => {
   const [loading, setLoading] = useState(false);
   const [groupInfo, setGroupInfo] = useState<{ id: number; name: string } | null>(null);
   const currentUser = useAppSelector(state => state.authentication.account);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -75,6 +78,35 @@ const GroupMembers = () => {
 
   const isCurrentUser = (member: GroupMemberDTO) => {
     return member.currentUser || member.login === currentUser?.login;
+  };
+
+  // Verifica si el usuario autenticado es miembro o admin
+  const canAddMember = () => {
+    const user = members.find(m => m.login === currentUser?.login);
+    return (
+      user &&
+      (user.role?.toUpperCase() === 'OWNER' ||
+        user.role?.toUpperCase() === 'ADMIN' ||
+        user.role?.toUpperCase() === 'PROPIETARIO' ||
+        user.role?.toUpperCase() === 'MEMBER' ||
+        user.currentUser)
+    );
+  };
+
+  const handleAddMember = async () => {
+    if (!groupId || !newUsername) return;
+    setAdding(true);
+    try {
+      await WorkGroupClientApi.addMember(Number(groupId), newUsername);
+      message.success('Miembro añadido exitosamente');
+      setAddModalVisible(false);
+      setNewUsername('');
+      loadMembers(Number(groupId));
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || 'Error al añadir miembro');
+    } finally {
+      setAdding(false);
+    }
   };
 
   const columns = [
@@ -166,10 +198,15 @@ const GroupMembers = () => {
         >
           <Row gutter={24}>
             <Col span={12}>
-              <div style={{ color: 'white' }}>
+              <div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: 16 }}>
                 <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700 }}>Miembros del Grupo</h1>
-                <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: 16 }}>{groupInfo?.name}</p>
+                {canAddMember() && (
+                  <Button type="primary" icon={<PlusOutlined />} style={{ marginLeft: 16 }} onClick={() => setAddModalVisible(true)}>
+                    Añadir miembro
+                  </Button>
+                )}
               </div>
+              <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: 16 }}>{groupInfo?.name}</p>
             </Col>
             <Col span={12}>
               <div style={{ textAlign: 'right' }}>
@@ -207,6 +244,24 @@ const GroupMembers = () => {
           rowClassName={record => (isCurrentUser(record) ? 'current-user-row' : '')}
         />
       </Card>
+
+      <Modal
+        title="Añadir miembro al grupo"
+        open={addModalVisible}
+        onCancel={() => setAddModalVisible(false)}
+        onOk={handleAddMember}
+        confirmLoading={adding}
+        okText="Añadir"
+        cancelText="Cancelar"
+      >
+        <Input
+          placeholder="Nombre de usuario"
+          value={newUsername}
+          onChange={e => setNewUsername(e.target.value)}
+          onPressEnter={handleAddMember}
+          disabled={adding}
+        />
+      </Modal>
     </div>
   );
 };
