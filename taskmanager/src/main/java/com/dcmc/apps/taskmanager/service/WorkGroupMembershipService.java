@@ -7,6 +7,7 @@ import com.dcmc.apps.taskmanager.domain.enumeration.GroupRole;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.service.dto.GroupMemberDTO;
 import com.dcmc.apps.taskmanager.service.dto.UserGroupViewDTO;
 import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
 import com.dcmc.apps.taskmanager.service.mapper.WorkGroupMembershipMapper;
@@ -223,7 +224,21 @@ public class WorkGroupMembershipService {
         }).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<GroupMemberDTO> findActiveMembersWithRoles(Long groupId) {
+        String currentUserLogin = securityUtilsService.getCurrentUser();
 
+        List<WorkGroupMembership> memberships =
+            workGroupMembershipRepository.findByWorkGroup_IdAndIsInGroupTrueAndWorkGroup_IsActiveTrue(groupId);
 
+        return memberships.stream().map(m -> {
+            GroupMemberDTO dto = new GroupMemberDTO();
+            dto.setId(m.getUser().getId().toString());
+            dto.setLogin(m.getUser().getLogin());
+            dto.setRole(m.getRole().name()); // Convertir enum a String
+            dto.setCurrentUser(m.getUser().getLogin().equals(currentUserLogin));
+            return dto;
+        }).toList();
+    }
 
 }

@@ -62,6 +62,15 @@ class WorkGroupClientApi {
     return this.api.delete<void>(`/api/work-groups/${id}`);
   }
 
+  /**
+   * Obtiene los miembros activos de un grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @returns {Promise<AxiosResponse<GroupMemberDTO[]>>} Una promesa con la respuesta de la API.
+   */
+  public getActiveMembers(groupId: number): Promise<AxiosResponse<any[]>> {
+    return this.api.get<any[]>(`/api/work-group-memberships/${groupId}/active-members`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

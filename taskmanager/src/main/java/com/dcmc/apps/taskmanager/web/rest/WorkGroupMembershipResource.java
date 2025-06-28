@@ -2,10 +2,7 @@ package com.dcmc.apps.taskmanager.web.rest;
 
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.service.WorkGroupMembershipService;
-import com.dcmc.apps.taskmanager.service.dto.OwnershipTransferDTO;
-import com.dcmc.apps.taskmanager.service.dto.PromotionRequestDTO;
-import com.dcmc.apps.taskmanager.service.dto.UserGroupViewDTO;
-import com.dcmc.apps.taskmanager.service.dto.WorkGroupMembershipDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -231,4 +228,9 @@ public class WorkGroupMembershipResource {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/{groupId}/active-members")
+    public ResponseEntity<List<GroupMemberDTO>> getActiveMembers(@PathVariable Long groupId) {
+        List<GroupMemberDTO> members = workGroupMembershipService.findActiveMembersWithRoles(groupId);
+        return ResponseEntity.ok().body(members);
+    }
 }

@@ -1,8 +1,9 @@
 // modules/work-group/work-group-admin.tsx
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, message, Tabs, Button, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { WorkGroupDTO, UserGroupViewDTO } from 'app/rest/dto';
 import CreateWorkGroupModal from './create-work-group-modal';
@@ -10,6 +11,7 @@ import EditWorkGroupModal from './edit-work-group-modal';
 import './work-group-modal.scss';
 
 const WorkGroupAdmin = () => {
+  const navigate = useNavigate();
   const [allWorkGroups, setAllWorkGroups] = useState<WorkGroupDTO[]>([]);
   const [myWorkGroups, setMyWorkGroups] = useState<UserGroupViewDTO[]>([]);
   const [loadingAll, setLoadingAll] = useState(false);
@@ -60,6 +62,7 @@ const WorkGroupAdmin = () => {
   };
 
   const handleDelete = async (id: number) => {
+    if (id === undefined) return;
     try {
       await WorkGroupClientApi.deleteWorkGroup(id);
       message.success('Grupo de trabajo eliminado exitosamente');
@@ -88,11 +91,18 @@ const WorkGroupAdmin = () => {
       key: 'actions',
       render: (_: any, record: WorkGroupDTO) => (
         <Space size="small">
+          <Button
+            type="text"
+            icon={<TeamOutlined />}
+            onClick={() => navigate(`/work-group/members/${record.id}/${encodeURIComponent(record.name)}`)}
+            style={{ color: '#10b981' }}
+            title="Ver miembros"
+          />
           <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ color: '#3b82f6' }} />
           <Popconfirm
             title="¿Estás seguro de que quieres eliminar este grupo?"
             description="Esta acción no se puede deshacer."
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => record.id !== undefined && handleDelete(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"
             okButtonProps={{ danger: true }}
@@ -108,6 +118,48 @@ const WorkGroupAdmin = () => {
     { title: 'Nombre', dataIndex: 'groupName', key: 'groupName' },
     { title: 'Descripción', dataIndex: 'groupDescription', key: 'groupDescription' },
     { title: 'Rol', dataIndex: 'role', key: 'role' },
+    {
+      title: 'Acciones',
+      key: 'actions',
+      render: (_: any, record: UserGroupViewDTO) => (
+        <Space size="small">
+          <Button
+            type="text"
+            icon={<TeamOutlined />}
+            onClick={() => navigate(`/work-group/members/${record.groupId}/${encodeURIComponent(record.groupName)}`)}
+            style={{ color: '#10b981' }}
+            title="Ver miembros"
+          />
+          {isOwner(record) && (
+            <>
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() =>
+                  handleEdit({
+                    id: record.groupId,
+                    name: record.groupName,
+                    description: record.groupDescription,
+                    isActive: record.isActive,
+                  })
+                }
+                style={{ color: '#3b82f6' }}
+              />
+              <Popconfirm
+                title="¿Estás seguro de que quieres eliminar este grupo?"
+                description="Esta acción no se puede deshacer."
+                onConfirm={() => record.groupId !== undefined && handleDelete(record.groupId)}
+                okText="Sí, eliminar"
+                cancelText="Cancelar"
+                okButtonProps={{ danger: true }}
+              >
+                <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} />
+              </Popconfirm>
+            </>
+          )}
+        </Space>
+      ),
+    },
   ];
 
   const tabItems = [
