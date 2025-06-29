@@ -108,13 +108,10 @@ const GroupMembers = () => {
     return user && user.role?.toUpperCase() === 'MEMBER';
   };
 
-  // Verifica si el usuario autenticado puede transferir propiedad (OWNER o ROLE_ADMIN)
+  // Verifica si el usuario autenticado puede transferir propiedad (solo OWNER)
   const canTransferOwnership = () => {
     const user = members.find(m => m.login === currentUser?.login);
-    return (
-      (user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO')) ||
-      currentUser?.authorities?.some((auth: string) => auth === 'ROLE_ADMIN')
-    );
+    return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
   };
 
   // Verifica si el usuario autenticado puede promover a moderador (OWNER o MODERATOR)
@@ -137,6 +134,18 @@ const GroupMembers = () => {
     }
     // Solo se puede promover a usuarios con rol MEMBER
     return member.role?.toUpperCase() === 'MEMBER' || member.role?.toUpperCase() === 'MIEMBRO';
+  };
+
+  // Verifica si el usuario autenticado puede degradar moderadores (solo OWNER)
+  const canDemoteModerator = () => {
+    const user = members.find(m => m.login === currentUser?.login);
+    return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
+  };
+
+  // Verifica si un usuario específico puede ser degradado
+  const canDemoteUser = (member: GroupMemberDTO) => {
+    // Solo se puede degradar a moderadores
+    return member.role?.toUpperCase() === 'MODERATOR' || member.role?.toUpperCase() === 'MODERADOR';
   };
 
   const handleAddMember = async () => {
@@ -233,6 +242,29 @@ const GroupMembers = () => {
     });
   };
 
+  const handleDemoteModerator = (username: string) => {
+    if (!groupId || !username) return;
+    Modal.confirm({
+      title: '¿Degradar moderador?',
+      content: `¿Estás seguro de que quieres degradar a @${username} de moderador a miembro del grupo?`,
+      okText: 'Sí, degradar',
+      cancelText: 'Cancelar',
+      okButtonProps: {
+        danger: true,
+        style: { backgroundColor: '#ef4444', borderColor: '#ef4444' },
+      },
+      async onOk() {
+        try {
+          await WorkGroupClientApi.demoteModerator(Number(groupId), username);
+          message.success('Moderador degradado exitosamente');
+          loadMembers(Number(groupId));
+        } catch (error: any) {
+          message.error(error?.response?.data?.message || 'Error al degradar moderador');
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: 'Usuario',
@@ -320,6 +352,16 @@ const GroupMembers = () => {
                 style={{ color: '#10b981' }}
               >
                 Promover
+              </Button>
+            )}
+            {canDemoteModerator() && canDemoteUser(record) && (
+              <Button
+                type="text"
+                onClick={() => handleDemoteModerator(record.login)}
+                title="Degradar de moderador"
+                style={{ color: '#ef4444' }}
+              >
+                Degradar
               </Button>
             )}
             {canRemove && (

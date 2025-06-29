@@ -124,6 +124,18 @@ class WorkGroupClientApi {
     });
   }
 
+  /**
+   * Degrada a un moderador a miembro del grupo de trabajo.
+   * @param groupId - El ID del grupo de trabajo.
+   * @param username - El nombre de usuario a degradar.
+   * @returns {Promise<AxiosResponse<void>>}
+   */
+  public demoteModerator(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/work-group-memberships/demote-moderator/${groupId}`, {
+      username,
+    });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
