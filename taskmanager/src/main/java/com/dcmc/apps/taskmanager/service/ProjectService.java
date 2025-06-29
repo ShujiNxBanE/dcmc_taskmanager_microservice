@@ -8,6 +8,7 @@ import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
+import com.dcmc.apps.taskmanager.service.dto.MinimalProjectDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
 import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
@@ -251,5 +252,36 @@ public class ProjectService {
         project.setMembers(currentUsers);
         projectRepository.save(project);
     }
+
+    @Transactional(readOnly = true)
+    public List<ProjectDTO> findProjectsAssignedToCurrentUser() {
+        String currentLogin = securityUtilsService.getCurrentUser();
+
+        User user = userRepository.findOneByLogin(currentLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+
+        List<Project> projects = projectRepository.findByMembersContainsAndIsActiveTrue(user);
+        return projects.stream().map(projectMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MinimalProjectDTO> getCreatedProjectsByCurrentUser() {
+        String currentLogin = securityUtilsService.getCurrentUser();
+
+        User creator = userRepository.findOneByLogin(currentLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+
+        List<Project> projects = projectRepository.findByCreatorAndIsActiveTrue(creator);
+
+        return projects.stream()
+            .map(project -> new MinimalProjectDTO(
+                project.getTitle(),
+                project.getDescription(),
+                project.getCreator().getLogin(),
+                project.getWorkGroup() != null ? project.getWorkGroup().getId() : null
+            ))
+            .toList();
+    }
+
 
 }

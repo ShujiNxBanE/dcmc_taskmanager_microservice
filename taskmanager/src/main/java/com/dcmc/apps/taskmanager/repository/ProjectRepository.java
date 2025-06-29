@@ -3,6 +3,8 @@ package com.dcmc.apps.taskmanager.repository;
 import com.dcmc.apps.taskmanager.domain.Project;
 import java.util.List;
 import java.util.Optional;
+
+import com.dcmc.apps.taskmanager.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -48,5 +50,9 @@ public interface ProjectRepository
     List<Project> findByWorkGroup_IdAndIsActiveTrue(Long workGroupId);
 
     Optional<Project> findByIdAndIsActiveTrue(Long id);
+
+    List<Project> findByMembersContainsAndIsActiveTrue(User user);
+
+    List<Project> findByCreatorAndIsActiveTrue(User creator);
 
 }

@@ -4,10 +4,7 @@ import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.service.ProjectQueryService;
 import com.dcmc.apps.taskmanager.service.ProjectService;
 import com.dcmc.apps.taskmanager.service.criteria.ProjectCriteria;
-import com.dcmc.apps.taskmanager.service.dto.ProjectAssignUsersDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -194,5 +191,17 @@ public class ProjectResource {
 
         projectService.assignUsersToProject(projectId, assignUsersDTO.getUserIds());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/assigned")
+    public ResponseEntity<List<ProjectDTO>> getAssignedProjects() {
+        List<ProjectDTO> projects = projectService.findProjectsAssignedToCurrentUser();
+        return ResponseEntity.ok(projects);
+    }
+
+    @GetMapping("/my-created")
+    public ResponseEntity<List<MinimalProjectDTO>> getMyCreatedProjects() {
+        List<MinimalProjectDTO> projects = projectService.getCreatedProjectsByCurrentUser();
+        return ResponseEntity.ok(projects);
     }
 }
