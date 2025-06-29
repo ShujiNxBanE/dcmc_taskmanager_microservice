@@ -195,7 +195,7 @@ public class ProjectResource {
 
     @GetMapping("/assigned")
     public ResponseEntity<List<ProjectDTO>> getAssignedProjects() {
-        List<ProjectDTO> projects = projectService.findProjectsAssignedToCurrentUser();
+        List<ProjectDTO> projects = projectService.findActiveAssignedProjectsForCurrentUser();
         return ResponseEntity.ok(projects);
     }
 
@@ -204,4 +204,11 @@ public class ProjectResource {
         List<MinimalProjectDTO> projects = projectService.getCreatedProjectsByCurrentUser();
         return ResponseEntity.ok(projects);
     }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<ProjectDTO>> getAllActiveProjects() {
+        List<ProjectDTO> activeProjects = projectService.findAllActiveProjects();
+        return ResponseEntity.ok(activeProjects);
+    }
+
 }

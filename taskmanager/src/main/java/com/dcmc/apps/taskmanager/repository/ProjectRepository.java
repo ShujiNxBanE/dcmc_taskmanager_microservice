@@ -51,8 +51,10 @@ public interface ProjectRepository
 
     Optional<Project> findByIdAndIsActiveTrue(Long id);
 
-    List<Project> findByMembersContainsAndIsActiveTrue(User user);
-
     List<Project> findByCreatorAndIsActiveTrue(User creator);
+
+    List<Project> findByMembersContainingAndIsActiveTrue(User user);
+
+    List<Project> findByIsActiveTrue();
 
 }

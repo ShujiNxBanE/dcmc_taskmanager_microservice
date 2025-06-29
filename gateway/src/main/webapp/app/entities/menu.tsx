@@ -8,6 +8,9 @@ const EntitiesMenu = () => {
       <MenuItem icon="asterisk" to="/work-group">
         Work Group
       </MenuItem>
+      <MenuItem icon="asterisk" to="/project">
+        Project
+      </MenuItem>
       {/* prettier-ignore */}
       {/* jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here */}
     </>

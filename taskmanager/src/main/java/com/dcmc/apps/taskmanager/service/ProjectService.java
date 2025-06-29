@@ -252,17 +252,23 @@ public class ProjectService {
         project.setMembers(currentUsers);
         projectRepository.save(project);
     }
-
     @Transactional(readOnly = true)
-    public List<ProjectDTO> findProjectsAssignedToCurrentUser() {
+    public List<ProjectDTO> findActiveAssignedProjectsForCurrentUser() {
         String currentLogin = securityUtilsService.getCurrentUser();
 
-        User user = userRepository.findOneByLogin(currentLogin)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+        User currentUser = userRepository.findOneByLogin(currentLogin)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "Authenticated user not found"
+            ));
 
-        List<Project> projects = projectRepository.findByMembersContainsAndIsActiveTrue(user);
-        return projects.stream().map(projectMapper::toDto).toList();
+        List<Project> activeAssignedProjects = projectRepository
+            .findByMembersContainingAndIsActiveTrue(currentUser);
+
+        return activeAssignedProjects.stream()
+            .map(projectMapper::toDto)
+            .toList();
     }
+
 
     @Transactional(readOnly = true)
     public List<MinimalProjectDTO> getCreatedProjectsByCurrentUser() {
@@ -283,5 +289,12 @@ public class ProjectService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<ProjectDTO> findAllActiveProjects() {
+        List<Project> activeProjects = projectRepository.findByIsActiveTrue();
+        return activeProjects.stream()
+            .map(projectMapper::toDto)
+            .toList();
+    }
 
 }
