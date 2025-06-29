@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ProjectDTO, MinimalProjectDTO } from './dto';
+import { ProjectDTO, MinimalProjectDTO, ProjectCreateDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Project.
@@ -46,6 +46,16 @@ class ProjectClientApi {
    */
   public getAllActiveProjects(): Promise<AxiosResponse<ProjectDTO[]>> {
     return this.api.get<ProjectDTO[]>('/api/projects/active');
+  }
+
+  /**
+   * Crea un nuevo proyecto en un grupo de trabajo específico.
+   * @param workGroupId - El ID del grupo de trabajo donde se creará el proyecto.
+   * @param projectData - Los datos del proyecto a crear.
+   * @returns {Promise<AxiosResponse<ProjectDTO>>} Una promesa con la respuesta de la API.
+   */
+  public createProject(workGroupId: number, projectData: ProjectCreateDTO): Promise<AxiosResponse<ProjectDTO>> {
+    return this.api.post<ProjectDTO>(`/api/projects/create-in/work-group/${workGroupId}`, projectData);
   }
 
   // Aquí puedes añadir más métodos en el futuro

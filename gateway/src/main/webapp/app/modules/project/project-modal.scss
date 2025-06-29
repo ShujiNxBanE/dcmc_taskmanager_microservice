@@ -49,4 +49,99 @@
       background-color: #e0f2fe !important;
     }
   }
+}
+
+// Estilos para el modal de crear proyecto
+.project-modal {
+  .ant-modal-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-bottom: none;
+    
+    .ant-modal-title {
+      color: white;
+      font-weight: 600;
+    }
+  }
+
+  .ant-modal-close {
+    color: white;
+    
+    &:hover {
+      color: #e5e7eb;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    
+    .ant-form-item-label > label {
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    .ant-input,
+    .ant-input-textarea,
+    .ant-select-selector {
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      
+      &:hover {
+        border-color: #3b82f6;
+      }
+      
+      &:focus,
+      &.ant-input-focused,
+      &.ant-select-focused .ant-select-selector {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+    }
+    
+    .ant-input-textarea {
+      resize: vertical;
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    
+    .ant-btn {
+      border-radius: 8px;
+      font-weight: 500;
+      min-width: 100px;
+      
+      &.ant-btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border: none;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        
+        &:hover {
+          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        &:disabled {
+          background: #9ca3af;
+          transform: none;
+          box-shadow: none;
+        }
+      }
+      
+      &:not(.ant-btn-primary) {
+        border: 1px solid #d1d5db;
+        color: #6b7280;
+        
+        &:hover {
+          border-color: #3b82f6;
+          color: #3b82f6;
+        }
+      }
+    }
+  }
 } 

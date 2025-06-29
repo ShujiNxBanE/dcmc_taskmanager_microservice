@@ -16,6 +16,11 @@ export interface UserGroupViewDTO {
   role?: string;
 }
 
+export interface ProjectCreateDTO {
+  title: string;
+  description?: string;
+}
+
 export interface MinimalProjectDTO {
   title: string;
   description: string;

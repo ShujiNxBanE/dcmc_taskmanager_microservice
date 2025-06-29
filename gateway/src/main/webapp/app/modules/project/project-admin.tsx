@@ -4,6 +4,7 @@ import { ProjectDTO, MinimalProjectDTO } from 'app/rest/dto';
 import ProjectClientApi from 'app/rest/ProjectClientApi';
 import { message, Table, Button, Space, Tabs, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, TeamOutlined, UserOutlined, GlobalOutlined } from '@ant-design/icons';
+import CreateProjectModal from './create-project-modal';
 import './project-modal.scss';
 
 const ProjectAdmin = () => {
@@ -14,6 +15,7 @@ const ProjectAdmin = () => {
   const [loadingAll, setLoadingAll] = useState(false);
   const [loadingAssigned, setLoadingAssigned] = useState(false);
   const [loadingCreated, setLoadingCreated] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
 
   const loadAllProjects = async () => {
     setLoadingAll(true);
@@ -189,6 +191,21 @@ const ProjectAdmin = () => {
     },
   ];
 
+  const handleCreateProject = () => {
+    setCreateModalVisible(true);
+  };
+
+  const handleCreateSuccess = () => {
+    // Recargar todos los datos después de crear un proyecto
+    loadAllProjects();
+    loadAssignedProjects();
+    loadMyCreatedProjects();
+  };
+
+  const handleCreateCancel = () => {
+    setCreateModalVisible(false);
+  };
+
   const tabItems = [
     {
       key: 'all',
@@ -201,7 +218,7 @@ const ProjectAdmin = () => {
       children: (
         <div className="project-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="primary" icon={<PlusOutlined />} className="create-project-button">
+            <Button type="primary" icon={<PlusOutlined />} className="create-project-button" onClick={handleCreateProject}>
               Crear Proyecto
             </Button>
           </div>
@@ -231,7 +248,7 @@ const ProjectAdmin = () => {
       children: (
         <div className="project-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="primary" icon={<PlusOutlined />} className="create-project-button">
+            <Button type="primary" icon={<PlusOutlined />} className="create-project-button" onClick={handleCreateProject}>
               Crear Proyecto
             </Button>
           </div>
@@ -261,7 +278,7 @@ const ProjectAdmin = () => {
       children: (
         <div className="project-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="primary" icon={<PlusOutlined />} className="create-project-button">
+            <Button type="primary" icon={<PlusOutlined />} className="create-project-button" onClick={handleCreateProject}>
               Crear Proyecto
             </Button>
           </div>
@@ -285,6 +302,7 @@ const ProjectAdmin = () => {
   return (
     <div className="project-container">
       <Tabs items={tabItems} />
+      <CreateProjectModal visible={createModalVisible} onCancel={handleCreateCancel} onSuccess={handleCreateSuccess} />
     </div>
   );
 };
