@@ -193,6 +193,15 @@ public class ProjectResource {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{projectId}/unassign/{userId}")
+    public ResponseEntity<Void> unassignUser(
+        @PathVariable Long projectId,
+        @PathVariable String userId
+    ) {
+        projectService.unassignUserFromProject(projectId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/assigned")
     public ResponseEntity<List<ProjectDTO>> getAssignedProjects() {
         List<ProjectDTO> projects = projectService.findActiveAssignedProjectsForCurrentUser();

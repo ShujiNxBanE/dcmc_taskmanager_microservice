@@ -249,6 +249,27 @@ public class ProjectService {
         project.setMembers(currentUsers);
         projectRepository.save(project);
     }
+
+    @Transactional
+    public void unassignUserFromProject(Long projectId, String userId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Set<User> currentUsers = project.getMembers();
+
+        if (!currentUsers.contains(user)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not assigned to this project");
+        }
+
+        currentUsers.remove(user);
+        project.setMembers(currentUsers);
+
+        projectRepository.save(project);
+    }
+
     @Transactional(readOnly = true)
     public List<ProjectDTO> findActiveAssignedProjectsForCurrentUser() {
         String currentLogin = securityUtilsService.getCurrentUser();

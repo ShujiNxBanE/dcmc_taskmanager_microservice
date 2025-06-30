@@ -9,12 +9,14 @@ import {
   DeleteOutlined,
   StarFilled,
   UserAddOutlined,
+  UserDeleteOutlined,
 } from '@ant-design/icons';
 import { ProjectDTO, UserDTO } from 'app/rest/dto';
 import ProjectClientApi from 'app/rest/ProjectClientApi';
 import EditProjectModal from './edit-project-modal';
 import DeleteProjectModal from './delete-project-modal';
 import AssignUsersModal from './assign-users-modal';
+import UnassignUserModal from './unassign-user-modal';
 import { useAppSelector } from 'app/config/store';
 import './project-modal.scss';
 
@@ -30,6 +32,8 @@ const ProjectDetails = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [assignUsersModalVisible, setAssignUsersModalVisible] = useState(false);
+  const [unassignUserModalVisible, setUnassignUserModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null);
   const accountLogin = useAppSelector(state => state.authentication.account?.login);
 
   const loadProjectDetails = async () => {
@@ -124,6 +128,23 @@ const ProjectDetails = () => {
     setAssignUsersModalVisible(false);
   };
 
+  const handleUnassignUser = (user: UserDTO) => {
+    setSelectedUser(user);
+    setUnassignUserModalVisible(true);
+  };
+
+  const handleUnassignUserSuccess = () => {
+    loadAssignedUsers();
+  };
+
+  const handleUnassignUserCancel = () => {
+    setUnassignUserModalVisible(false);
+    setSelectedUser(null);
+  };
+
+  // Verificar si el usuario actual es el creador del proyecto
+  const isProjectCreator = project?.creator?.login === accountLogin;
+
   const userColumns = [
     {
       title: 'Usuario',
@@ -148,10 +169,26 @@ const ProjectDetails = () => {
       },
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-      render: (email: string) => email || 'No disponible',
+      title: 'Acciones',
+      key: 'actions',
+      render(_: any, record: UserDTO) {
+        // Solo mostrar botón de desasignar si el usuario actual es el creador del proyecto
+        if (!isProjectCreator) {
+          return <span style={{ color: '#999' }}>Sin permisos</span>;
+        }
+
+        return (
+          <Button
+            type="text"
+            icon={<UserDeleteOutlined />}
+            style={{ color: '#ef4444' }}
+            title="Desasignar usuario"
+            onClick={() => handleUnassignUser(record)}
+          >
+            Desasignar
+          </Button>
+        );
+      },
     },
   ];
 
@@ -196,9 +233,11 @@ const ProjectDetails = () => {
             <Button type="primary" icon={<EditOutlined />} onClick={handleEditProject}>
               Editar
             </Button>
-            <Button icon={<UserAddOutlined />} onClick={handleAssignUsers}>
-              Asignar Usuarios
-            </Button>
+            {isProjectCreator && (
+              <Button icon={<UserAddOutlined />} onClick={handleAssignUsers}>
+                Asignar Usuarios
+              </Button>
+            )}
             <Button danger icon={<DeleteOutlined />} onClick={handleDeleteProject}>
               Eliminar
             </Button>
@@ -296,6 +335,15 @@ const ProjectDetails = () => {
         projectTitle={project?.title || ''}
         onCancel={handleAssignUsersCancel}
         onSuccess={handleAssignUsersSuccess}
+      />
+
+      <UnassignUserModal
+        visible={unassignUserModalVisible}
+        projectId={project?.id || 0}
+        projectTitle={project?.title || ''}
+        user={selectedUser}
+        onCancel={handleUnassignUserCancel}
+        onSuccess={handleUnassignUserSuccess}
       />
     </div>
   );

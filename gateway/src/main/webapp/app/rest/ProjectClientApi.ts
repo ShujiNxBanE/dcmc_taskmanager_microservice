@@ -105,6 +105,16 @@ class ProjectClientApi {
     return this.api.post<void>(`/api/projects/${projectId}/assign-users`, assignUsersData);
   }
 
+  /**
+   * Desasigna un usuario de un proyecto específico.
+   * @param projectId - El ID del proyecto.
+   * @param userId - El ID/login del usuario a desasignar.
+   * @returns {Promise<AxiosResponse<void>>} Una promesa con la respuesta de la API.
+   */
+  public unassignUserFromProject(projectId: number, userId: string): Promise<AxiosResponse<void>> {
+    return this.api.delete<void>(`/api/projects/${projectId}/unassign/${userId}`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
