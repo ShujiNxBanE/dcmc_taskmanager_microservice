@@ -1,0 +1,21 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+  <changeSet id="20250630212939-1" author="roger">
+    <addColumn tableName="task">
+      <column name="project_id" type="bigint"/>
+    </addColumn>
+
+    <addForeignKeyConstraint
+      baseColumnNames="project_id"
+      baseTableName="task"
+      referencedColumnNames="id"
+      referencedTableName="project"
+      constraintName="fk_task_project"/>
+  </changeSet>
+
+</databaseChangeLog>

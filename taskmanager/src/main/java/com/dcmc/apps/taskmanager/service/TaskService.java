@@ -140,7 +140,7 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDTO createTaskAtWorkGroup(Long workGroupId, TaskCreateDTO dto) {
+    public TaskDTO createTask(Long groupId, Long projectId, TaskCreateDTO dto) {
         Task task = new Task();
 
         task.setTitle(dto.getTitle());
@@ -159,18 +159,27 @@ public class TaskService {
         task.setCreator(creator);
 
         // Obtener y validar que el WorkGroup existe y está activo
-        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(workGroupId)
+        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
         task.setWorkGroup(wg);
 
-        // No parentProject: tarea a nivel WorkGroup
-        task.setParentProject(null);
+        // Obtener y validar que el proyecto existe y está activo
+        Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
+
+        // Validar que el proyecto pertenece al grupo
+        if (!project.getWorkGroup().getId().equals(groupId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
+        }
+
+        task.setProject(project);
 
         task = taskRepository.save(task);
         return taskMapper.toDto(task);
     }
 
-    public TaskDTO updateTaskAtWorkGroup(Long taskId, TaskUpdateDTO dto) {
+
+    public TaskDTO updateTask(Long taskId, TaskUpdateDTO dto) {
         // Buscar la tarea
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
@@ -191,18 +200,33 @@ public class TaskService {
         task.setDescription(dto.getDescription());
         task.setPriority(dto.getPriority());
         task.setStatus(dto.getStatus());
-        task.setArchived(dto.getArchived());
         task.setUpdateTime(Instant.now());
 
         task = taskRepository.save(task);
         return taskMapper.toDto(task);
     }
 
-
     public List<TaskSimpleDTO> getTasksByWorkGroupId(Long workGroupId) {
         List<Task> tasks = taskRepository.findByWorkGroup_IdAndArchivedFalse(workGroupId);
         return taskMapper.toSimpleDto(tasks);
     }
+
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getTasksByProjectId(Long projectId) {
+        // Verificar que el proyecto esté activo
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+
+        if (!Boolean.TRUE.equals(project.getActive())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is not active");
+        }
+
+        // Buscar tareas que no estén archivadas y estén asignadas al proyecto
+        List<Task> tasks = taskRepository.findByProject_IdAndArchivedFalse(projectId);
+
+        return taskMapper.toSimpleDto(tasks);
+    }
+
 
     public List<TaskSimpleDTO> getAllTasks() {
         List<Task> tasks = taskRepository.findByArchivedFalse();
@@ -281,45 +305,6 @@ public class TaskService {
         currentUsers.addAll(usersToAdd);
         task.setUpdateTime(Instant.now());
         taskRepository.save(task);
-    }
-
-    @Transactional
-    public TaskDTO createProjectLevelTask(Long groupId, Long projectId, TaskCreateDTO dto) {
-        Task task = new Task();
-
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        task.setPriority(dto.getPriority());
-        task.setStatus(dto.getStatus());
-        task.setArchived(false);
-        task.setActive(true);
-        task.setCreateTime(Instant.now());
-        task.setUpdateTime(Instant.now());
-
-        // Asignar creador desde usuario autenticado
-        String currentUserLogin = securityUtilsService.getCurrentUser();
-        User creator = userRepository.findOneByLogin(currentUserLogin)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
-        task.setCreator(creator);
-
-        // Obtener y validar que el WorkGroup existe y está activo
-        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
-        task.setWorkGroup(wg);
-
-        // Obtener y validar que el proyecto existe y está activo
-        Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
-
-        // Validar que el proyecto pertenece al grupo
-        if (!project.getWorkGroup().getId().equals(groupId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
-        }
-
-        task.setParentProject(project);
-
-        task = taskRepository.save(task);
-        return taskMapper.toDto(task);
     }
 
     @Transactional

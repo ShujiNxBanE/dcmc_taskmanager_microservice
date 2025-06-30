@@ -114,33 +114,6 @@ public class TaskResource {
         return ResponseUtil.wrapOrNotFound(taskDTO);
     }
 
-    @PostMapping("/workgroup/{workGroupId}/create-task")
-    public ResponseEntity<TaskDTO> createTaskAtWorkGroup(
-        @PathVariable Long workGroupId,
-        @Valid @RequestBody TaskCreateDTO dto
-    ) throws URISyntaxException {
-        LOG.debug("REST request to create task at WorkGroup {}: {}", workGroupId, dto);
-
-        TaskDTO result = taskService.createTaskAtWorkGroup(workGroupId, dto);
-
-        return ResponseEntity.created(new URI("/api/workgroups/" + workGroupId + "/tasks/" + result.getId()))
-            .body(result);
-    }
-
-    @PostMapping("/{taskId}/update")
-    public ResponseEntity<TaskDTO> updateTaskAtWorkGroup(
-        @PathVariable Long taskId,
-        @Valid @RequestBody TaskUpdateDTO dto
-    ) {
-        LOG.debug("REST request to update Task with id: {}", taskId);
-
-        TaskDTO updatedTask = taskService.updateTaskAtWorkGroup(taskId, dto);
-
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, "task", updatedTask.getId().toString()))
-            .body(updatedTask);
-    }
-
     @GetMapping("/work-group/{workGroupId}/tasks")
     public ResponseEntity<List<TaskSimpleDTO>> getTasksByWorkGroup(@PathVariable Long workGroupId) {
         List<TaskSimpleDTO> tasks = taskService.getTasksByWorkGroupId(workGroupId);
@@ -151,6 +124,36 @@ public class TaskResource {
     public ResponseEntity<List<TaskSimpleDTO>> getAllTasks() {
         List<TaskSimpleDTO> tasks = taskService.getAllTasks();
         return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/by-project/{projectId}")
+    public ResponseEntity<List<TaskSimpleDTO>> getTasksByProject(@PathVariable Long projectId) {
+        List<TaskSimpleDTO> tasks = taskService.getTasksByProjectId(projectId);
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PostMapping("/work-group/{groupId}/project/{projectId}/create-task")
+    public ResponseEntity<TaskDTO> createTask(
+        @PathVariable Long groupId,
+        @PathVariable Long projectId,
+        @Valid @RequestBody TaskCreateDTO dto
+    ) {
+        TaskDTO created = taskService.createTask(groupId, projectId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/{taskId}/update")
+    public ResponseEntity<TaskDTO> updateTask(
+        @PathVariable Long taskId,
+        @Valid @RequestBody TaskUpdateDTO dto
+    ) {
+        LOG.debug("REST request to update Task with id: {}", taskId);
+
+        TaskDTO updatedTask = taskService.updateTask(taskId, dto);
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, "task", updatedTask.getId().toString()))
+            .body(updatedTask);
     }
 
     @DeleteMapping("/{id}/delete")
@@ -166,16 +169,6 @@ public class TaskResource {
     ) {
         taskService.assignUsersToTask(groupId, dto);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/work-group/{groupId}/project/{projectId}/create-subtask")
-    public ResponseEntity<TaskDTO> createProjectLevelTask(
-        @PathVariable Long groupId,
-        @PathVariable Long projectId,
-        @Valid @RequestBody TaskCreateDTO dto
-    ) {
-        TaskDTO created = taskService.createProjectLevelTask(groupId, projectId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PostMapping("/{id}/archive")

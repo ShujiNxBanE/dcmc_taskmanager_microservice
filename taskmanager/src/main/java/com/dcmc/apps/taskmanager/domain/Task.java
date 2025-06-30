@@ -58,6 +58,18 @@ public class Task implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public Boolean getActive() {
         return isActive;
     }

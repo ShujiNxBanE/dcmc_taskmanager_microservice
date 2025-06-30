@@ -14,17 +14,6 @@ public class TaskUpdateDTO {
     @NotNull
     private Priority priority;
 
-    public Boolean getArchived() {
-        return Archived;
-    }
-
-    public void setArchived(Boolean archived) {
-        Archived = archived;
-    }
-
-    @NotNull
-    private Boolean Archived;
-
     public TaskStatus getStatus() {
         return status;
     }

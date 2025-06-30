@@ -51,4 +51,7 @@ public interface TaskRepository extends TaskRepositoryWithBagRelationships, JpaR
     List<Task> findByWorkGroup_IdAndArchivedFalse(Long workGroupId);
 
     List<Task> findByWorkGroup_IdAndArchivedTrue(Long workGroupId);
+
+    List<Task> findByProject_IdAndArchivedFalse(Long projectId);
+
 }
