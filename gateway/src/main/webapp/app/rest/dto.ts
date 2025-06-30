@@ -54,3 +54,9 @@ export interface UserDTO {
   firstName?: string;
   lastName?: string;
 }
+
+export interface PriorityDTO {
+  id?: number;
+  name: string;
+  isHidden?: boolean;
+}

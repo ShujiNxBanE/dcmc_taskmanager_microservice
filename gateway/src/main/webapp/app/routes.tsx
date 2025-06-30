@@ -15,6 +15,7 @@ import WorkGroup from './modules/work-group';
 import GroupMembers from './modules/work-group/group-members';
 import Project from './modules/project';
 import ProjectDetails from './modules/project/project-details';
+import Priority from './modules/priority';
 
 const loading = <div>loading ...</div>;
 
@@ -75,6 +76,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
               <ProjectDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="priority"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
+              <Priority />
             </PrivateRoute>
           }
         />
