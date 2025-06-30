@@ -21,6 +21,11 @@ export interface ProjectCreateDTO {
   description?: string;
 }
 
+export interface ProjectUpdateDTO {
+  title: string;
+  description?: string;
+}
+
 export interface MinimalProjectDTO {
   id?: number;
   title: string;

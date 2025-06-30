@@ -5,6 +5,7 @@ import ProjectClientApi from 'app/rest/ProjectClientApi';
 import { message, Table, Button, Space, Tabs, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, TeamOutlined, UserOutlined, GlobalOutlined } from '@ant-design/icons';
 import CreateProjectModal from './create-project-modal';
+import EditProjectModal from './edit-project-modal';
 import './project-modal.scss';
 
 const ProjectAdmin = () => {
@@ -16,6 +17,8 @@ const ProjectAdmin = () => {
   const [loadingAssigned, setLoadingAssigned] = useState(false);
   const [loadingCreated, setLoadingCreated] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<MinimalProjectDTO | null>(null);
 
   const loadAllProjects = async () => {
     setLoadingAll(true);
@@ -62,6 +65,51 @@ const ProjectAdmin = () => {
     loadMyCreatedProjects();
   }, []);
 
+  const handleEditProject = (project: MinimalProjectDTO) => {
+    setSelectedProject(project);
+    setEditModalVisible(true);
+  };
+
+  const handleEditProjectFromDTO = (project: ProjectDTO) => {
+    // Convertir ProjectDTO a MinimalProjectDTO para la edición
+    const minimalProject: MinimalProjectDTO = {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      creatorId: project.creator?.login || '',
+      workGroupId: project.workGroup?.id || 0,
+    };
+    setSelectedProject(minimalProject);
+    setEditModalVisible(true);
+  };
+
+  const handleCreateProject = () => {
+    setCreateModalVisible(true);
+  };
+
+  const handleCreateSuccess = () => {
+    // Recargar todos los datos después de crear un proyecto
+    loadAllProjects();
+    loadAssignedProjects();
+    loadMyCreatedProjects();
+  };
+
+  const handleEditSuccess = () => {
+    // Recargar todos los datos después de editar un proyecto
+    loadAllProjects();
+    loadAssignedProjects();
+    loadMyCreatedProjects();
+  };
+
+  const handleCreateCancel = () => {
+    setCreateModalVisible(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditModalVisible(false);
+    setSelectedProject(null);
+  };
+
   const allColumns = [
     {
       title: 'Título',
@@ -105,7 +153,13 @@ const ProjectAdmin = () => {
           >
             Ver
           </Button>
-          <Button type="text" icon={<EditOutlined />} style={{ color: '#3b82f6' }} title="Editar proyecto" />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            style={{ color: '#3b82f6' }}
+            title="Editar proyecto"
+            onClick={() => handleEditProjectFromDTO(record)}
+          />
           <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} title="Eliminar proyecto" />
         </Space>
       ),
@@ -184,27 +238,18 @@ const ProjectAdmin = () => {
           >
             Ver
           </Button>
-          <Button type="text" icon={<EditOutlined />} style={{ color: '#3b82f6' }} title="Editar proyecto" />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            style={{ color: '#3b82f6' }}
+            title="Editar proyecto"
+            onClick={() => handleEditProject(record)}
+          />
           <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} title="Eliminar proyecto" />
         </Space>
       ),
     },
   ];
-
-  const handleCreateProject = () => {
-    setCreateModalVisible(true);
-  };
-
-  const handleCreateSuccess = () => {
-    // Recargar todos los datos después de crear un proyecto
-    loadAllProjects();
-    loadAssignedProjects();
-    loadMyCreatedProjects();
-  };
-
-  const handleCreateCancel = () => {
-    setCreateModalVisible(false);
-  };
 
   const tabItems = [
     {
@@ -303,6 +348,7 @@ const ProjectAdmin = () => {
     <div className="project-container">
       <Tabs items={tabItems} />
       <CreateProjectModal visible={createModalVisible} onCancel={handleCreateCancel} onSuccess={handleCreateSuccess} />
+      <EditProjectModal visible={editModalVisible} project={selectedProject} onCancel={handleEditCancel} onSuccess={handleEditSuccess} />
     </div>
   );
 };

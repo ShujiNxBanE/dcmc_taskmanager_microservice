@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ProjectDTO, MinimalProjectDTO, ProjectCreateDTO } from './dto';
+import { ProjectDTO, MinimalProjectDTO, ProjectCreateDTO, ProjectUpdateDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Project.
@@ -56,6 +56,16 @@ class ProjectClientApi {
    */
   public createProject(workGroupId: number, projectData: ProjectCreateDTO): Promise<AxiosResponse<ProjectDTO>> {
     return this.api.post<ProjectDTO>(`/api/projects/create-in/work-group/${workGroupId}`, projectData);
+  }
+
+  /**
+   * Actualiza un proyecto existente.
+   * @param projectId - El ID del proyecto a actualizar.
+   * @param projectData - Los datos del proyecto a actualizar.
+   * @returns {Promise<AxiosResponse<ProjectDTO>>} Una promesa con la respuesta de la API.
+   */
+  public updateProject(projectId: number, projectData: ProjectUpdateDTO): Promise<AxiosResponse<ProjectDTO>> {
+    return this.api.post<ProjectDTO>(`/api/projects/${projectId}/update`, projectData);
   }
 
   // Aquí puedes añadir más métodos en el futuro
