@@ -22,6 +22,7 @@ export interface ProjectCreateDTO {
 }
 
 export interface MinimalProjectDTO {
+  id?: number;
   title: string;
   description: string;
   creatorId: string;

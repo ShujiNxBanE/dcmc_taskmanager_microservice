@@ -178,7 +178,7 @@ const ProjectAdmin = () => {
           <Button
             type="text"
             icon={<TeamOutlined />}
-            onClick={() => navigate(`/project/${record.workGroupId}`)}
+            onClick={() => navigate(`/project/${record.id}`)}
             style={{ color: '#10b981' }}
             title="Ver detalles"
           >
@@ -283,7 +283,7 @@ const ProjectAdmin = () => {
             </Button>
           </div>
           <Table
-            rowKey="workGroupId"
+            rowKey="id"
             dataSource={myCreatedProjects}
             columns={createdColumns}
             loading={loadingCreated}

@@ -281,6 +281,7 @@ public class ProjectService {
 
         return projects.stream()
             .map(project -> new MinimalProjectDTO(
+                project.getId(), // 👈 Aquí pasamos el ID
                 project.getTitle(),
                 project.getDescription(),
                 project.getCreator().getLogin(),
@@ -288,6 +289,7 @@ public class ProjectService {
             ))
             .toList();
     }
+
 
     @Transactional(readOnly = true)
     public List<ProjectDTO> findAllActiveProjects() {

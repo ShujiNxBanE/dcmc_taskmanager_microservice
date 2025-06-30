@@ -2,6 +2,7 @@ package com.dcmc.apps.taskmanager.service.dto;
 
 public class MinimalProjectDTO {
 
+    private Long id; // 👈 NUEVO CAMPO
     private String title;
     private String description;
     private String creatorId;
@@ -9,11 +10,20 @@ public class MinimalProjectDTO {
 
     public MinimalProjectDTO() {}
 
-    public MinimalProjectDTO(String title, String description, String creatorId, Long workGroupId) {
+    public MinimalProjectDTO(Long id, String title, String description, String creatorId, Long workGroupId) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.creatorId = creatorId;
         this.workGroupId = workGroupId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
