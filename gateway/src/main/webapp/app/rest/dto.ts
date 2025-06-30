@@ -26,6 +26,10 @@ export interface ProjectUpdateDTO {
   description?: string;
 }
 
+export interface ProjectAssignUsersDTO {
+  userIds: string[];
+}
+
 export interface MinimalProjectDTO {
   id?: number;
   title: string;

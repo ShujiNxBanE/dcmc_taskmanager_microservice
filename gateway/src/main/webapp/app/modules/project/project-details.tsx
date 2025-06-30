@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Avatar, Space, message, Spin, Typography, Divider } from 'antd';
-import { ArrowLeftOutlined, TeamOutlined, UserOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  TeamOutlined,
+  UserOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  StarFilled,
+  UserAddOutlined,
+} from '@ant-design/icons';
 import { ProjectDTO, UserDTO } from 'app/rest/dto';
 import ProjectClientApi from 'app/rest/ProjectClientApi';
 import EditProjectModal from './edit-project-modal';
 import DeleteProjectModal from './delete-project-modal';
+import AssignUsersModal from './assign-users-modal';
+import { useAppSelector } from 'app/config/store';
 import './project-modal.scss';
 
 const { Title, Text } = Typography;
@@ -19,6 +29,8 @@ const ProjectDetails = () => {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [assignUsersModalVisible, setAssignUsersModalVisible] = useState(false);
+  const accountLogin = useAppSelector(state => state.authentication.account?.login);
 
   const loadProjectDetails = async () => {
     if (!id) return;
@@ -100,21 +112,40 @@ const ProjectDetails = () => {
     setDeleteModalVisible(false);
   };
 
+  const handleAssignUsers = () => {
+    setAssignUsersModalVisible(true);
+  };
+
+  const handleAssignUsersSuccess = () => {
+    loadAssignedUsers();
+  };
+
+  const handleAssignUsersCancel = () => {
+    setAssignUsersModalVisible(false);
+  };
+
   const userColumns = [
     {
       title: 'Usuario',
       key: 'user',
-      render: (_: any, record: UserDTO) => (
-        <Space>
-          <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />
-          <div>
-            <div style={{ fontWeight: 500 }}>
-              {record.firstName && record.lastName ? `${record.firstName} ${record.lastName}` : record.login}
+      render(_: any, record: UserDTO) {
+        const isCurrentUser = record.login === accountLogin;
+        return (
+          <Space>
+            <Avatar
+              icon={<UserOutlined />}
+              style={{ backgroundColor: isCurrentUser ? '#fadb14' : '#1890ff', color: isCurrentUser ? '#222' : undefined }}
+            />
+            <div>
+              <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                {record.firstName && record.lastName ? `${record.firstName} ${record.lastName}` : record.login}
+                {isCurrentUser && <StarFilled style={{ color: '#fadb14', marginLeft: 6 }} title="Tú" />}
+              </div>
+              <div style={{ fontSize: 12, color: '#666' }}>@{record.login}</div>
             </div>
-            <div style={{ fontSize: 12, color: '#666' }}>@{record.login}</div>
-          </div>
-        </Space>
-      ),
+          </Space>
+        );
+      },
     },
     {
       title: 'Email',
@@ -164,6 +195,9 @@ const ProjectDetails = () => {
           <Space>
             <Button type="primary" icon={<EditOutlined />} onClick={handleEditProject}>
               Editar
+            </Button>
+            <Button icon={<UserAddOutlined />} onClick={handleAssignUsers}>
+              Asignar Usuarios
             </Button>
             <Button danger icon={<DeleteOutlined />} onClick={handleDeleteProject}>
               Eliminar
@@ -254,6 +288,14 @@ const ProjectDetails = () => {
         }
         onCancel={handleDeleteCancel}
         onSuccess={handleDeleteSuccess}
+      />
+
+      <AssignUsersModal
+        visible={assignUsersModalVisible}
+        projectId={project?.id || 0}
+        projectTitle={project?.title || ''}
+        onCancel={handleAssignUsersCancel}
+        onSuccess={handleAssignUsersSuccess}
       />
     </div>
   );

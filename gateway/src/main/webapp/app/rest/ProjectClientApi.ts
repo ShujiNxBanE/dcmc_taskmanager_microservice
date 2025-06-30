@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ProjectDTO, MinimalProjectDTO, ProjectCreateDTO, ProjectUpdateDTO, UserDTO } from './dto';
+import { ProjectDTO, MinimalProjectDTO, ProjectCreateDTO, ProjectUpdateDTO, UserDTO, ProjectAssignUsersDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Project.
@@ -93,6 +93,16 @@ class ProjectClientApi {
    */
   public getAssignedUsers(projectId: number): Promise<AxiosResponse<UserDTO[]>> {
     return this.api.get<UserDTO[]>(`/api/projects/${projectId}/assigned-users`);
+  }
+
+  /**
+   * Asigna usuarios a un proyecto específico.
+   * @param projectId - El ID del proyecto.
+   * @param assignUsersData - Los datos de usuarios a asignar.
+   * @returns {Promise<AxiosResponse<void>>} Una promesa con la respuesta de la API.
+   */
+  public assignUsersToProject(projectId: number, assignUsersData: ProjectAssignUsersDTO): Promise<AxiosResponse<void>> {
+    return this.api.post<void>(`/api/projects/${projectId}/assign-users`, assignUsersData);
   }
 
   // Aquí puedes añadir más métodos en el futuro
