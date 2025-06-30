@@ -8,10 +8,7 @@ import com.dcmc.apps.taskmanager.repository.ProjectRepository;
 import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupMembershipRepository;
 import com.dcmc.apps.taskmanager.repository.WorkGroupRepository;
-import com.dcmc.apps.taskmanager.service.dto.MinimalProjectDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectCreateDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectDTO;
-import com.dcmc.apps.taskmanager.service.dto.ProjectUpdateDTO;
+import com.dcmc.apps.taskmanager.service.dto.*;
 import com.dcmc.apps.taskmanager.service.mapper.ProjectMapper;
 
 import java.util.HashSet;
@@ -296,6 +293,16 @@ public class ProjectService {
         List<Project> activeProjects = projectRepository.findByIsActiveTrue();
         return activeProjects.stream()
             .map(projectMapper::toDto)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAssignedUsersByProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
+
+        return project.getMembers().stream()
+            .map(UserDTO::new) // Usa el constructor que ya tienes
             .toList();
     }
 

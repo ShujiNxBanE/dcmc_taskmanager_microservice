@@ -211,4 +211,10 @@ public class ProjectResource {
         return ResponseEntity.ok(activeProjects);
     }
 
+    @GetMapping("/{projectId}/assigned-users")
+    public ResponseEntity<List<UserDTO>> getAssignedUsers(@PathVariable Long projectId) {
+        List<UserDTO> users = projectService.getAssignedUsersByProject(projectId);
+        return ResponseEntity.ok(users);
+    }
+
 }

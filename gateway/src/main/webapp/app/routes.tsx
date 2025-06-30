@@ -13,6 +13,8 @@ import PageNotFound from 'app/shared/error/page-not-found';
 import { AUTHORITIES } from 'app/config/constants';
 import WorkGroup from './modules/work-group';
 import GroupMembers from './modules/work-group/group-members';
+import Project from './modules/project';
+import ProjectDetails from './modules/project/project-details';
 
 const loading = <div>loading ...</div>;
 
@@ -20,6 +22,7 @@ const Admin = Loadable({
   loader: () => import(/* webpackChunkName: "administration" */ 'app/modules/administration'),
   loading: () => loading,
 });
+
 const AppRoutes = () => {
   return (
     <div className="view-routes">
@@ -56,6 +59,22 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
               <GroupMembers />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="project"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <Project />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="project/:id"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <ProjectDetails />
             </PrivateRoute>
           }
         />
