@@ -68,6 +68,15 @@ class ProjectClientApi {
     return this.api.post<ProjectDTO>(`/api/projects/${projectId}/update`, projectData);
   }
 
+  /**
+   * Elimina un proyecto (marca como inactivo).
+   * @param projectId - El ID del proyecto a eliminar.
+   * @returns {Promise<AxiosResponse<void>>} Una promesa con la respuesta de la API.
+   */
+  public deleteProject(projectId: number): Promise<AxiosResponse<void>> {
+    return this.api.delete<void>(`/api/projects/${projectId}/delete`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

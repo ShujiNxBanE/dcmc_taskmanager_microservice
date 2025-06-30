@@ -6,6 +6,7 @@ import { message, Table, Button, Space, Tabs, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import CreateProjectModal from './create-project-modal';
 import EditProjectModal from './edit-project-modal';
+import DeleteProjectModal from './delete-project-modal';
 import './project-modal.scss';
 
 const ProjectUser = () => {
@@ -16,6 +17,7 @@ const ProjectUser = () => {
   const [loadingCreated, setLoadingCreated] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<MinimalProjectDTO | null>(null);
 
   const loadAssignedProjects = async () => {
@@ -128,7 +130,13 @@ const ProjectUser = () => {
             title="Editar proyecto"
             onClick={() => handleEditProject(record)}
           />
-          <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} title="Eliminar proyecto" />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            style={{ color: '#ef4444' }}
+            title="Eliminar proyecto"
+            onClick={() => handleDeleteProject(record)}
+          />
         </Space>
       ),
     },
@@ -143,6 +151,11 @@ const ProjectUser = () => {
     setEditModalVisible(true);
   };
 
+  const handleDeleteProject = (project: MinimalProjectDTO) => {
+    setSelectedProject(project);
+    setDeleteModalVisible(true);
+  };
+
   const handleCreateSuccess = () => {
     // Recargar todos los datos después de crear un proyecto
     loadAssignedProjects();
@@ -155,12 +168,23 @@ const ProjectUser = () => {
     loadMyCreatedProjects();
   };
 
+  const handleDeleteSuccess = () => {
+    // Recargar todos los datos después de eliminar un proyecto
+    loadAssignedProjects();
+    loadMyCreatedProjects();
+  };
+
   const handleCreateCancel = () => {
     setCreateModalVisible(false);
   };
 
   const handleEditCancel = () => {
     setEditModalVisible(false);
+    setSelectedProject(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
     setSelectedProject(null);
   };
 
@@ -232,6 +256,12 @@ const ProjectUser = () => {
       <Tabs items={tabItems} />
       <CreateProjectModal visible={createModalVisible} onCancel={handleCreateCancel} onSuccess={handleCreateSuccess} />
       <EditProjectModal visible={editModalVisible} project={selectedProject} onCancel={handleEditCancel} onSuccess={handleEditSuccess} />
+      <DeleteProjectModal
+        visible={deleteModalVisible}
+        project={selectedProject}
+        onCancel={handleDeleteCancel}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { message, Table, Button, Space, Tabs, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, TeamOutlined, UserOutlined, GlobalOutlined } from '@ant-design/icons';
 import CreateProjectModal from './create-project-modal';
 import EditProjectModal from './edit-project-modal';
+import DeleteProjectModal from './delete-project-modal';
 import './project-modal.scss';
 
 const ProjectAdmin = () => {
@@ -18,6 +19,7 @@ const ProjectAdmin = () => {
   const [loadingCreated, setLoadingCreated] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<MinimalProjectDTO | null>(null);
 
   const loadAllProjects = async () => {
@@ -83,8 +85,26 @@ const ProjectAdmin = () => {
     setEditModalVisible(true);
   };
 
+  const handleDeleteProjectFromDTO = (project: ProjectDTO) => {
+    // Convertir ProjectDTO a MinimalProjectDTO para la eliminación
+    const minimalProject: MinimalProjectDTO = {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      creatorId: project.creator?.login || '',
+      workGroupId: project.workGroup?.id || 0,
+    };
+    setSelectedProject(minimalProject);
+    setDeleteModalVisible(true);
+  };
+
   const handleCreateProject = () => {
     setCreateModalVisible(true);
+  };
+
+  const handleDeleteProject = (project: MinimalProjectDTO) => {
+    setSelectedProject(project);
+    setDeleteModalVisible(true);
   };
 
   const handleCreateSuccess = () => {
@@ -101,12 +121,24 @@ const ProjectAdmin = () => {
     loadMyCreatedProjects();
   };
 
+  const handleDeleteSuccess = () => {
+    // Recargar todos los datos después de eliminar un proyecto
+    loadAllProjects();
+    loadAssignedProjects();
+    loadMyCreatedProjects();
+  };
+
   const handleCreateCancel = () => {
     setCreateModalVisible(false);
   };
 
   const handleEditCancel = () => {
     setEditModalVisible(false);
+    setSelectedProject(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
     setSelectedProject(null);
   };
 
@@ -160,7 +192,13 @@ const ProjectAdmin = () => {
             title="Editar proyecto"
             onClick={() => handleEditProjectFromDTO(record)}
           />
-          <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} title="Eliminar proyecto" />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            style={{ color: '#ef4444' }}
+            title="Eliminar proyecto"
+            onClick={() => handleDeleteProjectFromDTO(record)}
+          />
         </Space>
       ),
     },
@@ -245,7 +283,13 @@ const ProjectAdmin = () => {
             title="Editar proyecto"
             onClick={() => handleEditProject(record)}
           />
-          <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} title="Eliminar proyecto" />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            style={{ color: '#ef4444' }}
+            title="Eliminar proyecto"
+            onClick={() => handleDeleteProject(record)}
+          />
         </Space>
       ),
     },
@@ -349,6 +393,12 @@ const ProjectAdmin = () => {
       <Tabs items={tabItems} />
       <CreateProjectModal visible={createModalVisible} onCancel={handleCreateCancel} onSuccess={handleCreateSuccess} />
       <EditProjectModal visible={editModalVisible} project={selectedProject} onCancel={handleEditCancel} onSuccess={handleEditSuccess} />
+      <DeleteProjectModal
+        visible={deleteModalVisible}
+        project={selectedProject}
+        onCancel={handleDeleteCancel}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 };
