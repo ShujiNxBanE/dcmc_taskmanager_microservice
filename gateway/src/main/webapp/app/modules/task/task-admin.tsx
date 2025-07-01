@@ -5,6 +5,8 @@ import taskClientApi from 'app/rest/TaskClientApi';
 import { UserOutlined, CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import projectClientApi from 'app/rest/ProjectClientApi';
 import CreateTaskModal from './create-task-modal';
+import { useAppSelector } from 'app/config/store';
+import EditTaskModal from './edit-task-modal';
 
 const TaskAdmin = () => {
   const [allTasks, setAllTasks] = useState<TaskSimpleDTO[]>([]);
@@ -15,6 +17,9 @@ const TaskAdmin = () => {
   const [loadingCreated, setLoadingCreated] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [hasProjects, setHasProjects] = useState(false);
+  const currentUser = useAppSelector(state => state.authentication.account?.login);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editTask, setEditTask] = useState<TaskSimpleDTO | null>(null);
 
   useEffect(() => {
     loadAllTasks();
@@ -95,7 +100,21 @@ const TaskAdmin = () => {
     {
       title: 'Acciones',
       key: 'actions',
-      render: (_: any, record: TaskSimpleDTO) => <Space size="small">{/* Aquí puedes agregar botones de acciones futuras */}</Space>,
+      render: (_: any, record: TaskSimpleDTO) => (
+        <Space size="small">
+          {record.creatorLogin === currentUser && (
+            <Button
+              type="link"
+              onClick={() => {
+                setEditTask(record);
+                setEditModalOpen(true);
+              }}
+            >
+              Editar
+            </Button>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -145,6 +164,7 @@ const TaskAdmin = () => {
       </Button>
       <Tabs defaultActiveKey="all" items={tabItems} />
       <CreateTaskModal open={showModal} onCancel={() => setShowModal(false)} onSuccess={handleSuccess} />
+      <EditTaskModal open={editModalOpen} onCancel={() => setEditModalOpen(false)} onSuccess={handleSuccess} task={editTask} />
     </div>
   );
 };

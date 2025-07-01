@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TaskSimpleDTO, TaskCreateDTO } from './dto';
+import { TaskSimpleDTO, TaskCreateDTO, TaskUpdateDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Task.
@@ -47,6 +47,15 @@ class TaskClientApi {
    */
   public createTask(groupId: number, projectId: number, data: TaskCreateDTO): Promise<AxiosResponse<any>> {
     return this.api.post(`/api/tasks/work-group/${groupId}/project/${projectId}/create-task`, data);
+  }
+
+  /**
+   * Actualiza una tarea existente (solo el creador puede hacerlo).
+   * @param taskId - ID de la tarea
+   * @param data - Datos a actualizar
+   */
+  public updateTask(taskId: number, data: TaskUpdateDTO): Promise<AxiosResponse<any>> {
+    return this.api.post(`/api/tasks/${taskId}/update`, data);
   }
 
   // Aquí puedes añadir más métodos en el futuro

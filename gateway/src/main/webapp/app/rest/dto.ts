@@ -85,3 +85,10 @@ export interface StatusDTO {
   id: number;
   name: string;
 }
+
+export interface TaskUpdateDTO {
+  title: string;
+  description?: string;
+  priorityId: number;
+  statusId: number;
+}
