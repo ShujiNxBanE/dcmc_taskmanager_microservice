@@ -35,7 +35,10 @@ public interface TaskMapper extends EntityMapper<TaskDTO, Task> {
 
     @Mapping(target = "creatorLogin", source = "creator.login")
     @Mapping(target = "workGroupId", source = "workGroup.id")
+    @Mapping(target = "priorityName", source = "priorityEntity.name")
+    @Mapping(target = "statusName", source = "statusEntity.name")
     TaskSimpleDTO toSimpleDto(Task task);
+
 
     List<TaskSimpleDTO> toSimpleDto(List<Task> tasks);
 

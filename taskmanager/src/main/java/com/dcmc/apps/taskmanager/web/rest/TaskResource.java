@@ -108,11 +108,12 @@ public class TaskResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the taskDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDTO> getTask(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Task : {}", id);
-        Optional<TaskDTO> taskDTO = taskService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(taskDTO);
+    public ResponseEntity<TaskSimpleDTO> getTaskSimple(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get simple Task : {}", id);
+        Optional<TaskSimpleDTO> dto = taskService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(dto);
     }
+
 
     @GetMapping("/work-group/{workGroupId}/tasks")
     public ResponseEntity<List<TaskSimpleDTO>> getTasksByWorkGroup(@PathVariable Long workGroupId) {
@@ -188,9 +189,10 @@ public class TaskResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/work-group/{groupId}/tasks/archived")
-    public List<TaskSimpleDTO> getArchivedTasks(@PathVariable Long groupId) {
-        return taskService.getArchivedTasksByWorkGroup(groupId);
+    @GetMapping("/project/{projectId}/archived-tasks")
+    public ResponseEntity<List<TaskSimpleDTO>> getArchivedTasksByProject(@PathVariable Long projectId) {
+        List<TaskSimpleDTO> tasks = taskService.getArchivedTasksByProject(projectId);
+        return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/{taskId}/subtasks")

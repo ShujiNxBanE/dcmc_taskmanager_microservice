@@ -6,20 +6,22 @@ import com.dcmc.apps.taskmanager.domain.enumeration.TaskStatus;
 import java.io.Serializable;
 import java.time.Instant;
 
-public class TaskSimpleDTO  implements Serializable {
+public class TaskSimpleDTO implements Serializable {
 
     private Long id;
     private String title;
     private String description;
-    private Priority priority;
-    private TaskStatus status;
+
+    private String priorityName;
+    private String statusName;
+
     private Instant createTime;
     private Instant updateTime;
     private Boolean archived;
     private String creatorLogin;
     private Long workGroupId;
 
-    // Getters and setters
+    // Getters y Setters
 
     public Long getId() {
         return id;
@@ -45,20 +47,20 @@ public class TaskSimpleDTO  implements Serializable {
         this.description = description;
     }
 
-    public Priority getPriority() {
-        return priority;
+    public String getPriorityName() {
+        return priorityName;
     }
 
-    public void setPriority(Priority priority) {
-        this.priority = priority;
+    public void setPriorityName(String priorityName) {
+        this.priorityName = priorityName;
     }
 
-    public TaskStatus getStatus() {
-        return status;
+    public String getStatusName() {
+        return statusName;
     }
 
-    public void setStatus(TaskStatus status) {
-        this.status = status;
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 
     public Instant getCreateTime() {
@@ -101,4 +103,5 @@ public class TaskSimpleDTO  implements Serializable {
         this.workGroupId = workGroupId;
     }
 }
+
 

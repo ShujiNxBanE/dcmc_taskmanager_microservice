@@ -130,10 +130,12 @@ public class TaskService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<TaskDTO> findOne(Long id) {
-        LOG.debug("Request to get Task : {}", id);
-        return taskRepository.findOneWithEagerRelationships(id).map(taskMapper::toDto);
+    public Optional<TaskSimpleDTO> findOne(Long id) {
+        return taskRepository.findById(id)
+            .filter(task -> Boolean.TRUE.equals(task.getActive())) // opcional: solo activos
+            .map(taskMapper::toSimpleDto);
     }
+
 
     /**
      * Delete the task by id.
@@ -284,7 +286,6 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskSimpleDTO> getTasksByProjectId(Long projectId) {
-        // Verificar que el proyecto esté activo
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
 
@@ -292,12 +293,10 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is not active");
         }
 
-        // Buscar tareas que no estén archivadas y estén asignadas al proyecto
-        List<Task> tasks = taskRepository.findByProject_IdAndArchivedFalse(projectId);
+        List<Task> tasks = taskRepository.findByProject_IdAndArchivedFalseAndIsActiveTrue(projectId);
 
         return taskMapper.toSimpleDto(tasks);
     }
-
 
     public List<TaskSimpleDTO> getAllTasks() {
         List<Task> tasks = taskRepository.findByArchivedFalse();
@@ -384,7 +383,7 @@ public class TaskService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         // Verificar que la tarea tenga status DONE
-        if (task.getStatus() != TaskStatus.DONE) {
+        if (!"DONE".equals(task.getStatusEntity().getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only tasks with status DONE can be archived");
         }
 
@@ -400,15 +399,14 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskSimpleDTO> getArchivedTasksByWorkGroup(Long workGroupId) {
-        // Validar que el grupo existe y está activo
-        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(workGroupId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
+    public List<TaskSimpleDTO> getArchivedTasksByProject(Long projectId) {
+        // Validar que el proyecto existe y está activo
+        Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
 
-        // Obtener tareas archivadas de ese grupo
-        List<Task> archivedTasks = taskRepository.findByWorkGroup_IdAndArchivedTrue(workGroupId);
+        // Obtener tareas archivadas activas de ese proyecto
+        List<Task> archivedTasks = taskRepository.findByProject_IdAndArchivedTrueAndIsActiveTrue(projectId);
 
-        // Mapear a DTO
         return taskMapper.toSimpleDto(archivedTasks);
     }
 
