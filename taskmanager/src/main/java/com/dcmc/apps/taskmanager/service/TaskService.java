@@ -299,7 +299,7 @@ public class TaskService {
     }
 
     public List<TaskSimpleDTO> getAllTasks() {
-        List<Task> tasks = taskRepository.findByArchivedFalse();
+        List<Task> tasks = taskRepository.findByArchivedFalseAndIsActiveTrue();
         return taskMapper.toSimpleDto(tasks);
     }
 

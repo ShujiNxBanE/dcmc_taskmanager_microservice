@@ -62,4 +62,5 @@ public interface TaskRepository extends TaskRepositoryWithBagRelationships, JpaR
 
     List<Task> findByParentTask_IdAndArchivedFalseAndIsActiveTrue(Long parentTaskId);
 
+    List<Task> findByArchivedFalseAndIsActiveTrue();
 }

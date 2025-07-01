@@ -63,7 +63,6 @@ public class StatusService {
 
     @Transactional(readOnly = true)
     public List<StatusDTO> findAll(Long groupId) {
-        securityUtilsService.assertOwnerOrModerator(groupId);
         LOG.debug("Request to get all Statuses");
         return statusRepository.findAll().stream().map(statusMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
