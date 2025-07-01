@@ -419,4 +419,31 @@ public class TaskService {
         return taskMapper.toSimpleDto(subTasks);
     }
 
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getAssignedMainTasksForCurrentUser() {
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        List<Task> tasks = taskRepository.findByAssignedTos_LoginAndParentTaskIsNullAndArchivedFalseAndIsActiveTrue(currentUserLogin);
+        return taskMapper.toSimpleDto(tasks);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getAssignedSubTasksForCurrentUser() {
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        List<Task> subtasks = taskRepository.findByAssignedTos_LoginAndParentTaskIsNotNullAndArchivedFalseAndIsActiveTrue(currentUserLogin);
+        return taskMapper.toSimpleDto(subtasks);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getCreatedMainTasksByCurrentUser() {
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        List<Task> tasks = taskRepository.findByCreator_LoginAndParentTaskIsNullAndArchivedFalseAndIsActiveTrue(currentUserLogin);
+        return taskMapper.toSimpleDto(tasks);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskSimpleDTO> getCreatedSubTasksByCurrentUser() {
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        List<Task> subtasks = taskRepository.findByCreator_LoginAndParentTaskIsNotNullAndArchivedFalseAndIsActiveTrue(currentUserLogin);
+        return taskMapper.toSimpleDto(subtasks);
+    }
 }

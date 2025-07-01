@@ -201,4 +201,27 @@ public class TaskResource {
         return ResponseEntity.ok(subTasks);
     }
 
+    @GetMapping("/assigned")
+    public ResponseEntity<List<TaskSimpleDTO>> getAssignedMainTasks() {
+        List<TaskSimpleDTO> tasks = taskService.getAssignedMainTasksForCurrentUser();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/assigned/subtasks")
+    public ResponseEntity<List<TaskSimpleDTO>> getAssignedSubTasks() {
+        List<TaskSimpleDTO> subtasks = taskService.getAssignedSubTasksForCurrentUser();
+        return ResponseEntity.ok(subtasks);
+    }
+
+    @GetMapping("/created")
+    public ResponseEntity<List<TaskSimpleDTO>> getCreatedMainTasks() {
+        List<TaskSimpleDTO> tasks = taskService.getCreatedMainTasksByCurrentUser();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/created/subtasks")
+    public ResponseEntity<List<TaskSimpleDTO>> getCreatedSubTasks() {
+        List<TaskSimpleDTO> subtasks = taskService.getCreatedSubTasksByCurrentUser();
+        return ResponseEntity.ok(subtasks);
+    }
 }
