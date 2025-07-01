@@ -411,8 +411,12 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskDTO> getSubTasks(Long parentTaskId) {
-        List<Task> subTasks = taskRepository.findByParentTask_Id(parentTaskId);
-        return taskMapper.toDto(subTasks);
+    public List<TaskSimpleDTO> getSubTasks(Long parentTaskId) {
+        // Buscar subtareas filtradas
+        List<Task> subTasks = taskRepository.findByParentTask_IdAndArchivedFalseAndIsActiveTrue(parentTaskId);
+
+        // Mapear a DTO simplificado
+        return taskMapper.toSimpleDto(subTasks);
     }
+
 }

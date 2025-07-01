@@ -60,4 +60,6 @@ public interface TaskRepository extends TaskRepositoryWithBagRelationships, JpaR
 
     List<Task> findByProject_IdAndArchivedTrueAndIsActiveTrue(Long projectId);
 
+    List<Task> findByParentTask_IdAndArchivedFalseAndIsActiveTrue(Long parentTaskId);
+
 }

@@ -196,8 +196,9 @@ public class TaskResource {
     }
 
     @GetMapping("/{taskId}/subtasks")
-    public ResponseEntity<List<TaskDTO>> getSubTasks(@PathVariable Long taskId) {
-        List<TaskDTO> subTasks = taskService.getSubTasks(taskId);
+    public ResponseEntity<List<TaskSimpleDTO>> getSubTasks(@PathVariable Long taskId) {
+        List<TaskSimpleDTO> subTasks = taskService.getSubTasks(taskId);
         return ResponseEntity.ok(subTasks);
     }
+
 }
