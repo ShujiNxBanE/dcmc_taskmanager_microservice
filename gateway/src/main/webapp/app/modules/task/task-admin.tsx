@@ -1,0 +1,131 @@
+import React, { useEffect, useState } from 'react';
+import { Tabs, Table, Tag, Space } from 'antd';
+import { TaskSimpleDTO } from 'app/rest/dto';
+import taskClientApi from 'app/rest/TaskClientApi';
+import { UserOutlined, CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
+
+const TaskAdmin = () => {
+  const [allTasks, setAllTasks] = useState<TaskSimpleDTO[]>([]);
+  const [assignedTasks, setAssignedTasks] = useState<TaskSimpleDTO[]>([]);
+  const [createdTasks, setCreatedTasks] = useState<TaskSimpleDTO[]>([]);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [loadingAssigned, setLoadingAssigned] = useState(false);
+  const [loadingCreated, setLoadingCreated] = useState(false);
+
+  useEffect(() => {
+    loadAllTasks();
+    loadAssignedTasks();
+    loadCreatedTasks();
+  }, []);
+
+  const loadAllTasks = async () => {
+    setLoadingAll(true);
+    try {
+      const res = await taskClientApi.getAllTasks();
+      setAllTasks(res.data);
+    } finally {
+      setLoadingAll(false);
+    }
+  };
+
+  const loadAssignedTasks = async () => {
+    setLoadingAssigned(true);
+    try {
+      const res = await taskClientApi.getAssignedTasks();
+      setAssignedTasks(res.data);
+    } finally {
+      setLoadingAssigned(false);
+    }
+  };
+
+  const loadCreatedTasks = async () => {
+    setLoadingCreated(true);
+    try {
+      const res = await taskClientApi.getCreatedTasks();
+      setCreatedTasks(res.data);
+    } finally {
+      setLoadingCreated(false);
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Título',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
+    },
+    {
+      title: 'Descripción',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text: string) => (
+        <div style={{ color: '#6b7280', maxWidth: 300 }}>{text && text.length > 100 ? `${text.substring(0, 100)}...` : text}</div>
+      ),
+    },
+    {
+      title: 'Prioridad',
+      dataIndex: 'priorityName',
+      key: 'priorityName',
+      render: (priority: string) => <Tag color="red">{priority}</Tag>,
+    },
+    {
+      title: 'Estado',
+      dataIndex: 'statusName',
+      key: 'statusName',
+      render: (status: string) => <Tag color="blue">{status}</Tag>,
+    },
+    {
+      title: 'Creador',
+      dataIndex: 'creatorLogin',
+      key: 'creatorLogin',
+      render: (login: string) => <Tag color="purple">@{login}</Tag>,
+    },
+    {
+      title: 'Acciones',
+      key: 'actions',
+      render: (_: any, record: TaskSimpleDTO) => <Space size="small">{/* Aquí puedes agregar botones de acciones futuras */}</Space>,
+    },
+  ];
+
+  const tabItems = [
+    {
+      key: 'all',
+      label: (
+        <span>
+          <CheckCircleOutlined style={{ marginRight: 8 }} />
+          Todas las tareas ({allTasks.length})
+        </span>
+      ),
+      children: <Table columns={columns} dataSource={allTasks} rowKey="id" loading={loadingAll} pagination={{ pageSize: 10 }} />,
+    },
+    {
+      key: 'assigned',
+      label: (
+        <span>
+          <UserOutlined style={{ marginRight: 8 }} />
+          Tareas asignadas ({assignedTasks.length})
+        </span>
+      ),
+      children: <Table columns={columns} dataSource={assignedTasks} rowKey="id" loading={loadingAssigned} pagination={{ pageSize: 10 }} />,
+    },
+    {
+      key: 'created',
+      label: (
+        <span>
+          <PlusOutlined style={{ marginRight: 8 }} />
+          Tareas creadas ({createdTasks.length})
+        </span>
+      ),
+      children: <Table columns={columns} dataSource={createdTasks} rowKey="id" loading={loadingCreated} pagination={{ pageSize: 10 }} />,
+    },
+  ];
+
+  return (
+    <div>
+      <Tabs defaultActiveKey="all" items={tabItems} />
+    </div>
+  );
+};
+
+export default TaskAdmin;

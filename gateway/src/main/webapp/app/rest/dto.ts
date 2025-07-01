@@ -60,3 +60,16 @@ export interface PriorityDTO {
   name: string;
   isHidden?: boolean;
 }
+
+export interface TaskSimpleDTO {
+  id?: number;
+  title: string;
+  description?: string;
+  priorityName?: string;
+  statusName?: string;
+  createTime?: string;
+  updateTime?: string;
+  archived?: boolean;
+  creatorLogin?: string;
+  workGroupId?: number;
+}

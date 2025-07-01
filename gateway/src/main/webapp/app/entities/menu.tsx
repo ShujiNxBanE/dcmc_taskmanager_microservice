@@ -21,6 +21,9 @@ const EntitiesMenu = () => {
           Priority
         </MenuItem>
       )}
+      <MenuItem icon="asterisk" to="/task">
+        Task
+      </MenuItem>
       {/* prettier-ignore */}
       {/* jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here */}
     </>

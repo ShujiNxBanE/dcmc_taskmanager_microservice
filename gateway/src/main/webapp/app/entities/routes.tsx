@@ -10,6 +10,7 @@ import getStore from 'app/config/store';
 import entitiesReducers from './reducers';
 import WorkGroup from 'app/modules/work-group';
 import Project from 'app/modules/project';
+import Task from 'app/modules/task';
 
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
@@ -23,6 +24,7 @@ export default () => {
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
         <Route path="work-group/*" element={<WorkGroup />} />
         <Route path="project/*" element={<Project />} />
+        <Route path="task/*" element={<Task />} />
       </ErrorBoundaryRoutes>
     </div>
   );
