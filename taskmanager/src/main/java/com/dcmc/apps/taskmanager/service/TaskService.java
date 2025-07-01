@@ -222,7 +222,6 @@ public class TaskService {
         return taskMapper.toDto(subTask);
     }
 
-
     public TaskDTO updateTask(Long taskId, TaskUpdateDTO dto) {
         // Buscar la tarea
         Task task = taskRepository.findById(taskId)

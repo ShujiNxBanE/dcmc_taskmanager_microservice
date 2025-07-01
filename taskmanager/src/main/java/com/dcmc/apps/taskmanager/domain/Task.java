@@ -107,7 +107,44 @@ public class Task implements Serializable {
     @OneToMany(mappedBy = "parentTask", fetch = FetchType.LAZY)
     private Set<Task> subTasks = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "priority_id")
+    private com.dcmc.apps.taskmanager.domain.Priority priorityEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private Status statusEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public com.dcmc.apps.taskmanager.domain.Priority getPriorityEntity() {
+        return priorityEntity;
+    }
+
+    public void setPriorityEntity(com.dcmc.apps.taskmanager.domain.Priority priorityEntity) {
+        this.priorityEntity = priorityEntity;
+    }
+
+    public Status getStatusEntity() {
+        return statusEntity;
+    }
+
+    public void setStatusEntity(Status statusEntity) {
+        this.statusEntity = statusEntity;
+    }
+
+    public Comment getComment() {
+        return comment;
+    }
+
+    public void setComment(Comment comment) {
+        this.comment = comment;
+    }
+
 
     public Set<Task> getSubTasks() {
         return subTasks;
