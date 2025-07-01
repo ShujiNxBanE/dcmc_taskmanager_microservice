@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Table, Tag, Space, Button } from 'antd';
+import { Tabs, Table, Tag, Space, Button, Popconfirm, message } from 'antd';
 import { TaskSimpleDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 import { UserOutlined, CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -103,15 +103,36 @@ const TaskAdmin = () => {
       render: (_: any, record: TaskSimpleDTO) => (
         <Space size="small">
           {record.creatorLogin === currentUser && (
-            <Button
-              type="link"
-              onClick={() => {
-                setEditTask(record);
-                setEditModalOpen(true);
-              }}
-            >
-              Editar
-            </Button>
+            <>
+              <Button
+                type="link"
+                onClick={() => {
+                  setEditTask(record);
+                  setEditModalOpen(true);
+                }}
+              >
+                Editar
+              </Button>
+              <Popconfirm
+                title="¿Seguro que deseas eliminar esta tarea?"
+                okText="Sí"
+                cancelText="No"
+                onConfirm={async () => {
+                  if (!record.id) return message.error('ID de tarea no válido');
+                  try {
+                    await taskClientApi.deleteTask(record.id);
+                    message.success('Tarea eliminada correctamente');
+                    handleSuccess();
+                  } catch (err: any) {
+                    message.error(err.message || 'Error al eliminar la tarea');
+                  }
+                }}
+              >
+                <Button type="link" danger>
+                  Eliminar
+                </Button>
+              </Popconfirm>
+            </>
           )}
         </Space>
       ),

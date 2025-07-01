@@ -58,6 +58,14 @@ class TaskClientApi {
     return this.api.post(`/api/tasks/${taskId}/update`, data);
   }
 
+  /**
+   * Elimina (soft delete) una tarea. Solo el creador puede hacerlo si no está archivada.
+   * @param taskId - ID de la tarea
+   */
+  public deleteTask(taskId: number): Promise<AxiosResponse<void>> {
+    return this.api.delete(`/api/tasks/${taskId}/delete`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
