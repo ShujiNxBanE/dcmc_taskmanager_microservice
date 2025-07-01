@@ -224,4 +224,10 @@ public class TaskResource {
         List<TaskSimpleDTO> subtasks = taskService.getCreatedSubTasksByCurrentUser();
         return ResponseEntity.ok(subtasks);
     }
+
+    @PostMapping("/{taskId}/unarchive")
+    public ResponseEntity<Void> unarchiveTask(@PathVariable Long taskId) {
+        taskService.unarchiveTask(taskId);
+        return ResponseEntity.noContent().build();
+    }
 }

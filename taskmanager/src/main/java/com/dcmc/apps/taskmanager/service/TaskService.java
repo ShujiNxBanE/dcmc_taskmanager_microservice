@@ -446,4 +446,25 @@ public class TaskService {
         List<Task> subtasks = taskRepository.findByCreator_LoginAndParentTaskIsNotNullAndArchivedFalseAndIsActiveTrue(currentUserLogin);
         return taskMapper.toSimpleDto(subtasks);
     }
+
+    @Transactional
+    public void unarchiveTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        // Verificar que la tarea esté actualmente archivada
+        if (Boolean.FALSE.equals(task.getArchived())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is not archived");
+        }
+
+        // Verificar permisos del usuario (OWNER o MODERATOR)
+        Long workGroupId = task.getWorkGroup().getId();
+        securityUtilsService.assertOwnerOrModerator(workGroupId);
+
+        // Desarchivar la tarea
+        task.setArchived(false);
+        task.setUpdateTime(Instant.now());
+
+        taskRepository.save(task);
+    }
 }
