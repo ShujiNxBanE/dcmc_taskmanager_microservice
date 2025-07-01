@@ -115,10 +115,6 @@ public class Task implements Serializable {
     @JoinColumn(name = "status_id")
     private Status statusEntity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public com.dcmc.apps.taskmanager.domain.Priority getPriorityEntity() {
@@ -136,15 +132,6 @@ public class Task implements Serializable {
     public void setStatusEntity(Status statusEntity) {
         this.statusEntity = statusEntity;
     }
-
-    public Comment getComment() {
-        return comment;
-    }
-
-    public void setComment(Comment comment) {
-        this.comment = comment;
-    }
-
 
     public Set<Task> getSubTasks() {
         return subTasks;

@@ -45,6 +45,25 @@ public class TaskDTO implements Serializable {
 
     private ProjectDTO parentProject;
 
+    private String priorityName;
+    private String statusName;
+
+    public String getPriorityName() {
+        return priorityName;
+    }
+
+    public void setPriorityName(String priorityName) {
+        this.priorityName = priorityName;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
+    }
+
     public Long getId() {
         return id;
     }

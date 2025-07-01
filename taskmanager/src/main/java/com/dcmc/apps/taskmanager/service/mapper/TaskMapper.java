@@ -20,6 +20,8 @@ public interface TaskMapper extends EntityMapper<TaskDTO, Task> {
     @Mapping(target = "workGroup", source = "workGroup", qualifiedByName = "workGroupName")
     @Mapping(target = "assignedTos", source = "assignedTos", qualifiedByName = "userLoginSet")
     @Mapping(target = "parentProject", source = "parentProject", qualifiedByName = "projectId")
+    @Mapping(target = "priorityName", source = "priorityEntity.name")
+    @Mapping(target = "statusName", source = "statusEntity.name")
     TaskDTO toDto(Task s);
 
     @Mapping(target = "removeAssignedTo", ignore = true)

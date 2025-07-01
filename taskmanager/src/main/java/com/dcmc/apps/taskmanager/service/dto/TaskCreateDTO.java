@@ -25,27 +25,28 @@ public class TaskCreateDTO {
         this.title = title;
     }
 
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
     private String description;
 
-    @NotNull
-    private Priority priority;
 
     @NotNull
-    private TaskStatus status;
+    private Long priorityId;
+
+    @NotNull
+    private Long statusId;
+
+    public Long getPriorityId() {
+        return priorityId;
+    }
+
+    public void setPriorityId(Long priorityId) {
+        this.priorityId = priorityId;
+    }
+
+    public Long getStatusId() {
+        return statusId;
+    }
+
+    public void setStatusId(Long statusId) {
+        this.statusId = statusId;
+    }
 }

@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,11 +47,16 @@ public class TaskService {
 
     private final WorkGroupMembershipRepository workGroupMembershipRepository;
 
+    private final PriorityRepository priorityRepository;
+
+    private final StatusRepository statusRepository;
+
     public TaskService(TaskRepository taskRepository, TaskMapper taskMapper,
                        SecurityUtilsService securityUtilsService,
                        UserRepository userRepository, WorkGroupRepository workGroupRepository,
                        WorkGroupMembershipRepository workGroupMembershipRepository,
-                       ProjectRepository projectRepository) {
+                       ProjectRepository projectRepository,
+                       PriorityRepository priorityRepository, StatusRepository statusRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.securityUtilsService = securityUtilsService;
@@ -60,6 +64,8 @@ public class TaskService {
         this.workGroupRepository = workGroupRepository;
         this.workGroupMembershipRepository = workGroupMembershipRepository;
         this.projectRepository = projectRepository;
+        this.priorityRepository = priorityRepository;
+        this.statusRepository = statusRepository;
     }
 
     /**
@@ -145,37 +151,44 @@ public class TaskService {
 
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
-        task.setPriority(dto.getPriority());
-        task.setStatus(dto.getStatus());
+
+        // Obtener Priority
+        Priority priority = priorityRepository.findById(dto.getPriorityId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid priority ID"));
+        task.setPriorityEntity(priority);
+
+        // Obtener Status
+        Status status = statusRepository.findById(dto.getStatusId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status ID"));
+        task.setStatusEntity(status);
+
         task.setArchived(false);
         task.setActive(true);
         task.setCreateTime(Instant.now());
         task.setUpdateTime(Instant.now());
 
-        // Asignar creador desde usuario autenticado
+        // Asignar creador
         String currentUserLogin = securityUtilsService.getCurrentUser();
         User creator = userRepository.findOneByLogin(currentUserLogin)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
         task.setCreator(creator);
 
-        // Obtener y validar que el WorkGroup existe y está activo
+        // Validar WorkGroup
         WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
         task.setWorkGroup(wg);
 
-        // Obtener y validar que el proyecto existe y está activo
+        // Validar Project
         Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
-
-        // Validar que el proyecto pertenece al grupo
         if (!project.getWorkGroup().getId().equals(groupId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
         }
-
         task.setProject(project);
-
-        task = taskRepository.save(task);
-        return taskMapper.toDto(task);
+        task.setParentProject(null);
+        task.setPriority(com.dcmc.apps.taskmanager.domain.enumeration.Priority.NULL);
+        task.setStatus(TaskStatus.NULL);
+        return taskMapper.toDto(taskRepository.save(task));
     }
 
     @Transactional
@@ -190,63 +203,78 @@ public class TaskService {
         Task subTask = new Task();
         subTask.setTitle(dto.getTitle());
         subTask.setDescription(dto.getDescription());
-        subTask.setPriority(dto.getPriority());
-        subTask.setStatus(dto.getStatus());
+
+        // Obtener Priority
+        Priority priority = priorityRepository.findById(dto.getPriorityId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid priority ID"));
+        subTask.setPriorityEntity(priority);
+
+        // Obtener Status
+        Status status = statusRepository.findById(dto.getStatusId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status ID"));
+        subTask.setStatusEntity(status);
+
         subTask.setArchived(false);
         subTask.setActive(true);
         subTask.setCreateTime(Instant.now());
         subTask.setUpdateTime(Instant.now());
 
-        // Asignar creador actual
+        // Asignar creador
         String currentUserLogin = securityUtilsService.getCurrentUser();
         User creator = userRepository.findOneByLogin(currentUserLogin)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
         subTask.setCreator(creator);
 
-        // Validaciones de grupo y proyecto
+        // Validar WorkGroup y Project
         WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
         subTask.setWorkGroup(wg);
 
         Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
-
         if (!project.getWorkGroup().getId().equals(groupId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
         }
-
         subTask.setProject(project);
-        subTask.setParentTask(parentTask); // ← Relación de subtarea
+        subTask.setParentTask(parentTask);
 
-        subTask = taskRepository.save(subTask);
-        return taskMapper.toDto(subTask);
+        subTask.setParentProject(null);
+        subTask.setPriority(com.dcmc.apps.taskmanager.domain.enumeration.Priority.NULL);
+        subTask.setStatus(TaskStatus.NULL);
+
+        return taskMapper.toDto(taskRepository.save(subTask));
     }
 
+
+    @Transactional
     public TaskDTO updateTask(Long taskId, TaskUpdateDTO dto) {
-        // Buscar la tarea
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
-        // Validar que la tarea no esté archivada
         if (Boolean.TRUE.equals(task.getArchived())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Archived tasks cannot be edited");
         }
 
-        // Validar que el usuario actual es el creador de la tarea
         String currentUserLogin = securityUtilsService.getCurrentUser();
         if (!task.getCreator().getLogin().equals(currentUserLogin)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the creator of the task can update it");
         }
 
-        // Actualizar campos permitidos
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
-        task.setPriority(dto.getPriority());
-        task.setStatus(dto.getStatus());
         task.setUpdateTime(Instant.now());
 
-        task = taskRepository.save(task);
-        return taskMapper.toDto(task);
+        // Obtener y asignar Priority
+        Priority priority = priorityRepository.findById(dto.getPriorityId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid priority ID"));
+        task.setPriorityEntity(priority);
+
+        // Obtener y asignar Status
+        Status status = statusRepository.findById(dto.getStatusId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status ID"));
+        task.setStatusEntity(status);
+
+        return taskMapper.toDto(taskRepository.save(task));
     }
 
     public List<TaskSimpleDTO> getTasksByWorkGroupId(Long workGroupId) {

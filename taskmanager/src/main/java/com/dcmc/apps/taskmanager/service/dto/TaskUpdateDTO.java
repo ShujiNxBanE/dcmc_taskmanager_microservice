@@ -12,22 +12,19 @@ public class TaskUpdateDTO {
     private String description;
 
     @NotNull
-    private Priority priority;
+    private Long priorityId;
 
-    public TaskStatus getStatus() {
-        return status;
+    @NotNull
+    private Long statusId;
+
+    // Getters y Setters
+
+    public String getTitle() {
+        return title;
     }
 
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -38,14 +35,20 @@ public class TaskUpdateDTO {
         this.description = description;
     }
 
-    public String getTitle() {
-        return title;
+    public Long getPriorityId() {
+        return priorityId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setPriorityId(Long priorityId) {
+        this.priorityId = priorityId;
     }
 
-    @NotNull
-    private TaskStatus status;
+    public Long getStatusId() {
+        return statusId;
+    }
+
+    public void setStatusId(Long statusId) {
+        this.statusId = statusId;
+    }
 }
+

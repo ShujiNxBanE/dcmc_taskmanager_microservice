@@ -7,4 +7,5 @@ public enum TaskStatus {
     NOT_STARTED,
     WORKING_ON_IT,
     DONE,
+    NULL,
 }
