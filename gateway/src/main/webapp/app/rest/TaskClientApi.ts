@@ -66,6 +66,14 @@ class TaskClientApi {
     return this.api.delete(`/api/tasks/${taskId}/delete`);
   }
 
+  /**
+   * Obtiene las tareas archivadas activas de un proyecto específico.
+   * @param projectId - ID del proyecto
+   */
+  public getArchivedTasksByProject(projectId: number): Promise<AxiosResponse<TaskSimpleDTO[]>> {
+    return this.api.get<TaskSimpleDTO[]>(`/api/tasks/project/${projectId}/archived-tasks`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

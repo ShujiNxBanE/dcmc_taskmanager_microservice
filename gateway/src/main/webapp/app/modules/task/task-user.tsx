@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Table, Tag, Space, Button, Popconfirm, message } from 'antd';
+import { Tabs, Table, Tag, Space, Button, Popconfirm, message, Select } from 'antd';
 import { TaskSimpleDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
-import { UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { UserOutlined, PlusOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import projectClientApi from 'app/rest/ProjectClientApi';
 import CreateTaskModal from './create-task-modal';
 import { useAppSelector } from 'app/config/store';
@@ -18,12 +18,30 @@ const TaskUser = () => {
   const currentUser = useAppSelector(state => state.authentication.account?.login);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editTask, setEditTask] = useState<TaskSimpleDTO | null>(null);
+  const [archivedTasks, setArchivedTasks] = useState<TaskSimpleDTO[]>([]);
+  const [archivedLoading, setArchivedLoading] = useState(false);
+  const [assignedProjects, setAssignedProjects] = useState<any[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     loadAssignedTasks();
     loadCreatedTasks();
-    projectClientApi.getAssignedProjects().then(r => setHasProjects(r.data.length > 0));
+    projectClientApi.getAssignedProjects().then(r => {
+      setHasProjects(r.data.length > 0);
+      setAssignedProjects(r.data);
+      if (r.data.length > 0) setSelectedProjectId(r.data[0].id);
+    });
   }, []);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      setArchivedLoading(true);
+      taskClientApi
+        .getArchivedTasksByProject(selectedProjectId)
+        .then(r => setArchivedTasks(r.data))
+        .finally(() => setArchivedLoading(false));
+    }
+  }, [selectedProjectId]);
 
   const loadAssignedTasks = async () => {
     setLoadingAssigned(true);
@@ -145,6 +163,33 @@ const TaskUser = () => {
         </span>
       ),
       children: <Table columns={columns} dataSource={createdTasks} rowKey="id" loading={loadingCreated} pagination={{ pageSize: 10 }} />,
+    },
+    {
+      key: 'archived',
+      label: (
+        <span>
+          <CheckCircleOutlined style={{ marginRight: 8 }} />
+          Tareas archivadas
+        </span>
+      ),
+      children: (
+        <div>
+          <span style={{ marginRight: 8, fontWeight: 500 }}>Escoger proyecto:</span>
+          <Select
+            style={{ width: 300, marginBottom: 16 }}
+            value={selectedProjectId}
+            onChange={setSelectedProjectId}
+            placeholder="Selecciona un proyecto"
+          >
+            {assignedProjects.map(p => (
+              <Select.Option key={p.id} value={p.id}>
+                {p.title}
+              </Select.Option>
+            ))}
+          </Select>
+          <Table columns={columns} dataSource={archivedTasks} rowKey="id" loading={archivedLoading} pagination={{ pageSize: 10 }} />
+        </div>
+      ),
     },
   ];
 
