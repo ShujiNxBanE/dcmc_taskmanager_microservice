@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TaskSimpleDTO } from './dto';
+import { TaskSimpleDTO, TaskCreateDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Task.
@@ -37,6 +37,16 @@ class TaskClientApi {
    */
   public getCreatedTasks(): Promise<AxiosResponse<TaskSimpleDTO[]>> {
     return this.api.get<TaskSimpleDTO[]>('/api/tasks/created');
+  }
+
+  /**
+   * Crea una nueva tarea en un proyecto y grupo de trabajo específico.
+   * @param groupId - ID del grupo de trabajo
+   * @param projectId - ID del proyecto
+   * @param data - Datos de la tarea a crear
+   */
+  public createTask(groupId: number, projectId: number, data: TaskCreateDTO): Promise<AxiosResponse<any>> {
+    return this.api.post(`/api/tasks/work-group/${groupId}/project/${projectId}/create-task`, data);
   }
 
   // Aquí puedes añadir más métodos en el futuro

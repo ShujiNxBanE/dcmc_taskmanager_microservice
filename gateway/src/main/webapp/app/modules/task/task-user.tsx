@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Tabs, Table, Tag, Space } from 'antd';
+import { Tabs, Table, Tag, Space, Button } from 'antd';
 import { TaskSimpleDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 import { UserOutlined, PlusOutlined } from '@ant-design/icons';
+import projectClientApi from 'app/rest/ProjectClientApi';
+import CreateTaskModal from './create-task-modal';
 
 const TaskUser = () => {
   const [assignedTasks, setAssignedTasks] = useState<TaskSimpleDTO[]>([]);
   const [createdTasks, setCreatedTasks] = useState<TaskSimpleDTO[]>([]);
   const [loadingAssigned, setLoadingAssigned] = useState(false);
   const [loadingCreated, setLoadingCreated] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [hasProjects, setHasProjects] = useState(false);
 
   useEffect(() => {
     loadAssignedTasks();
     loadCreatedTasks();
+    projectClientApi.getAssignedProjects().then(r => setHasProjects(r.data.length > 0));
   }, []);
 
   const loadAssignedTasks = async () => {
@@ -33,6 +38,11 @@ const TaskUser = () => {
     } finally {
       setLoadingCreated(false);
     }
+  };
+
+  const handleSuccess = () => {
+    loadAssignedTasks();
+    loadCreatedTasks();
   };
 
   const columns = [
@@ -100,7 +110,17 @@ const TaskUser = () => {
 
   return (
     <div>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        style={{ marginBottom: 16 }}
+        onClick={() => setShowModal(true)}
+        disabled={!hasProjects}
+      >
+        Crear tarea
+      </Button>
       <Tabs defaultActiveKey="assigned" items={tabItems} />
+      <CreateTaskModal open={showModal} onCancel={() => setShowModal(false)} onSuccess={handleSuccess} />
     </div>
   );
 };

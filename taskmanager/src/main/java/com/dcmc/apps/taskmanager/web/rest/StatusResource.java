@@ -21,7 +21,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.dcmc.apps.taskmanager.domain.Status}.
  */
 @RestController
-@RequestMapping("/api/groups/{groupId}/statuses")
+@RequestMapping("/api/statuses")
 public class StatusResource {
 
     private final StatusService statusService;
@@ -38,24 +38,22 @@ public class StatusResource {
     }
 
     @PostMapping("")
-    public ResponseEntity<StatusDTO> createStatus(
-        @PathVariable("groupId") Long groupId,
-        @RequestBody StatusDTO statusDTO) throws URISyntaxException {
+    public ResponseEntity<StatusDTO> createStatus(@RequestBody StatusDTO statusDTO) throws URISyntaxException {
         LOG.debug("REST request to save Status : {}", statusDTO);
         if (statusDTO.getId() != null) {
             throw new BadRequestAlertException("A new status cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        statusDTO = statusService.save(groupId, statusDTO);
-        return ResponseEntity.created(new URI("/api/groups/" + groupId + "/statuses/" + statusDTO.getId()))
+        statusDTO = statusService.save(statusDTO);
+        return ResponseEntity.created(new URI("/api/statuses/" + statusDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, statusDTO.getId().toString()))
             .body(statusDTO);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<StatusDTO> updateStatus(
-        @PathVariable("groupId") Long groupId,
-        @PathVariable("id") Long id,
-        @RequestBody StatusDTO statusDTO) throws URISyntaxException {
+        @PathVariable Long id,
+        @RequestBody StatusDTO statusDTO
+    ) throws URISyntaxException {
         LOG.debug("REST request to update Status : {}, {}", id, statusDTO);
         if (statusDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -67,7 +65,7 @@ public class StatusResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        statusDTO = statusService.update(groupId, statusDTO);
+        statusDTO = statusService.update(statusDTO);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, statusDTO.getId().toString()))
             .body(statusDTO);
@@ -75,10 +73,10 @@ public class StatusResource {
 
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<StatusDTO> partialUpdateStatus(
-        @PathVariable("groupId") Long groupId,
-        @PathVariable("id") Long id,
-        @RequestBody StatusDTO statusDTO) throws URISyntaxException {
-        LOG.debug("REST request to partial update Status partially : {}, {}", id, statusDTO);
+        @PathVariable Long id,
+        @RequestBody StatusDTO statusDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to partial update Status : {}, {}", id, statusDTO);
         if (statusDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -89,7 +87,7 @@ public class StatusResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<StatusDTO> result = statusService.partialUpdate(groupId, statusDTO);
+        Optional<StatusDTO> result = statusService.partialUpdate(statusDTO);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -98,25 +96,26 @@ public class StatusResource {
     }
 
     @GetMapping("")
-    public List<StatusDTO> getAllStatuses(@PathVariable("groupId") Long groupId) {
+    public List<StatusDTO> getAllStatuses() {
         LOG.debug("REST request to get all Statuses");
-        return statusService.findAll(groupId);
+        return statusService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StatusDTO> getStatus(@PathVariable("groupId") Long groupId, @PathVariable("id") Long id) {
+    public ResponseEntity<StatusDTO> getStatus(@PathVariable Long id) {
         LOG.debug("REST request to get Status : {}", id);
-        Optional<StatusDTO> statusDTO = statusService.findOne(groupId, id);
+        Optional<StatusDTO> statusDTO = statusService.findOne(id);
         return ResponseUtil.wrapOrNotFound(statusDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStatus(@PathVariable("groupId") Long groupId, @PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteStatus(@PathVariable Long id) {
         LOG.debug("REST request to delete Status : {}", id);
-        statusService.delete(groupId, id);
+        statusService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
 }
 

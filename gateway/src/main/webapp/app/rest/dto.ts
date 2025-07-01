@@ -73,3 +73,15 @@ export interface TaskSimpleDTO {
   creatorLogin?: string;
   workGroupId?: number;
 }
+
+export interface TaskCreateDTO {
+  title: string;
+  description?: string;
+  priorityId: number;
+  statusId: number;
+}
+
+export interface StatusDTO {
+  id: number;
+  name: string;
+}
