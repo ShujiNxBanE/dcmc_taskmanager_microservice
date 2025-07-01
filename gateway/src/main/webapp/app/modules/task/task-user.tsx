@@ -7,6 +7,7 @@ import projectClientApi from 'app/rest/ProjectClientApi';
 import CreateTaskModal from './create-task-modal';
 import { useAppSelector } from 'app/config/store';
 import EditTaskModal from './edit-task-modal';
+import { AUTHORITIES } from 'app/config/constants';
 
 const TaskUser = () => {
   const [assignedTasks, setAssignedTasks] = useState<TaskSimpleDTO[]>([]);
@@ -22,6 +23,8 @@ const TaskUser = () => {
   const [archivedLoading, setArchivedLoading] = useState(false);
   const [assignedProjects, setAssignedProjects] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>(undefined);
+  const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
+  const isOwnerOrModerator = authorities.includes(AUTHORITIES.OWNER) || authorities.includes(AUTHORITIES.MODERATOR);
 
   useEffect(() => {
     loadAssignedTasks();
@@ -107,36 +110,83 @@ const TaskUser = () => {
       render: (_: any, record: TaskSimpleDTO) => (
         <Space size="small">
           {record.creatorLogin === currentUser && (
-            <>
-              <Button
-                type="link"
-                onClick={() => {
-                  setEditTask(record);
-                  setEditModalOpen(true);
-                }}
-              >
-                Editar
+            <Button
+              type="link"
+              onClick={() => {
+                setEditTask(record);
+                setEditModalOpen(true);
+              }}
+            >
+              Editar
+            </Button>
+          )}
+          {!record.archived && (
+            <Popconfirm
+              title="¿Seguro que deseas archivar esta tarea?"
+              okText="Sí"
+              cancelText="No"
+              onConfirm={async () => {
+                if (!record.id) return message.error('ID de tarea no válido');
+                try {
+                  await taskClientApi.archiveTask(record.id);
+                  message.success('Tarea archivada correctamente');
+                  handleSuccess();
+                } catch (err: any) {
+                  message.error(err.response?.data?.detail || err.message || 'Error al archivar la tarea');
+                }
+              }}
+            >
+              <Button type="link" style={{ color: '#8e24aa' }}>
+                Archivar
               </Button>
-              <Popconfirm
-                title="¿Seguro que deseas eliminar esta tarea?"
-                okText="Sí"
-                cancelText="No"
-                onConfirm={async () => {
-                  if (!record.id) return message.error('ID de tarea no válido');
-                  try {
-                    await taskClientApi.deleteTask(record.id);
-                    message.success('Tarea eliminada correctamente');
-                    handleSuccess();
-                  } catch (err: any) {
-                    message.error(err.message || 'Error al eliminar la tarea');
-                  }
-                }}
-              >
-                <Button type="link" danger>
-                  Eliminar
-                </Button>
-              </Popconfirm>
-            </>
+            </Popconfirm>
+          )}
+          {record.archived && (
+            <Popconfirm
+              title="¿Seguro que deseas desarchivar esta tarea?"
+              okText="Sí"
+              cancelText="No"
+              onConfirm={async () => {
+                if (!record.id || !selectedProjectId) return message.error('ID de tarea o proyecto no válido');
+                try {
+                  await taskClientApi.unarchiveTask(record.id);
+                  message.success('Tarea desarchivada correctamente');
+                  setArchivedLoading(true);
+                  taskClientApi
+                    .getArchivedTasksByProject(selectedProjectId)
+                    .then(r => setArchivedTasks(r.data))
+                    .finally(() => setArchivedLoading(false));
+                  handleSuccess();
+                } catch (err: any) {
+                  message.error(err.response?.data?.detail || err.message || 'Error al desarchivar la tarea');
+                }
+              }}
+            >
+              <Button type="link" style={{ color: '#1976d2' }}>
+                Desarchivar
+              </Button>
+            </Popconfirm>
+          )}
+          {((!record.archived && record.creatorLogin === currentUser) || (record.archived && isOwnerOrModerator)) && (
+            <Popconfirm
+              title="¿Seguro que deseas eliminar esta tarea?"
+              okText="Sí"
+              cancelText="No"
+              onConfirm={async () => {
+                if (!record.id) return message.error('ID de tarea no válido');
+                try {
+                  await taskClientApi.deleteTask(record.id);
+                  message.success('Tarea eliminada correctamente');
+                  handleSuccess();
+                } catch (err: any) {
+                  message.error(err.response?.data?.detail || err.message || 'Error al eliminar la tarea');
+                }
+              }}
+            >
+              <Button type="link" danger>
+                Eliminar
+              </Button>
+            </Popconfirm>
           )}
         </Space>
       ),

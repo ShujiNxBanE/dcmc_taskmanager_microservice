@@ -74,6 +74,22 @@ class TaskClientApi {
     return this.api.get<TaskSimpleDTO[]>(`/api/tasks/project/${projectId}/archived-tasks`);
   }
 
+  /**
+   * Archiva una tarea (solo OWNER o MODERATOR, y solo si está en estado DONE).
+   * @param taskId - ID de la tarea
+   */
+  public archiveTask(taskId: number): Promise<AxiosResponse<void>> {
+    return this.api.post(`/api/tasks/${taskId}/archive`);
+  }
+
+  /**
+   * Desarchiva una tarea (solo OWNER o MODERATOR).
+   * @param taskId - ID de la tarea
+   */
+  public unarchiveTask(taskId: number): Promise<AxiosResponse<void>> {
+    return this.api.post(`/api/tasks/${taskId}/unarchive`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
