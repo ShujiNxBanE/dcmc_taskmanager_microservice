@@ -33,4 +33,5 @@
   <include file="config/liquibase/changelog/20250624212924_add_is_hidden_to_priority.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250630212939_add_project_to_task.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20250630212940_add_is_active_to_task.xml" relativeToChangelogFile="false"/>
+  <include file="config/liquibase/changelog/20250630212941_add_parent_task__id_to_task.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

@@ -142,6 +142,17 @@ public class TaskResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PostMapping("/work-group/{groupId}/project/{projectId}/parent/{parentTaskId}/create-subtask")
+    public ResponseEntity<TaskDTO> createSubTask(
+        @PathVariable Long groupId,
+        @PathVariable Long projectId,
+        @PathVariable Long parentTaskId,
+        @RequestBody @Valid TaskCreateDTO dto
+    ) {
+        TaskDTO result = taskService.createSubTask(groupId, projectId, parentTaskId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
     @PostMapping("/{taskId}/update")
     public ResponseEntity<TaskDTO> updateTask(
         @PathVariable Long taskId,
@@ -182,4 +193,9 @@ public class TaskResource {
         return taskService.getArchivedTasksByWorkGroup(groupId);
     }
 
+    @GetMapping("/{taskId}/subtasks")
+    public ResponseEntity<List<TaskDTO>> getSubTasks(@PathVariable Long taskId) {
+        List<TaskDTO> subTasks = taskService.getSubTasks(taskId);
+        return ResponseEntity.ok(subTasks);
+    }
 }

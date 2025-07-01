@@ -100,7 +100,30 @@ public class Task implements Serializable {
     @JsonIgnoreProperties(value = { "subTasks", "creator", "workGroup", "members" }, allowSetters = true)
     private Project parentProject;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_task_id")
+    private Task parentTask;
+
+    @OneToMany(mappedBy = "parentTask", fetch = FetchType.LAZY)
+    private Set<Task> subTasks = new HashSet<>();
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Set<Task> getSubTasks() {
+        return subTasks;
+    }
+
+    public void setSubTasks(Set<Task> subTasks) {
+        this.subTasks = subTasks;
+    }
+
+    public Task getParentTask() {
+        return parentTask;
+    }
+
+    public void setParentTask(Task parentTask) {
+        this.parentTask = parentTask;
+    }
 
     public Long getId() {
         return this.id;

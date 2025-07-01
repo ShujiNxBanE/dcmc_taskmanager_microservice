@@ -178,6 +178,50 @@ public class TaskService {
         return taskMapper.toDto(task);
     }
 
+    @Transactional
+    public TaskDTO createSubTask(Long groupId, Long projectId, Long parentTaskId, TaskCreateDTO dto) {
+        Task parentTask = taskRepository.findById(parentTaskId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent task not found"));
+
+        if (Boolean.TRUE.equals(parentTask.getArchived())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add subtask to an archived task");
+        }
+
+        Task subTask = new Task();
+        subTask.setTitle(dto.getTitle());
+        subTask.setDescription(dto.getDescription());
+        subTask.setPriority(dto.getPriority());
+        subTask.setStatus(dto.getStatus());
+        subTask.setArchived(false);
+        subTask.setActive(true);
+        subTask.setCreateTime(Instant.now());
+        subTask.setUpdateTime(Instant.now());
+
+        // Asignar creador actual
+        String currentUserLogin = securityUtilsService.getCurrentUser();
+        User creator = userRepository.findOneByLogin(currentUserLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
+        subTask.setCreator(creator);
+
+        // Validaciones de grupo y proyecto
+        WorkGroup wg = workGroupRepository.findByIdAndIsActiveTrue(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkGroup not found or inactive"));
+        subTask.setWorkGroup(wg);
+
+        Project project = projectRepository.findByIdAndIsActiveTrue(projectId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found or inactive"));
+
+        if (!project.getWorkGroup().getId().equals(groupId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project does not belong to the specified WorkGroup");
+        }
+
+        subTask.setProject(project);
+        subTask.setParentTask(parentTask); // ← Relación de subtarea
+
+        subTask = taskRepository.save(subTask);
+        return taskMapper.toDto(subTask);
+    }
+
 
     public TaskDTO updateTask(Long taskId, TaskUpdateDTO dto) {
         // Buscar la tarea
@@ -341,5 +385,9 @@ public class TaskService {
         return taskMapper.toSimpleDto(archivedTasks);
     }
 
-
+    @Transactional(readOnly = true)
+    public List<TaskDTO> getSubTasks(Long parentTaskId) {
+        List<Task> subTasks = taskRepository.findByParentTask_Id(parentTaskId);
+        return taskMapper.toDto(subTasks);
+    }
 }
