@@ -90,6 +90,22 @@ class TaskClientApi {
     return this.api.post(`/api/tasks/${taskId}/unarchive`);
   }
 
+  /**
+   * Obtiene los detalles de una tarea específica.
+   * @param taskId - ID de la tarea
+   */
+  public getTaskDetails(taskId: number): Promise<AxiosResponse<TaskSimpleDTO>> {
+    return this.api.get<TaskSimpleDTO>(`/api/tasks/${taskId}`);
+  }
+
+  /**
+   * Obtiene las subtareas de una tarea específica.
+   * @param taskId - ID de la tarea padre
+   */
+  public getSubTasks(taskId: number): Promise<AxiosResponse<TaskSimpleDTO[]>> {
+    return this.api.get<TaskSimpleDTO[]>(`/api/tasks/${taskId}/subtasks`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

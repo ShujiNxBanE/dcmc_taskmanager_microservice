@@ -16,6 +16,9 @@ import GroupMembers from './modules/work-group/group-members';
 import Project from './modules/project';
 import ProjectDetails from './modules/project/project-details';
 import Priority from './modules/priority';
+import Task from './modules/task';
+import TaskDetails from './modules/task/task-details';
+import ArchivedTaskDetails from './modules/task/archived-task-details';
 
 const loading = <div>loading ...</div>;
 
@@ -84,6 +87,30 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
               <Priority />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="task"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <Task />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="task/:id"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <TaskDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="task/archived/:id"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <ArchivedTaskDetails />
             </PrivateRoute>
           }
         />

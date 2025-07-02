@@ -1,0 +1,217 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, Descriptions, Tag, Button, Table, Space, message, Spin, Popconfirm } from 'antd';
+import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
+import { TaskSimpleDTO } from 'app/rest/dto';
+import taskClientApi from 'app/rest/TaskClientApi';
+import { useAppSelector } from 'app/config/store';
+import { AUTHORITIES } from 'app/config/constants';
+import EditTaskModal from './edit-task-modal';
+
+const TaskDetails = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [task, setTask] = useState<TaskSimpleDTO | null>(null);
+  const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [subTasksLoading, setSubTasksLoading] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const currentUser = useAppSelector(state => state.authentication.account?.login);
+  const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
+  const isOwnerOrModerator = authorities.includes(AUTHORITIES.OWNER) || authorities.includes(AUTHORITIES.MODERATOR);
+
+  useEffect(() => {
+    if (id) {
+      loadTaskDetails();
+      loadSubTasks();
+    }
+  }, [id]);
+
+  const loadTaskDetails = async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const response = await taskClientApi.getTaskDetails(parseInt(id, 10));
+      setTask(response.data);
+    } catch (error: any) {
+      message.error('Error al cargar los detalles de la tarea');
+      console.error('Error loading task details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSubTasks = async () => {
+    if (!id) return;
+    setSubTasksLoading(true);
+    try {
+      const response = await taskClientApi.getSubTasks(parseInt(id, 10));
+      setSubTasks(response.data);
+    } catch (error: any) {
+      message.error('Error al cargar las subtareas');
+      console.error('Error loading subtasks:', error);
+    } finally {
+      setSubTasksLoading(false);
+    }
+  };
+
+  const handleSuccess = () => {
+    loadTaskDetails();
+    loadSubTasks();
+  };
+
+  const handleArchive = async () => {
+    if (!task?.id) return;
+    try {
+      await taskClientApi.archiveTask(task.id);
+      message.success('Tarea archivada correctamente');
+      navigate(-1);
+    } catch (error: any) {
+      message.error('Error al archivar la tarea');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!task?.id) return;
+    try {
+      await taskClientApi.deleteTask(task.id);
+      message.success('Tarea eliminada correctamente');
+      navigate(-1);
+    } catch (error: any) {
+      message.error('Error al eliminar la tarea');
+    }
+  };
+
+  const subTaskColumns = [
+    {
+      title: 'Título',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
+    },
+    {
+      title: 'Descripción',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text: string) => (
+        <div style={{ color: '#6b7280', maxWidth: 300 }}>{text && text.length > 100 ? `${text.substring(0, 100)}...` : text}</div>
+      ),
+    },
+    {
+      title: 'Prioridad',
+      dataIndex: 'priorityName',
+      key: 'priorityName',
+      render: (priority: string) => <Tag color="red">{priority}</Tag>,
+    },
+    {
+      title: 'Estado',
+      dataIndex: 'statusName',
+      key: 'statusName',
+      render: (status: string) => <Tag color="blue">{status}</Tag>,
+    },
+    {
+      title: 'Creador',
+      dataIndex: 'creatorLogin',
+      key: 'creatorLogin',
+      render: (login: string) => <Tag color="purple">@{login}</Tag>,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <h2>Tarea no encontrada</h2>
+        <Button type="primary" onClick={() => navigate(-1)}>
+          Volver
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} style={{ marginBottom: '16px' }}>
+          Volver
+        </Button>
+
+        <Card
+          title={
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Detalles de la Tarea</span>
+              <Space>
+                {task.creatorLogin === currentUser && (
+                  <Button type="primary" icon={<EditOutlined />} onClick={() => setEditModalOpen(true)}>
+                    Editar
+                  </Button>
+                )}
+                <Popconfirm title="¿Seguro que deseas archivar esta tarea?" okText="Sí" cancelText="No" onConfirm={handleArchive}>
+                  <Button icon={<InboxOutlined />} style={{ color: '#8e24aa' }}>
+                    Archivar
+                  </Button>
+                </Popconfirm>
+                {(task.creatorLogin === currentUser || isOwnerOrModerator) && (
+                  <Popconfirm title="¿Seguro que deseas eliminar esta tarea?" okText="Sí" cancelText="No" onConfirm={handleDelete}>
+                    <Button danger icon={<DeleteOutlined />}>
+                      Eliminar
+                    </Button>
+                  </Popconfirm>
+                )}
+              </Space>
+            </div>
+          }
+        >
+          <Descriptions bordered column={2}>
+            <Descriptions.Item label="Título" span={2}>
+              <strong>{task.title}</strong>
+            </Descriptions.Item>
+            <Descriptions.Item label="Descripción" span={2}>
+              {task.description || 'Sin descripción'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Prioridad">
+              <Tag color="red">{task.priorityName}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Estado">
+              <Tag color="blue">{task.statusName}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Creador">
+              <Tag color="purple">@{task.creatorLogin}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Fecha de Creación">
+              {task.createTime ? new Date(task.createTime).toLocaleString() : 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Última Actualización">
+              {task.updateTime ? new Date(task.updateTime).toLocaleString() : 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Archivada">
+              <Tag color={task.archived ? 'red' : 'green'}>{task.archived ? 'Sí' : 'No'}</Tag>
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+      </div>
+
+      <Card title={`Subtareas (${subTasks.length})`}>
+        <Table
+          columns={subTaskColumns}
+          dataSource={subTasks}
+          rowKey="id"
+          loading={subTasksLoading}
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'No hay subtareas para esta tarea' }}
+        />
+      </Card>
+
+      <EditTaskModal open={editModalOpen} onCancel={() => setEditModalOpen(false)} onSuccess={handleSuccess} task={task} />
+    </div>
+  );
+};
+
+export default TaskDetails;

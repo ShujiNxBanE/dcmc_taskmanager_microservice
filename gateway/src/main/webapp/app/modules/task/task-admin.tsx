@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Tabs, Table, Tag, Space, Button, Popconfirm, message, Select } from 'antd';
 import { TaskSimpleDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
-import { UserOutlined, CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { UserOutlined, CheckCircleOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import projectClientApi from 'app/rest/ProjectClientApi';
 import CreateTaskModal from './create-task-modal';
 import { useAppSelector } from 'app/config/store';
 import EditTaskModal from './edit-task-modal';
 import { AUTHORITIES } from 'app/config/constants';
+import { useNavigate } from 'react-router-dom';
 
 const TaskAdmin = () => {
+  const navigate = useNavigate();
   const [allTasks, setAllTasks] = useState<TaskSimpleDTO[]>([]);
   const [assignedTasks, setAssignedTasks] = useState<TaskSimpleDTO[]>([]);
   const [createdTasks, setCreatedTasks] = useState<TaskSimpleDTO[]>([]);
@@ -123,6 +125,19 @@ const TaskAdmin = () => {
       key: 'actions',
       render: (_: any, record: TaskSimpleDTO) => (
         <Space size="small">
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              if (record.archived) {
+                navigate(`/task/archived/${record.id}`);
+              } else {
+                navigate(`/task/${record.id}`);
+              }
+            }}
+          >
+            Ver detalles
+          </Button>
           {record.creatorLogin === currentUser && !record.archived && (
             <Button
               type="link"
@@ -181,27 +196,32 @@ const TaskAdmin = () => {
               </Button>
             </Popconfirm>
           )}
-          {((!record.archived && record.creatorLogin === currentUser) || (record.archived && isOwnerOrModerator)) && (
-            <Popconfirm
-              title="¿Seguro que deseas eliminar esta tarea?"
-              okText="Sí"
-              cancelText="No"
-              onConfirm={async () => {
-                if (!record.id) return message.error('ID de tarea no válido');
-                try {
-                  await taskClientApi.deleteTask(record.id);
-                  message.success('Tarea eliminada correctamente');
-                  handleSuccess();
-                } catch (err: any) {
-                  message.error(err.response?.data?.detail || err.message || 'Error al eliminar la tarea');
+          <Popconfirm
+            title="¿Seguro que deseas eliminar esta tarea?"
+            okText="Sí"
+            cancelText="No"
+            onConfirm={async () => {
+              if (!record.id) return message.error('ID de tarea no válido');
+              try {
+                await taskClientApi.deleteTask(record.id);
+                message.success('Tarea eliminada correctamente');
+                if (record.archived && selectedProjectId) {
+                  setArchivedLoading(true);
+                  taskClientApi
+                    .getArchivedTasksByProject(selectedProjectId)
+                    .then(r => setArchivedTasks(r.data))
+                    .finally(() => setArchivedLoading(false));
                 }
-              }}
-            >
-              <Button type="link" danger>
-                Eliminar
-              </Button>
-            </Popconfirm>
-          )}
+                handleSuccess();
+              } catch (err: any) {
+                message.error(err.response?.data?.detail || err.message || 'Error al eliminar la tarea');
+              }
+            }}
+          >
+            <Button type="link" danger>
+              Eliminar
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
