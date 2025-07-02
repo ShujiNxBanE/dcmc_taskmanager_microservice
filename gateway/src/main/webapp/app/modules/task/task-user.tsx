@@ -109,7 +109,7 @@ const TaskUser = () => {
       key: 'actions',
       render: (_: any, record: TaskSimpleDTO) => (
         <Space size="small">
-          {record.creatorLogin === currentUser && (
+          {record.creatorLogin === currentUser && !record.archived && (
             <Button
               type="link"
               onClick={() => {
