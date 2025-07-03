@@ -7,6 +7,7 @@ import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.service.dto.CommentDTO;
 import com.dcmc.apps.taskmanager.service.mapper.CommentMapper;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public class CommentService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
         comment.setAuthor(creator);
         comment.setTaskRef(null);
+        comment.setCreatedDate(Instant.now());
         Comment saved = commentRepository.save(comment);
         return commentMapper.toDto(saved);
     }
@@ -69,6 +71,11 @@ public class CommentService {
     public CommentDTO update(CommentDTO commentDTO) {
         LOG.debug("Request to update Comment : {}", commentDTO);
         Comment comment = commentMapper.toEntity(commentDTO);
+        comment.setCreatedDate(Instant.now());
+        String currentLogin = securityUtilsService.getCurrentUser();
+        User creator = userRepository.findOneByLogin(currentLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+        comment.setAuthor(creator);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }

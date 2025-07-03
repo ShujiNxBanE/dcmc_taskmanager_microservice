@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TaskSimpleDTO, TaskCreateDTO, TaskUpdateDTO, UserDTO } from './dto';
+import { TaskSimpleDTO, TaskCreateDTO, TaskUpdateDTO, UserDTO, TaskDetailsDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Task.
@@ -94,8 +94,8 @@ class TaskClientApi {
    * Obtiene los detalles de una tarea específica.
    * @param taskId - ID de la tarea
    */
-  public getTaskDetails(taskId: number): Promise<AxiosResponse<TaskSimpleDTO>> {
-    return this.api.get<TaskSimpleDTO>(`/api/tasks/${taskId}`);
+  public getTaskDetails(taskId: number): Promise<AxiosResponse<TaskDetailsDTO>> {
+    return this.api.get<TaskDetailsDTO>(`/api/tasks/${taskId}`);
   }
 
   /**

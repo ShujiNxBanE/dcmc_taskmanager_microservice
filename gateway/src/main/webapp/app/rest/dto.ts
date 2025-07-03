@@ -74,6 +74,21 @@ export interface TaskSimpleDTO {
   workGroupId?: number;
 }
 
+export interface TaskDetailsDTO {
+  id?: number;
+  title: string;
+  description?: string;
+  priorityName?: string;
+  statusName?: string;
+  createTime?: string;
+  updateTime?: string;
+  archived?: boolean;
+  creatorLogin?: string;
+  workGroupId?: number;
+  projectId?: number;
+  assignedTos?: UserDTO[];
+}
+
 export interface TaskCreateDTO {
   title: string;
   description?: string;
@@ -91,4 +106,13 @@ export interface TaskUpdateDTO {
   description?: string;
   priorityId: number;
   statusId: number;
+}
+
+export interface CommentDTO {
+  id?: number;
+  content: string;
+  createdDate?: string;
+  creatorLogin?: string;
+  projectId?: number;
+  taskId?: number;
 }

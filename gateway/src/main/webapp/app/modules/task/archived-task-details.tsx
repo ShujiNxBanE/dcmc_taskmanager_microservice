@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Spin, message } from 'antd';
 import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
-import { TaskSimpleDTO, UserDTO } from 'app/rest/dto';
+import { TaskSimpleDTO, TaskDetailsDTO, UserDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
+import CommentSectionReadonly from './comment-section-readonly';
 
 const ArchivedTaskDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [task, setTask] = useState<TaskSimpleDTO | null>(null);
+  const [task, setTask] = useState<TaskDetailsDTO | null>(null);
   const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
   const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,6 +196,8 @@ const ArchivedTaskDetails = () => {
           locale={{ emptyText: 'No hay usuarios asignados a esta tarea' }}
         />
       </Card>
+
+      <CommentSectionReadonly taskId={task?.id || 0} />
     </div>
   );
 };

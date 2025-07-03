@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Space, message, Spin, Popconfirm } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
-import { TaskSimpleDTO, UserDTO } from 'app/rest/dto';
+import { TaskSimpleDTO, TaskDetailsDTO, UserDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 import projectClientApi from 'app/rest/ProjectClientApi';
 import { useAppSelector } from 'app/config/store';
 import AssignUsersModal from './assign-users-modal';
+import CommentSection from './comment-section';
 
 const SubTaskDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [task, setTask] = useState<TaskSimpleDTO | null>(null);
+  const [task, setTask] = useState<TaskDetailsDTO | null>(null);
   const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
   const [projectId, setProjectId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,6 +210,13 @@ const SubTaskDetails = () => {
         workGroupId={task?.workGroupId || 0}
         projectId={projectId || 0}
         currentAssignedUsers={assignedUsers}
+      />
+
+      <CommentSection
+        taskId={task?.id || 0}
+        projectId={task?.projectId || 0}
+        workGroupId={task?.workGroupId || 0}
+        onSuccess={handleSuccess}
       />
     </div>
   );

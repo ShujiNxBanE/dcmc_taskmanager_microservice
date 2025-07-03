@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Space, message, Spin, Popconfirm } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, InboxOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
-import { TaskSimpleDTO, UserDTO } from 'app/rest/dto';
+import { TaskSimpleDTO, TaskDetailsDTO, UserDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 import projectClientApi from 'app/rest/ProjectClientApi';
 import { useAppSelector } from 'app/config/store';
@@ -10,11 +10,12 @@ import { AUTHORITIES } from 'app/config/constants';
 import EditTaskModal from './edit-task-modal';
 import AssignUsersModal from './assign-users-modal';
 import CreateSubTaskModal from './create-subtask-modal';
+import CommentSection from './comment-section';
 
 const TaskDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [task, setTask] = useState<TaskSimpleDTO | null>(null);
+  const [task, setTask] = useState<TaskDetailsDTO | null>(null);
   const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
   const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
   const [projectId, setProjectId] = useState<number | null>(null);
@@ -382,6 +383,13 @@ const TaskDetails = () => {
           locale={{ emptyText: 'No hay usuarios asignados a esta tarea' }}
         />
       </Card>
+
+      <CommentSection
+        taskId={task?.id || 0}
+        projectId={task?.projectId || 0}
+        workGroupId={task?.workGroupId || 0}
+        onSuccess={handleSuccess}
+      />
 
       <EditTaskModal open={editModalOpen} onCancel={() => setEditModalOpen(false)} onSuccess={handleSuccess} task={task} />
 
