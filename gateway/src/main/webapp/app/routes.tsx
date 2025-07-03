@@ -19,6 +19,7 @@ import Priority from './modules/priority';
 import Task from './modules/task';
 import TaskDetails from './modules/task/task-details';
 import ArchivedTaskDetails from './modules/task/archived-task-details';
+import SubTaskDetails from './modules/task/subtask-details';
 
 const loading = <div>loading ...</div>;
 
@@ -111,6 +112,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
               <ArchivedTaskDetails />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="task/subtask/:id"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.USER]}>
+              <SubTaskDetails />
             </PrivateRoute>
           }
         />

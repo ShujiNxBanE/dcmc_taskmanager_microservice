@@ -169,6 +169,9 @@ const TaskDetails = () => {
           >
             Editar
           </Button>
+          <Button type="link" onClick={() => navigate(`/task/subtask/${record.id}`)}>
+            Ver detalles
+          </Button>
           <Popconfirm
             title="¿Seguro que deseas eliminar esta subtarea?"
             okText="Sí"
