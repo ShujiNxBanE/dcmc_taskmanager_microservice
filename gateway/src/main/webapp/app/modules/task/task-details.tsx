@@ -24,6 +24,8 @@ const TaskDetails = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [assignUsersModalOpen, setAssignUsersModalOpen] = useState(false);
   const [createSubTaskModalOpen, setCreateSubTaskModalOpen] = useState(false);
+  const [editSubTaskModalOpen, setEditSubTaskModalOpen] = useState(false);
+  const [editSubTask, setEditSubTask] = useState<TaskSimpleDTO | null>(null);
   const currentUser = useAppSelector(state => state.authentication.account?.login);
   const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
   const isOwnerOrModerator = authorities.includes(AUTHORITIES.OWNER) || authorities.includes(AUTHORITIES.MODERATOR);
@@ -152,6 +154,61 @@ const TaskDetails = () => {
       dataIndex: 'creatorLogin',
       key: 'creatorLogin',
       render: (login: string) => <Tag color="purple">@{login}</Tag>,
+    },
+    {
+      title: 'Acciones',
+      key: 'acciones',
+      render: (_: any, record: TaskSimpleDTO) => (
+        <Space>
+          <Button
+            type="link"
+            onClick={() => {
+              setEditSubTask(record);
+              setEditSubTaskModalOpen(true);
+            }}
+          >
+            Editar
+          </Button>
+          <Popconfirm
+            title="¿Seguro que deseas eliminar esta subtarea?"
+            okText="Sí"
+            cancelText="No"
+            onConfirm={async () => {
+              if (!record.id) return message.error('ID de subtarea no válido');
+              try {
+                await taskClientApi.deleteTask(record.id);
+                message.success('Subtarea eliminada correctamente');
+                handleSuccess();
+              } catch (err: any) {
+                message.error(err.response?.data?.detail || err.message || 'Error al eliminar la subtarea');
+              }
+            }}
+          >
+            <Button type="link" danger>
+              Eliminar
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title="¿Seguro que deseas archivar esta subtarea?"
+            okText="Sí"
+            cancelText="No"
+            onConfirm={async () => {
+              if (!record.id) return message.error('ID de subtarea no válido');
+              try {
+                await taskClientApi.archiveTask(record.id);
+                message.success('Subtarea archivada correctamente');
+                handleSuccess();
+              } catch (err: any) {
+                message.error(err.response?.data?.detail || err.message || 'Error al archivar la subtarea');
+              }
+            }}
+          >
+            <Button type="link" style={{ color: '#8e24aa' }}>
+              Archivar
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
@@ -317,6 +374,13 @@ const TaskDetails = () => {
         projectId={projectId || 0}
         workGroupId={task?.workGroupId || 0}
         parentTaskId={task?.id || 0}
+      />
+
+      <EditTaskModal
+        open={editSubTaskModalOpen}
+        onCancel={() => setEditSubTaskModalOpen(false)}
+        onSuccess={handleSuccess}
+        task={editSubTask}
       />
     </div>
   );

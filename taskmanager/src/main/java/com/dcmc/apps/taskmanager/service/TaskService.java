@@ -329,7 +329,6 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-
     @Transactional
     public void assignUsersToTask(Long groupId, TaskAssignmentDTO dto) {
         Task task = taskRepository.findById(dto.getTaskId())
