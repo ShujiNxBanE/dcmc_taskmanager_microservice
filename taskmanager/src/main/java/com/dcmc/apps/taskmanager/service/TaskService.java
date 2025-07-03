@@ -130,12 +130,11 @@ public class TaskService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Optional<TaskSimpleDTO> findOne(Long id) {
+    public Optional<TaskDetailsDTO> findOne(Long id) {
         return taskRepository.findById(id)
             .filter(task -> Boolean.TRUE.equals(task.getActive())) // opcional: solo activos
-            .map(taskMapper::toSimpleDto);
+            .map(taskMapper::toDetailsDto); // ahora usamos el nuevo DTO
     }
-
 
     /**
      * Delete the task by id.

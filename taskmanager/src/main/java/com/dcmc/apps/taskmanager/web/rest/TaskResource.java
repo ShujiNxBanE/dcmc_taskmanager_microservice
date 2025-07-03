@@ -108,12 +108,11 @@ public class TaskResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the taskDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskSimpleDTO> getTaskSimple(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get simple Task : {}", id);
-        Optional<TaskSimpleDTO> dto = taskService.findOne(id);
+    public ResponseEntity<TaskDetailsDTO> getTaskDetails(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get detailed Task : {}", id);
+        Optional<TaskDetailsDTO> dto = taskService.findOne(id);
         return ResponseUtil.wrapOrNotFound(dto);
     }
-
 
     @GetMapping("/work-group/{workGroupId}/tasks")
     public ResponseEntity<List<TaskSimpleDTO>> getTasksByWorkGroup(@PathVariable Long workGroupId) {

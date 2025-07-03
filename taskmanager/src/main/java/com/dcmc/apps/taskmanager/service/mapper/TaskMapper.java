@@ -42,6 +42,13 @@ public interface TaskMapper extends EntityMapper<TaskDTO, Task> {
 
     List<TaskSimpleDTO> toSimpleDto(List<Task> tasks);
 
+    @Mapping(target = "creatorLogin", source = "creator.login")
+    @Mapping(target = "workGroup", source = "workGroup", qualifiedByName = "workGroupName")
+    @Mapping(target = "assignedTos", source = "assignedTos", qualifiedByName = "userLoginSet")
+    @Mapping(target = "projectId", source = "project.id")
+    @Mapping(target = "priorityName", source = "priorityEntity.name")
+    @Mapping(target = "statusName", source = "statusEntity.name")
+    TaskDetailsDTO toDetailsDto(Task task);
 
     @Named("userLoginSet")
     default Set<UserDTO> toDtoUserLoginSet(Set<User> user) {
