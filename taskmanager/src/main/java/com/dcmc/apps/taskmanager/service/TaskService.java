@@ -377,6 +377,22 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAssignedUsers(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        Set<User> assignedUsers = task.getAssignedTos();
+        return assignedUsers.stream()
+            .map(user -> {
+                UserDTO dto = new UserDTO();
+                dto.setId(user.getId());
+                dto.setLogin(user.getLogin());
+                return dto;
+            })
+            .collect(Collectors.toList());
+    }
+
     @Transactional
     public void archiveTask(Long taskId) {
         Task task = taskRepository.findById(taskId)

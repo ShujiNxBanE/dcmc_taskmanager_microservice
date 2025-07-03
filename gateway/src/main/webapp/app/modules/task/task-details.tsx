@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Space, message, Spin, Popconfirm } from 'antd';
-import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
-import { TaskSimpleDTO } from 'app/rest/dto';
+import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, InboxOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { TaskSimpleDTO, UserDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
+import projectClientApi from 'app/rest/ProjectClientApi';
 import { useAppSelector } from 'app/config/store';
 import { AUTHORITIES } from 'app/config/constants';
 import EditTaskModal from './edit-task-modal';
+import AssignUsersModal from './assign-users-modal';
 
 const TaskDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [task, setTask] = useState<TaskSimpleDTO | null>(null);
   const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
+  const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
+  const [projectId, setProjectId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [subTasksLoading, setSubTasksLoading] = useState(false);
+  const [assignedUsersLoading, setAssignedUsersLoading] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [assignUsersModalOpen, setAssignUsersModalOpen] = useState(false);
   const currentUser = useAppSelector(state => state.authentication.account?.login);
   const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
   const isOwnerOrModerator = authorities.includes(AUTHORITIES.OWNER) || authorities.includes(AUTHORITIES.MODERATOR);
@@ -24,6 +30,8 @@ const TaskDetails = () => {
     if (id) {
       loadTaskDetails();
       loadSubTasks();
+      loadAssignedUsers();
+      loadProjectId();
     }
   }, [id]);
 
@@ -55,9 +63,37 @@ const TaskDetails = () => {
     }
   };
 
+  const loadAssignedUsers = async () => {
+    if (!id) return;
+    setAssignedUsersLoading(true);
+    try {
+      const response = await taskClientApi.getAssignedUsers(parseInt(id, 10));
+      setAssignedUsers(response.data);
+    } catch (error: any) {
+      message.error('Error al cargar los usuarios asignados');
+      console.error('Error loading assigned users:', error);
+    } finally {
+      setAssignedUsersLoading(false);
+    }
+  };
+
+  const loadProjectId = async () => {
+    try {
+      const response = await projectClientApi.getAssignedProjects();
+      // Asumimos que la tarea pertenece al primer proyecto asignado
+      // En un caso real, necesitarías obtener el proyecto específico de la tarea
+      if (response.data.length > 0) {
+        setProjectId(response.data[0].id);
+      }
+    } catch (error: any) {
+      console.error('Error loading project ID:', error);
+    }
+  };
+
   const handleSuccess = () => {
     loadTaskDetails();
     loadSubTasks();
+    loadAssignedUsers();
   };
 
   const handleArchive = async () => {
@@ -209,7 +245,59 @@ const TaskDetails = () => {
         />
       </Card>
 
+      <Card
+        title={`Usuarios Asignados (${assignedUsers.length})`}
+        style={{ marginTop: '16px' }}
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setAssignUsersModalOpen(true)}
+            disabled={!projectId || !task?.workGroupId}
+          >
+            Asignar Usuarios
+          </Button>
+        }
+      >
+        <Table
+          columns={[
+            {
+              title: 'Usuario',
+              dataIndex: 'login',
+              key: 'login',
+              render: (login: string) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <UserOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+                  <span style={{ fontWeight: 500 }}>@{login}</span>
+                </div>
+              ),
+            },
+            {
+              title: 'ID',
+              dataIndex: 'id',
+              key: 'id',
+              render: (userId: number) => <Tag color="blue">{userId}</Tag>,
+            },
+          ]}
+          dataSource={assignedUsers}
+          rowKey="id"
+          loading={assignedUsersLoading}
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'No hay usuarios asignados a esta tarea' }}
+        />
+      </Card>
+
       <EditTaskModal open={editModalOpen} onCancel={() => setEditModalOpen(false)} onSuccess={handleSuccess} task={task} />
+
+      <AssignUsersModal
+        open={assignUsersModalOpen}
+        onCancel={() => setAssignUsersModalOpen(false)}
+        onSuccess={handleSuccess}
+        taskId={task?.id || 0}
+        workGroupId={task?.workGroupId || 0}
+        projectId={projectId || 0}
+        currentAssignedUsers={assignedUsers}
+      />
     </div>
   );
 };

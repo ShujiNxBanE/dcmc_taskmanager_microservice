@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TaskSimpleDTO, TaskCreateDTO, TaskUpdateDTO } from './dto';
+import { TaskSimpleDTO, TaskCreateDTO, TaskUpdateDTO, UserDTO } from './dto';
 
 /**
  * Servicio para interactuar con la API de Task.
@@ -104,6 +104,27 @@ class TaskClientApi {
    */
   public getSubTasks(taskId: number): Promise<AxiosResponse<TaskSimpleDTO[]>> {
     return this.api.get<TaskSimpleDTO[]>(`/api/tasks/${taskId}/subtasks`);
+  }
+
+  /**
+   * Obtiene los usuarios asignados a una tarea específica.
+   * @param taskId - ID de la tarea
+   */
+  public getAssignedUsers(taskId: number): Promise<AxiosResponse<UserDTO[]>> {
+    return this.api.get<UserDTO[]>(`/api/tasks/${taskId}/assigned-users`);
+  }
+
+  /**
+   * Asigna usuarios a una tarea en un grupo específico.
+   * @param groupId - ID del grupo de trabajo
+   * @param taskId - ID de la tarea
+   * @param userIds - Array de IDs de usuarios a asignar
+   */
+  public assignUsersToTask(groupId: number, taskId: number, userIds: string[]): Promise<AxiosResponse<void>> {
+    return this.api.post(`/api/tasks/group/${groupId}/assign-member`, {
+      taskId,
+      userIds,
+    });
   }
 
   // Aquí puedes añadir más métodos en el futuro

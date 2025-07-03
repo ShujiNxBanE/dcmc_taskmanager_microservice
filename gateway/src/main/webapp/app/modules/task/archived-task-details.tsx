@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Tag, Button, Table, Spin, message } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { TaskSimpleDTO } from 'app/rest/dto';
+import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
+import { TaskSimpleDTO, UserDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 
 const ArchivedTaskDetails = () => {
@@ -10,13 +10,16 @@ const ArchivedTaskDetails = () => {
   const navigate = useNavigate();
   const [task, setTask] = useState<TaskSimpleDTO | null>(null);
   const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
+  const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [subTasksLoading, setSubTasksLoading] = useState(false);
+  const [assignedUsersLoading, setAssignedUsersLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadTaskDetails();
       loadSubTasks();
+      loadAssignedUsers();
     }
   }, [id]);
 
@@ -45,6 +48,20 @@ const ArchivedTaskDetails = () => {
       console.error('Error loading subtasks:', error);
     } finally {
       setSubTasksLoading(false);
+    }
+  };
+
+  const loadAssignedUsers = async () => {
+    if (!id) return;
+    setAssignedUsersLoading(true);
+    try {
+      const response = await taskClientApi.getAssignedUsers(parseInt(id, 10));
+      setAssignedUsers(response.data);
+    } catch (error: any) {
+      message.error('Error al cargar los usuarios asignados');
+      console.error('Error loading assigned users:', error);
+    } finally {
+      setAssignedUsersLoading(false);
     }
   };
 
@@ -147,6 +164,35 @@ const ArchivedTaskDetails = () => {
           loading={subTasksLoading}
           pagination={{ pageSize: 10 }}
           locale={{ emptyText: 'No hay subtareas para esta tarea' }}
+        />
+      </Card>
+
+      <Card title={`Usuarios Asignados (${assignedUsers.length})`} style={{ marginTop: '16px' }}>
+        <Table
+          columns={[
+            {
+              title: 'Usuario',
+              dataIndex: 'login',
+              key: 'login',
+              render: (login: string) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <UserOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+                  <span style={{ fontWeight: 500 }}>@{login}</span>
+                </div>
+              ),
+            },
+            {
+              title: 'ID',
+              dataIndex: 'id',
+              key: 'id',
+              render: (userId: number) => <Tag color="blue">{userId}</Tag>,
+            },
+          ]}
+          dataSource={assignedUsers}
+          rowKey="id"
+          loading={assignedUsersLoading}
+          pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'No hay usuarios asignados a esta tarea' }}
         />
       </Card>
     </div>

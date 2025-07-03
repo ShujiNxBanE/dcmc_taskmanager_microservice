@@ -183,6 +183,12 @@ public class TaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{taskId}/assigned-users")
+    public ResponseEntity<List<UserDTO>> getAssignedUsers(@PathVariable Long taskId) {
+        List<UserDTO> users = taskService.getAssignedUsers(taskId);
+        return ResponseEntity.ok(users);
+    }
+
     @PostMapping("/{id}/archive")
     public ResponseEntity<Void> archiveTask(@PathVariable Long id) {
         taskService.archiveTask(id);
