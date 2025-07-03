@@ -15,11 +15,14 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface CommentMapper extends EntityMapper<CommentDTO, Comment> {
-    @Mapping(target = "author", source = "author", qualifiedByName = "userLogin")
-    @Mapping(target = "task", source = "task", qualifiedByName = "taskTitle")
-    @Mapping(target = "project", source = "project", qualifiedByName = "projectTitle")
-    @Mapping(target = "taskRef", source = "taskRef", qualifiedByName = "taskId")
-    CommentDTO toDto(Comment s);
+    @Mapping(target = "creatorLogin", source = "author.login")
+    @Mapping(target = "projectId", source = "project.id")
+    @Mapping(target = "taskId", source = "task.id")
+    CommentDTO toDto(Comment comment);
+
+    @Mapping(target = "project.id", source = "projectId")       // opcional
+    @Mapping(target = "task.id", source = "taskId")             // opcional
+    Comment toEntity(CommentDTO dto);
 
     @Named("userLogin")
     @BeanMapping(ignoreByDefault = true)

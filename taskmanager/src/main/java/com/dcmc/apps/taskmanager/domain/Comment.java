@@ -22,7 +22,6 @@ public class Comment implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Lob
     @Column(name = "content", nullable = false)
     private String content;
 

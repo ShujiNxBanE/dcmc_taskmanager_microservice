@@ -185,4 +185,10 @@ public class CommentResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @GetMapping("/by-task/{taskId}")
+    public ResponseEntity<List<CommentDTO>> getCommentsByTask(@PathVariable Long taskId) {
+        List<CommentDTO> comments = commentService.findAllByTaskId(taskId);
+        return ResponseEntity.ok(comments);
+    }
 }

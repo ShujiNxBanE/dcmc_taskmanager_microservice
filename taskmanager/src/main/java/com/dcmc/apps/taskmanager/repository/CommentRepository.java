@@ -44,4 +44,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         "select comment from Comment comment left join fetch comment.author left join fetch comment.task left join fetch comment.project where comment.id =:id"
     )
     Optional<Comment> findOneWithToOneRelationships(@Param("id") Long id);
+
+    List<Comment> findAllByTask_IdOrderByCreatedDateAsc(Long taskId);
 }

@@ -1,16 +1,22 @@
 package com.dcmc.apps.taskmanager.service;
 
 import com.dcmc.apps.taskmanager.domain.Comment;
+import com.dcmc.apps.taskmanager.domain.User;
 import com.dcmc.apps.taskmanager.repository.CommentRepository;
+import com.dcmc.apps.taskmanager.repository.UserRepository;
 import com.dcmc.apps.taskmanager.service.dto.CommentDTO;
 import com.dcmc.apps.taskmanager.service.mapper.CommentMapper;
+
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service Implementation for managing {@link com.dcmc.apps.taskmanager.domain.Comment}.
@@ -25,9 +31,15 @@ public class CommentService {
 
     private final CommentMapper commentMapper;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper) {
+    private final SecurityUtilsService securityUtilsService;
+    private final UserRepository userRepository;
+
+    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper,
+                          SecurityUtilsService securityUtilsService, UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
+        this.securityUtilsService = securityUtilsService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -39,8 +51,13 @@ public class CommentService {
     public CommentDTO save(CommentDTO commentDTO) {
         LOG.debug("Request to save Comment : {}", commentDTO);
         Comment comment = commentMapper.toEntity(commentDTO);
-        comment = commentRepository.save(comment);
-        return commentMapper.toDto(comment);
+        String currentLogin = securityUtilsService.getCurrentUser();
+        User creator = userRepository.findOneByLogin(currentLogin)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user not found"));
+        comment.setAuthor(creator);
+        comment.setTaskRef(null);
+        Comment saved = commentRepository.save(comment);
+        return commentMapper.toDto(saved);
     }
 
     /**
@@ -117,5 +134,12 @@ public class CommentService {
     public void delete(Long id) {
         LOG.debug("Request to delete Comment : {}", id);
         commentRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentDTO> findAllByTaskId(Long taskId) {
+        LOG.debug("Request to get all Comments for Task ID: {}", taskId);
+        List<Comment> comments = commentRepository.findAllByTask_IdOrderByCreatedDateAsc(taskId);
+        return comments.stream().map(commentMapper::toDto).toList();
     }
 }

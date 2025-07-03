@@ -1,32 +1,20 @@
 package com.dcmc.apps.taskmanager.service.dto;
 
-import jakarta.persistence.Lob;
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * A DTO for the {@link com.dcmc.apps.taskmanager.domain.Comment} entity.
- */
-@SuppressWarnings("common-java:DuplicatedBlocks")
 public class CommentDTO implements Serializable {
 
     private Long id;
-
-    @Lob
     private String content;
-
-    @NotNull
     private Instant createdDate;
 
-    private UserDTO author;
+    private String creatorLogin; // Solo el login del autor
+    private Long projectId;      // Solo el ID del proyecto
+    private Long taskId;         // Solo el ID de la tarea
 
-    private TaskDTO task;
-
-    private ProjectDTO project;
-
-    private TaskDTO taskRef;
+    // Getters y setters
 
     public Long getId() {
         return id;
@@ -52,70 +40,40 @@ public class CommentDTO implements Serializable {
         this.createdDate = createdDate;
     }
 
-    public UserDTO getAuthor() {
-        return author;
+    public String getCreatorLogin() {
+        return creatorLogin;
     }
 
-    public void setAuthor(UserDTO author) {
-        this.author = author;
+    public void setCreatorLogin(String creatorLogin) {
+        this.creatorLogin = creatorLogin;
     }
 
-    public TaskDTO getTask() {
-        return task;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setTask(TaskDTO task) {
-        this.task = task;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
-    public ProjectDTO getProject() {
-        return project;
+    public Long getTaskId() {
+        return taskId;
     }
 
-    public void setProject(ProjectDTO project) {
-        this.project = project;
-    }
-
-    public TaskDTO getTaskRef() {
-        return taskRef;
-    }
-
-    public void setTaskRef(TaskDTO taskRef) {
-        this.taskRef = taskRef;
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof CommentDTO)) {
-            return false;
-        }
-
-        CommentDTO commentDTO = (CommentDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, commentDTO.id);
+        if (this == o) return true;
+        if (!(o instanceof CommentDTO)) return false;
+        CommentDTO that = (CommentDTO) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id);
-    }
-
-    // prettier-ignore
-    @Override
-    public String toString() {
-        return "CommentDTO{" +
-            "id=" + getId() +
-            ", content='" + getContent() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            ", author=" + getAuthor() +
-            ", task=" + getTask() +
-            ", project=" + getProject() +
-            ", taskRef=" + getTaskRef() +
-            "}";
+        return Objects.hash(id);
     }
 }
