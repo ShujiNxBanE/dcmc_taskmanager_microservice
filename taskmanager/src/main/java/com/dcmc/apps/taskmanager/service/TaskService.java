@@ -375,6 +375,53 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    @Transactional
+    public void unassignUsersFromTask(Long groupId, TaskAssignmentDTO dto) {
+        Task task = taskRepository.findById(dto.getTaskId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        // Verificar que los usuarios pertenezcan al grupo
+        List<WorkGroupMembership> memberships = workGroupMembershipRepository
+            .findByWorkGroup_IdAndIsInGroupTrue(groupId);
+
+        Set<String> validUserIds = memberships.stream()
+            .map(m -> m.getUser().getId())
+            .collect(Collectors.toSet());
+
+        for (String id : dto.getUserIds()) {
+            if (!validUserIds.contains(id)) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "User with ID " + id + " is not a member of the group"
+                );
+            }
+        }
+
+        // Obtener usuarios a desasignar
+        Set<User> usersToRemove = new HashSet<>(userRepository.findAllById(dto.getUserIds()));
+
+        if (usersToRemove.size() != dto.getUserIds().size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Some user IDs do not exist");
+        }
+
+        Set<User> currentUsers = task.getAssignedTos();
+
+        for (User user : usersToRemove) {
+            if (!currentUsers.contains(user)) {
+                throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User with ID " + user.getId() + " is not assigned to the task"
+                );
+            }
+        }
+
+        // Desasignar usuarios
+        currentUsers.removeAll(usersToRemove);
+        task.setUpdateTime(Instant.now());
+        taskRepository.save(task);
+    }
+
+
     @Transactional(readOnly = true)
     public List<UserDTO> getAssignedUsers(Long taskId) {
         Task task = taskRepository.findById(taskId)

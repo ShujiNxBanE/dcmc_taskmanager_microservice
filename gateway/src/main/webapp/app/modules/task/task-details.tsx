@@ -346,6 +346,31 @@ const TaskDetails = () => {
               key: 'id',
               render: (userId: number) => <Tag color="blue">{userId}</Tag>,
             },
+            {
+              title: 'Acciones',
+              key: 'acciones',
+              render: (_: any, record: UserDTO) => (
+                <Popconfirm
+                  title="¿Seguro que deseas desasignar este usuario de la tarea?"
+                  okText="Sí"
+                  cancelText="No"
+                  onConfirm={async () => {
+                    if (!task?.workGroupId || !task?.id) return message.error('Faltan datos de la tarea');
+                    try {
+                      await taskClientApi.unassignUsersFromTask(task.workGroupId, task.id, [record.id.toString()]);
+                      message.success('Usuario desasignado correctamente');
+                      handleSuccess();
+                    } catch (err: any) {
+                      message.error(err.response?.data?.detail || err.message || 'Error al desasignar el usuario');
+                    }
+                  }}
+                >
+                  <Button type="link" danger>
+                    Desasignar
+                  </Button>
+                </Popconfirm>
+              ),
+            },
           ]}
           dataSource={assignedUsers}
           rowKey="id"

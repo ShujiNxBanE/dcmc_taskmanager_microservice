@@ -182,6 +182,15 @@ public class TaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/groups/{groupId}/tasks/unassign")
+    public ResponseEntity<Void> unassignUsersFromTask(
+        @PathVariable Long groupId,
+        @RequestBody TaskAssignmentDTO dto
+    ) {
+        taskService.unassignUsersFromTask(groupId, dto);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{taskId}/assigned-users")
     public ResponseEntity<List<UserDTO>> getAssignedUsers(@PathVariable Long taskId) {
         List<UserDTO> users = taskService.getAssignedUsers(taskId);

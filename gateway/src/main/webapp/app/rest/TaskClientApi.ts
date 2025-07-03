@@ -134,6 +134,21 @@ class TaskClientApi {
     return this.api.post(`/api/tasks/work-group/${groupId}/project/${projectId}/parent/${parentTaskId}/create-subtask`, data);
   }
 
+  /**
+   * Desasigna usuarios de una tarea en un grupo específico.
+   * @param groupId - ID del grupo de trabajo
+   * @param taskId - ID de la tarea
+   * @param userIds - Array de IDs de usuarios a desasignar
+   */
+  public unassignUsersFromTask(groupId: number, taskId: number, userIds: string[]): Promise<AxiosResponse<void>> {
+    return this.api.delete(`/api/tasks/groups/${groupId}/tasks/unassign`, {
+      data: {
+        taskId,
+        userIds,
+      },
+    });
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
