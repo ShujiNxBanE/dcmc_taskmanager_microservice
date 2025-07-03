@@ -127,6 +127,13 @@ class TaskClientApi {
     });
   }
 
+  /**
+   * Crea una subtarea en un grupo, proyecto y tarea padre específicos.
+   */
+  public createSubTask(groupId: number, projectId: number, parentTaskId: number, data: TaskCreateDTO): Promise<AxiosResponse<any>> {
+    return this.api.post(`/api/tasks/work-group/${groupId}/project/${projectId}/parent/${parentTaskId}/create-subtask`, data);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

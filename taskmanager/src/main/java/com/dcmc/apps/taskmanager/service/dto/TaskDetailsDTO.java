@@ -20,9 +20,9 @@ public class TaskDetailsDTO implements Serializable {
 
     private Boolean archived;
 
-    private String creatorLogin; // Reemplazo de UserDTO
+    private String creatorLogin; // Solo login del creador
 
-    private WorkGroupDTO workGroup;
+    private Long workGroupId; // Solo id del grupo
 
     private Set<UserDTO> assignedTos = new HashSet<>();
 
@@ -90,12 +90,12 @@ public class TaskDetailsDTO implements Serializable {
         this.creatorLogin = creatorLogin;
     }
 
-    public WorkGroupDTO getWorkGroup() {
-        return workGroup;
+    public Long getWorkGroupId() {
+        return workGroupId;
     }
 
-    public void setWorkGroup(WorkGroupDTO workGroup) {
-        this.workGroup = workGroup;
+    public void setWorkGroupId(Long workGroupId) {
+        this.workGroupId = workGroupId;
     }
 
     public Set<UserDTO> getAssignedTos() {

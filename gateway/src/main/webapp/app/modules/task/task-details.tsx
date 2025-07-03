@@ -9,6 +9,7 @@ import { useAppSelector } from 'app/config/store';
 import { AUTHORITIES } from 'app/config/constants';
 import EditTaskModal from './edit-task-modal';
 import AssignUsersModal from './assign-users-modal';
+import CreateSubTaskModal from './create-subtask-modal';
 
 const TaskDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ const TaskDetails = () => {
   const [assignedUsersLoading, setAssignedUsersLoading] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [assignUsersModalOpen, setAssignUsersModalOpen] = useState(false);
+  const [createSubTaskModalOpen, setCreateSubTaskModalOpen] = useState(false);
   const currentUser = useAppSelector(state => state.authentication.account?.login);
   const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
   const isOwnerOrModerator = authorities.includes(AUTHORITIES.OWNER) || authorities.includes(AUTHORITIES.MODERATOR);
@@ -234,7 +236,16 @@ const TaskDetails = () => {
         </Card>
       </div>
 
-      <Card title={`Subtareas (${subTasks.length})`}>
+      <Card
+        title={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Subtareas ({subTasks.length})</span>
+            <Button type="primary" onClick={() => setCreateSubTaskModalOpen(true)}>
+              Crear Subtarea
+            </Button>
+          </div>
+        }
+      >
         <Table
           columns={subTaskColumns}
           dataSource={subTasks}
@@ -297,6 +308,15 @@ const TaskDetails = () => {
         workGroupId={task?.workGroupId || 0}
         projectId={projectId || 0}
         currentAssignedUsers={assignedUsers}
+      />
+
+      <CreateSubTaskModal
+        open={createSubTaskModalOpen}
+        onCancel={() => setCreateSubTaskModalOpen(false)}
+        onSuccess={handleSuccess}
+        projectId={projectId || 0}
+        workGroupId={task?.workGroupId || 0}
+        parentTaskId={task?.id || 0}
       />
     </div>
   );
