@@ -18,7 +18,6 @@ const TaskDetails = () => {
   const [task, setTask] = useState<TaskDetailsDTO | null>(null);
   const [subTasks, setSubTasks] = useState<TaskSimpleDTO[]>([]);
   const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
-  const [projectId, setProjectId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [subTasksLoading, setSubTasksLoading] = useState(false);
   const [assignedUsersLoading, setAssignedUsersLoading] = useState(false);
@@ -36,7 +35,6 @@ const TaskDetails = () => {
       loadTaskDetails();
       loadSubTasks();
       loadAssignedUsers();
-      loadProjectId();
     }
   }, [id]);
 
@@ -79,19 +77,6 @@ const TaskDetails = () => {
       console.error('Error loading assigned users:', error);
     } finally {
       setAssignedUsersLoading(false);
-    }
-  };
-
-  const loadProjectId = async () => {
-    try {
-      const response = await projectClientApi.getAssignedProjects();
-      // Asumimos que la tarea pertenece al primer proyecto asignado
-      // En un caso real, necesitarías obtener el proyecto específico de la tarea
-      if (response.data.length > 0) {
-        setProjectId(response.data[0].id);
-      }
-    } catch (error: any) {
-      console.error('Error loading project ID:', error);
     }
   };
 
@@ -325,7 +310,7 @@ const TaskDetails = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setAssignUsersModalOpen(true)}
-            disabled={!projectId || !task?.workGroupId}
+            disabled={!task?.projectId || !task?.workGroupId}
           >
             Asignar Usuarios
           </Button>
@@ -399,7 +384,7 @@ const TaskDetails = () => {
         onSuccess={handleSuccess}
         taskId={task?.id || 0}
         workGroupId={task?.workGroupId || 0}
-        projectId={projectId || 0}
+        projectId={task?.projectId || 0}
         currentAssignedUsers={assignedUsers}
       />
 
@@ -407,7 +392,7 @@ const TaskDetails = () => {
         open={createSubTaskModalOpen}
         onCancel={() => setCreateSubTaskModalOpen(false)}
         onSuccess={handleSuccess}
-        projectId={projectId || 0}
+        projectId={task?.projectId || 0}
         workGroupId={task?.workGroupId || 0}
         parentTaskId={task?.id || 0}
       />

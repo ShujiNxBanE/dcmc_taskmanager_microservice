@@ -14,7 +14,6 @@ const SubTaskDetails = () => {
   const navigate = useNavigate();
   const [task, setTask] = useState<TaskDetailsDTO | null>(null);
   const [assignedUsers, setAssignedUsers] = useState<UserDTO[]>([]);
-  const [projectId, setProjectId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignedUsersLoading, setAssignedUsersLoading] = useState(false);
   const [assignUsersModalOpen, setAssignUsersModalOpen] = useState(false);
@@ -25,7 +24,6 @@ const SubTaskDetails = () => {
     if (id) {
       loadTaskDetails();
       loadAssignedUsers();
-      loadProjectId();
     }
   }, [id]);
 
@@ -54,17 +52,6 @@ const SubTaskDetails = () => {
       console.error('Error loading assigned users:', error);
     } finally {
       setAssignedUsersLoading(false);
-    }
-  };
-
-  const loadProjectId = async () => {
-    try {
-      const response = await projectClientApi.getAssignedProjects();
-      if (response.data.length > 0) {
-        setProjectId(response.data[0].id);
-      }
-    } catch (error: any) {
-      console.error('Error loading project ID:', error);
     }
   };
 
@@ -143,7 +130,7 @@ const SubTaskDetails = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setAssignUsersModalOpen(true)}
-            disabled={!projectId || !task?.workGroupId}
+            disabled={!task?.projectId || !task?.workGroupId}
           >
             Asignar Usuarios
           </Button>
@@ -208,7 +195,7 @@ const SubTaskDetails = () => {
         onSuccess={handleSuccess}
         taskId={task?.id || 0}
         workGroupId={task?.workGroupId || 0}
-        projectId={projectId || 0}
+        projectId={task?.projectId || 0}
         currentAssignedUsers={assignedUsers}
       />
 
