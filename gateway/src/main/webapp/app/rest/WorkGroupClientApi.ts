@@ -136,6 +136,13 @@ class WorkGroupClientApi {
     });
   }
 
+  /**
+   * Obtiene la lista de usuarios públicos del sistema (para añadir miembros a grupos).
+   */
+  public getAllUsers(): Promise<AxiosResponse<any>> {
+    return this.api.get('/api/users');
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 

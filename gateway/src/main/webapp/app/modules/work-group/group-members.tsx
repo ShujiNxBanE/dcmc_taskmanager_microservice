@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, Modal, Input } from 'antd';
+import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, Modal, Input, Select, Spin } from 'antd';
 import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined, SwapOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { useAppSelector } from 'app/config/store';
@@ -23,6 +23,8 @@ const GroupMembers = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [adding, setAdding] = useState(false);
+  const [userOptions, setUserOptions] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [transferModalVisible, setTransferModalVisible] = useState(false);
   const [newOwnerUsername, setNewOwnerUsername] = useState('');
   const [transferring, setTransferring] = useState(false);
@@ -36,6 +38,23 @@ const GroupMembers = () => {
       loadMembers(parseInt(groupId, 10));
     }
   }, [groupId, groupName]);
+
+  useEffect(() => {
+    if (addModalVisible) {
+      setLoadingUsers(true);
+      WorkGroupClientApi.getAllUsers()
+        .then(res => {
+          setUserOptions(res.data.map((u: any) => ({ label: `@${u.login}`, value: u.login })));
+        })
+        .catch(() => {
+          message.error('Error al cargar usuarios');
+        })
+        .finally(() => setLoadingUsers(false));
+    } else {
+      setUserOptions([]);
+      setNewUsername('');
+    }
+  }, [addModalVisible]);
 
   const loadMembers = async (id: number) => {
     setLoading(true);
@@ -505,12 +524,19 @@ const GroupMembers = () => {
         okText="Añadir"
         cancelText="Cancelar"
       >
-        <Input
-          placeholder="Nombre de usuario"
-          value={newUsername}
-          onChange={e => setNewUsername(e.target.value)}
-          onPressEnter={handleAddMember}
-          disabled={adding}
+        <Select
+          showSearch
+          placeholder="Selecciona un usuario"
+          value={newUsername || undefined}
+          onChange={v => setNewUsername(v)}
+          options={userOptions}
+          loading={loadingUsers}
+          style={{ width: '100%' }}
+          filterOption={(input, option) =>
+            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+          }
+          disabled={adding || loadingUsers}
+          notFoundContent={loadingUsers ? <Spin size="small" /> : 'No hay usuarios disponibles'}
         />
       </Modal>
 
