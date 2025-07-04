@@ -20,6 +20,7 @@ import Task from './modules/task';
 import TaskDetails from './modules/task/task-details';
 import ArchivedTaskDetails from './modules/task/archived-task-details';
 import SubTaskDetails from './modules/task/subtask-details';
+import Status from './modules/status';
 
 const loading = <div>loading ...</div>;
 
@@ -88,6 +89,14 @@ const AppRoutes = () => {
           element={
             <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
               <Priority />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="status"
+          element={
+            <PrivateRoute hasAnyAuthorities={[AUTHORITIES.ADMIN]}>
+              <Status />
             </PrivateRoute>
           }
         />

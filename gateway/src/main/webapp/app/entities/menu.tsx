@@ -21,6 +21,11 @@ const EntitiesMenu = () => {
           Priority
         </MenuItem>
       )}
+      {isAdmin && (
+        <MenuItem icon="asterisk" to="/status">
+          Status
+        </MenuItem>
+      )}
       <MenuItem icon="asterisk" to="/task">
         Task
       </MenuItem>

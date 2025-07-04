@@ -97,7 +97,7 @@ export interface TaskCreateDTO {
 }
 
 export interface StatusDTO {
-  id: number;
+  id?: number;
   name: string;
 }
 
