@@ -50,29 +50,29 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ open, onCancel, onSuccess
         priorityId: values.priorityId,
         statusId: values.statusId,
       };
-      if (!task?.id) throw new Error('Tarea no encontrada');
+      if (!task?.id) throw new Error('Task not found');
       await taskClientApi.updateTask(task.id, data);
-      message.success('Tarea actualizada correctamente');
+      message.success('Task updated successfully');
       setLoading(false);
       onSuccess();
       onCancel();
     } catch (err: any) {
       setLoading(false);
-      message.error(err.message || 'Error al actualizar la tarea');
+      message.error(err.message || 'Error updating task');
     }
   };
 
   return (
-    <Modal open={open} title="Editar tarea" onCancel={onCancel} footer={null} destroyOnClose>
+    <Modal open={open} title="Edit task" onCancel={onCancel} footer={null} destroyOnClose>
       <Form form={form} layout="vertical">
-        <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Ingrese el título' }]}>
+        <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Enter title' }]}>
           <Input maxLength={100} />
         </Form.Item>
-        <Form.Item name="description" label="Descripción">
+        <Form.Item name="description" label="Description">
           <Input.TextArea maxLength={500} rows={3} />
         </Form.Item>
-        <Form.Item name="priorityId" label="Prioridad" rules={[{ required: true, message: 'Seleccione una prioridad' }]}>
-          <Select placeholder="Seleccione una prioridad">
+        <Form.Item name="priorityId" label="Priority" rules={[{ required: true, message: 'Select priority' }]}>
+          <Select placeholder="Select priority">
             {priorities.map(p => (
               <Select.Option key={p.id} value={p.id}>
                 {p.name}
@@ -80,8 +80,8 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ open, onCancel, onSuccess
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="statusId" label="Estado" rules={[{ required: true, message: 'Seleccione un estado' }]}>
-          <Select placeholder="Seleccione un estado">
+        <Form.Item name="statusId" label="Status" rules={[{ required: true, message: 'Select status' }]}>
+          <Select placeholder="Select status">
             {statuses.map(s => (
               <Select.Option key={s.id} value={s.id}>
                 {s.name}
@@ -91,7 +91,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ open, onCancel, onSuccess
         </Form.Item>
         <Form.Item>
           <Button type="primary" onClick={handleOk} loading={loading} block>
-            Guardar cambios
+            Save changes
           </Button>
         </Form.Item>
       </Form>

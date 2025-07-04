@@ -31,7 +31,7 @@ const ArchivedTaskDetails = () => {
       const response = await taskClientApi.getTaskDetails(parseInt(id, 10));
       setTask(response.data);
     } catch (error: any) {
-      message.error('Error al cargar los detalles de la tarea');
+      message.error('Error loading task details');
       console.error('Error loading task details:', error);
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ const ArchivedTaskDetails = () => {
       const response = await taskClientApi.getSubTasks(parseInt(id, 10));
       setSubTasks(response.data);
     } catch (error: any) {
-      message.error('Error al cargar las subtareas');
+      message.error('Error loading subtasks');
       console.error('Error loading subtasks:', error);
     } finally {
       setSubTasksLoading(false);
@@ -59,7 +59,7 @@ const ArchivedTaskDetails = () => {
       const response = await taskClientApi.getAssignedUsers(parseInt(id, 10));
       setAssignedUsers(response.data);
     } catch (error: any) {
-      message.error('Error al cargar los usuarios asignados');
+      message.error('Error loading assigned users');
       console.error('Error loading assigned users:', error);
     } finally {
       setAssignedUsersLoading(false);
@@ -68,13 +68,13 @@ const ArchivedTaskDetails = () => {
 
   const subTaskColumns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
     },
     {
-      title: 'Descripción',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
@@ -82,19 +82,19 @@ const ArchivedTaskDetails = () => {
       ),
     },
     {
-      title: 'Prioridad',
+      title: 'Priority',
       dataIndex: 'priorityName',
       key: 'priorityName',
       render: (priority: string) => <Tag color="red">{priority}</Tag>,
     },
     {
-      title: 'Estado',
+      title: 'Status',
       dataIndex: 'statusName',
       key: 'statusName',
       render: (status: string) => <Tag color="blue">{status}</Tag>,
     },
     {
-      title: 'Creador',
+      title: 'Creator',
       dataIndex: 'creatorLogin',
       key: 'creatorLogin',
       render: (login: string) => <Tag color="purple">@{login}</Tag>,
@@ -112,9 +112,9 @@ const ArchivedTaskDetails = () => {
   if (!task) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <h2>Tarea no encontrada</h2>
+        <h2>Task not found</h2>
         <Button type="primary" onClick={() => navigate(-1)}>
-          Volver
+          Back
         </Button>
       </div>
     );
@@ -124,55 +124,55 @@ const ArchivedTaskDetails = () => {
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} style={{ marginBottom: '16px' }}>
-          Volver
+          Back
         </Button>
 
-        <Card title="Detalles de la Tarea Archivada">
+        <Card title="Archived Task Details">
           <Descriptions bordered column={2}>
-            <Descriptions.Item label="Título" span={2}>
+            <Descriptions.Item label="Title" span={2}>
               <strong>{task.title}</strong>
             </Descriptions.Item>
-            <Descriptions.Item label="Descripción" span={2}>
-              {task.description || 'Sin descripción'}
+            <Descriptions.Item label="Description" span={2}>
+              {task.description || 'No description'}
             </Descriptions.Item>
-            <Descriptions.Item label="Prioridad">
+            <Descriptions.Item label="Priority">
               <Tag color="red">{task.priorityName}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Estado">
+            <Descriptions.Item label="Status">
               <Tag color="blue">{task.statusName}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Creador">
+            <Descriptions.Item label="Creator">
               <Tag color="purple">@{task.creatorLogin}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Fecha de Creación">
+            <Descriptions.Item label="Creation Time">
               {task.createTime ? new Date(task.createTime).toLocaleString() : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Última Actualización">
+            <Descriptions.Item label="Last Update">
               {task.updateTime ? new Date(task.updateTime).toLocaleString() : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Archivada">
-              <Tag color="red">Sí</Tag>
+            <Descriptions.Item label="Archived">
+              <Tag color="red">Yes</Tag>
             </Descriptions.Item>
           </Descriptions>
         </Card>
       </div>
 
-      <Card title={`Subtareas (${subTasks.length})`}>
+      <Card title={`Subtasks (${subTasks.length})`}>
         <Table
           columns={subTaskColumns}
           dataSource={subTasks}
           rowKey="id"
           loading={subTasksLoading}
           pagination={{ pageSize: 10 }}
-          locale={{ emptyText: 'No hay subtareas para esta tarea' }}
+          locale={{ emptyText: 'No subtasks for this task' }}
         />
       </Card>
 
-      <Card title={`Usuarios Asignados (${assignedUsers.length})`} style={{ marginTop: '16px' }}>
+      <Card title={`Assigned Users (${assignedUsers.length})`} style={{ marginTop: '16px' }}>
         <Table
           columns={[
             {
-              title: 'Usuario',
+              title: 'User',
               dataIndex: 'login',
               key: 'login',
               render: (login: string) => (
@@ -193,7 +193,7 @@ const ArchivedTaskDetails = () => {
           rowKey="id"
           loading={assignedUsersLoading}
           pagination={{ pageSize: 10 }}
-          locale={{ emptyText: 'No hay usuarios asignados a esta tarea' }}
+          locale={{ emptyText: 'No users assigned to this task' }}
         />
       </Card>
 

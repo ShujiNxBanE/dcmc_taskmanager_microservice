@@ -34,7 +34,7 @@ const SubTaskDetails = () => {
       const response = await taskClientApi.getTaskDetails(parseInt(id, 10));
       setTask(response.data);
     } catch (error: any) {
-      message.error('Error al cargar los detalles de la subtarea');
+      message.error('Error loading subtask details');
       console.error('Error loading subtask details:', error);
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ const SubTaskDetails = () => {
       const response = await taskClientApi.getAssignedUsers(parseInt(id, 10));
       setAssignedUsers(response.data);
     } catch (error: any) {
-      message.error('Error al cargar los usuarios asignados');
+      message.error('Error loading assigned users');
       console.error('Error loading assigned users:', error);
     } finally {
       setAssignedUsersLoading(false);
@@ -71,9 +71,9 @@ const SubTaskDetails = () => {
   if (!task) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <h2>Subtarea no encontrada</h2>
+        <h2>Subtask not found</h2>
         <Button type="primary" onClick={() => navigate(-1)}>
-          Volver
+          Back
         </Button>
       </div>
     );
@@ -83,47 +83,47 @@ const SubTaskDetails = () => {
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} style={{ marginBottom: '16px' }}>
-          Volver
+          Back
         </Button>
 
         <Card
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Detalles de la Subtarea</span>
+              <span>Subtask Details</span>
             </div>
           }
         >
           <Descriptions bordered column={2}>
-            <Descriptions.Item label="Título" span={2}>
+            <Descriptions.Item label="Title" span={2}>
               <strong>{task.title}</strong>
             </Descriptions.Item>
-            <Descriptions.Item label="Descripción" span={2}>
-              {task.description || 'Sin descripción'}
+            <Descriptions.Item label="Description" span={2}>
+              {task.description || 'No description'}
             </Descriptions.Item>
-            <Descriptions.Item label="Prioridad">
+            <Descriptions.Item label="Priority">
               <Tag color="red">{task.priorityName}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Estado">
+            <Descriptions.Item label="Status">
               <Tag color="blue">{task.statusName}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Creador">
+            <Descriptions.Item label="Creator">
               <Tag color="purple">@{task.creatorLogin}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Fecha de Creación">
+            <Descriptions.Item label="Creation Date">
               {task.createTime ? new Date(task.createTime).toLocaleString() : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Última Actualización">
+            <Descriptions.Item label="Last Update">
               {task.updateTime ? new Date(task.updateTime).toLocaleString() : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Archivada">
-              <Tag color={task.archived ? 'red' : 'green'}>{task.archived ? 'Sí' : 'No'}</Tag>
+            <Descriptions.Item label="Archived">
+              <Tag color={task.archived ? 'red' : 'green'}>{task.archived ? 'Yes' : 'No'}</Tag>
             </Descriptions.Item>
           </Descriptions>
         </Card>
       </div>
 
       <Card
-        title={`Usuarios Asignados (${assignedUsers.length})`}
+        title={`Assigned Users (${assignedUsers.length})`}
         style={{ marginTop: '16px' }}
         extra={
           <Button
@@ -132,14 +132,14 @@ const SubTaskDetails = () => {
             onClick={() => setAssignUsersModalOpen(true)}
             disabled={!task?.projectId || !task?.workGroupId}
           >
-            Asignar Usuarios
+            Assign Users
           </Button>
         }
       >
         <Table
           columns={[
             {
-              title: 'Usuario',
+              title: 'User',
               dataIndex: 'login',
               key: 'login',
               render: (login: string) => (
@@ -156,26 +156,26 @@ const SubTaskDetails = () => {
               render: (userId: number) => <Tag color="blue">{userId}</Tag>,
             },
             {
-              title: 'Acciones',
-              key: 'acciones',
+              title: 'Actions',
+              key: 'actions',
               render: (_: any, record: UserDTO) => (
                 <Popconfirm
-                  title="¿Seguro que deseas desasignar este usuario de la subtarea?"
-                  okText="Sí"
+                  title="Are you sure you want to unassign this user from the subtask?"
+                  okText="Yes"
                   cancelText="No"
                   onConfirm={async () => {
-                    if (!task?.workGroupId || !task?.id) return message.error('Faltan datos de la subtarea');
+                    if (!task?.workGroupId || !task?.id) return message.error('Missing subtask data');
                     try {
                       await taskClientApi.unassignUsersFromTask(task.workGroupId, task.id, [record.id.toString()]);
-                      message.success('Usuario desasignado correctamente');
+                      message.success('User unassigned successfully');
                       handleSuccess();
                     } catch (err: any) {
-                      message.error(err.response?.data?.detail || err.message || 'Error al desasignar el usuario');
+                      message.error(err.response?.data?.detail || err.message || 'Error unassigning user');
                     }
                   }}
                 >
                   <Button type="link" danger>
-                    Desasignar
+                    Unassign
                   </Button>
                 </Popconfirm>
               ),
@@ -185,7 +185,7 @@ const SubTaskDetails = () => {
           rowKey="id"
           loading={assignedUsersLoading}
           pagination={{ pageSize: 10 }}
-          locale={{ emptyText: 'No hay usuarios asignados a esta subtarea' }}
+          locale={{ emptyText: 'No users assigned to this subtask' }}
         />
       </Card>
 

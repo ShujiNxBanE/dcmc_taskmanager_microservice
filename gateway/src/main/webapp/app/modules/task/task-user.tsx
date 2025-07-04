@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Table, Tag, Space, Button, Popconfirm, message, Select } from 'antd';
+import type { Breakpoint } from 'antd/es/_util/responsiveObserver';
 import { TaskSimpleDTO } from 'app/rest/dto';
 import taskClientApi from 'app/rest/TaskClientApi';
 import { UserOutlined, PlusOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
@@ -89,42 +90,45 @@ const TaskUser = () => {
 
   const columns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
+      responsive: ['md' as Breakpoint],
     },
     {
-      title: 'Descripción',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
         <div style={{ color: '#6b7280', maxWidth: 300 }}>{text && text.length > 100 ? `${text.substring(0, 100)}...` : text}</div>
       ),
+      responsive: ['lg' as Breakpoint],
     },
     {
-      title: 'Prioridad',
+      title: 'Priority',
       dataIndex: 'priorityName',
       key: 'priorityName',
       render: (priority: string) => <Tag color="red">{priority}</Tag>,
     },
     {
-      title: 'Estado',
+      title: 'Status',
       dataIndex: 'statusName',
       key: 'statusName',
       render: (status: string) => <Tag color="blue">{status}</Tag>,
     },
     {
-      title: 'Creador',
+      title: 'Creator',
       dataIndex: 'creatorLogin',
       key: 'creatorLogin',
       render: (login: string) => <Tag color="purple">@{login}</Tag>,
+      responsive: ['md' as Breakpoint],
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: TaskSimpleDTO) => (
-        <Space size="small">
+        <Space size="small" direction="vertical" style={{ width: '100%' }}>
           <Button
             type="link"
             icon={<EyeOutlined />}
@@ -135,8 +139,9 @@ const TaskUser = () => {
                 navigate(`/task/${record.id}`);
               }
             }}
+            style={{ padding: 0, height: 'auto' }}
           >
-            Ver detalles
+            View Details
           </Button>
           {record.creatorLogin === currentUser && !record.archived && (
             <Button
@@ -145,41 +150,42 @@ const TaskUser = () => {
                 setEditTask(record);
                 setEditModalOpen(true);
               }}
+              style={{ padding: 0, height: 'auto' }}
             >
-              Editar
+              Edit
             </Button>
           )}
           {!record.archived && (
             <Popconfirm
-              title="¿Seguro que deseas archivar esta tarea?"
-              okText="Sí"
+              title="Are you sure you want to archive this task?"
+              okText="Yes"
               cancelText="No"
               onConfirm={async () => {
-                if (!record.id) return message.error('ID de tarea no válido');
+                if (!record.id) return message.error('Invalid task ID');
                 try {
                   await taskClientApi.archiveTask(record.id);
-                  message.success('Tarea archivada correctamente');
+                  message.success('Task archived successfully');
                   handleSuccess();
                 } catch (err: any) {
-                  message.error(err.response?.data?.detail || err.message || 'Error al archivar la tarea');
+                  message.error(err.response?.data?.detail || err.message || 'Error archiving task');
                 }
               }}
             >
-              <Button type="link" style={{ color: '#8e24aa' }}>
-                Archivar
+              <Button type="link" style={{ color: '#8e24aa', padding: 0, height: 'auto' }}>
+                Archive
               </Button>
             </Popconfirm>
           )}
           {record.archived && (
             <Popconfirm
-              title="¿Seguro que deseas desarchivar esta tarea?"
-              okText="Sí"
+              title="Are you sure you want to unarchive this task?"
+              okText="Yes"
               cancelText="No"
               onConfirm={async () => {
-                if (!record.id || !selectedProjectId) return message.error('ID de tarea o proyecto no válido');
+                if (!record.id || !selectedProjectId) return message.error('Invalid task or project ID');
                 try {
                   await taskClientApi.unarchiveTask(record.id);
-                  message.success('Tarea desarchivada correctamente');
+                  message.success('Task unarchived successfully');
                   setArchivedLoading(true);
                   taskClientApi
                     .getArchivedTasksByProject(selectedProjectId)
@@ -187,24 +193,24 @@ const TaskUser = () => {
                     .finally(() => setArchivedLoading(false));
                   handleSuccess();
                 } catch (err: any) {
-                  message.error(err.response?.data?.detail || err.message || 'Error al desarchivar la tarea');
+                  message.error(err.response?.data?.detail || err.message || 'Error unarchiving task');
                 }
               }}
             >
-              <Button type="link" style={{ color: '#1976d2' }}>
-                Desarchivar
+              <Button type="link" style={{ color: '#1976d2', padding: 0, height: 'auto' }}>
+                Unarchive
               </Button>
             </Popconfirm>
           )}
           <Popconfirm
-            title="¿Seguro que deseas eliminar esta tarea?"
-            okText="Sí"
+            title="Are you sure you want to delete this task?"
+            okText="Yes"
             cancelText="No"
             onConfirm={async () => {
-              if (!record.id) return message.error('ID de tarea no válido');
+              if (!record.id) return message.error('Invalid task ID');
               try {
                 await taskClientApi.deleteTask(record.id);
-                message.success('Tarea eliminada correctamente');
+                message.success('Task deleted successfully');
                 if (record.archived && selectedProjectId) {
                   setArchivedLoading(true);
                   taskClientApi
@@ -214,12 +220,12 @@ const TaskUser = () => {
                 }
                 handleSuccess();
               } catch (err: any) {
-                message.error(err.response?.data?.detail || err.message || 'Error al eliminar la tarea');
+                message.error(err.response?.data?.detail || err.message || 'Error deleting task');
               }
             }}
           >
-            <Button type="link" danger>
-              Eliminar
+            <Button type="link" danger style={{ padding: 0, height: 'auto' }}>
+              Delete
             </Button>
           </Popconfirm>
         </Space>
@@ -229,7 +235,7 @@ const TaskUser = () => {
 
   const subTaskColumns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string) => (
@@ -252,38 +258,41 @@ const TaskUser = () => {
           {text}
         </div>
       ),
+      responsive: ['md' as Breakpoint],
     },
     {
-      title: 'Descripción',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
         <div style={{ color: '#6b7280', maxWidth: 300 }}>{text && text.length > 100 ? `${text.substring(0, 100)}...` : text}</div>
       ),
+      responsive: ['lg' as Breakpoint],
     },
     {
-      title: 'Prioridad',
+      title: 'Priority',
       dataIndex: 'priorityName',
       key: 'priorityName',
       render: (priority: string) => <Tag color="red">{priority}</Tag>,
     },
     {
-      title: 'Estado',
+      title: 'Status',
       dataIndex: 'statusName',
       key: 'statusName',
       render: (status: string) => <Tag color="blue">{status}</Tag>,
     },
     {
-      title: 'Creador',
+      title: 'Creator',
       dataIndex: 'creatorLogin',
       key: 'creatorLogin',
       render: (login: string) => <Tag color="purple">@{login}</Tag>,
+      responsive: ['md' as Breakpoint],
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: TaskSimpleDTO) => (
-        <Space size="small">
+        <Space size="small" direction="vertical" style={{ width: '100%' }}>
           <Button
             type="link"
             icon={<EyeOutlined />}
@@ -294,8 +303,9 @@ const TaskUser = () => {
                 navigate(`/task/subtask/${record.id}`);
               }
             }}
+            style={{ padding: 0, height: 'auto' }}
           >
-            Ver detalles
+            View Details
           </Button>
           {record.creatorLogin === currentUser && !record.archived && (
             <Button
@@ -304,41 +314,42 @@ const TaskUser = () => {
                 setEditTask(record);
                 setEditModalOpen(true);
               }}
+              style={{ padding: 0, height: 'auto' }}
             >
-              Editar
+              Edit
             </Button>
           )}
           {!record.archived && (
             <Popconfirm
-              title="¿Seguro que deseas archivar esta subtarea?"
-              okText="Sí"
+              title="Are you sure you want to archive this subtask?"
+              okText="Yes"
               cancelText="No"
               onConfirm={async () => {
-                if (!record.id) return message.error('ID de subtarea no válido');
+                if (!record.id) return message.error('Invalid subtask ID');
                 try {
                   await taskClientApi.archiveTask(record.id);
-                  message.success('Subtarea archivada correctamente');
+                  message.success('Subtask archived successfully');
                   handleSuccess();
                 } catch (err: any) {
-                  message.error(err.response?.data?.detail || err.message || 'Error al archivar la subtarea');
+                  message.error(err.response?.data?.detail || err.message || 'Error archiving subtask');
                 }
               }}
             >
-              <Button type="link" style={{ color: '#8e24aa' }}>
-                Archivar
+              <Button type="link" style={{ color: '#8e24aa', padding: 0, height: 'auto' }}>
+                Archive
               </Button>
             </Popconfirm>
           )}
           {record.archived && (
             <Popconfirm
-              title="¿Seguro que deseas desarchivar esta subtarea?"
-              okText="Sí"
+              title="Are you sure you want to unarchive this subtask?"
+              okText="Yes"
               cancelText="No"
               onConfirm={async () => {
-                if (!record.id || !selectedProjectId) return message.error('ID de subtarea o proyecto no válido');
+                if (!record.id || !selectedProjectId) return message.error('Invalid subtask or project ID');
                 try {
                   await taskClientApi.unarchiveTask(record.id);
-                  message.success('Subtarea desarchivada correctamente');
+                  message.success('Subtask unarchived successfully');
                   setArchivedLoading(true);
                   taskClientApi
                     .getArchivedTasksByProject(selectedProjectId)
@@ -346,24 +357,24 @@ const TaskUser = () => {
                     .finally(() => setArchivedLoading(false));
                   handleSuccess();
                 } catch (err: any) {
-                  message.error(err.response?.data?.detail || err.message || 'Error al desarchivar la subtarea');
+                  message.error(err.response?.data?.detail || err.message || 'Error unarchiving subtask');
                 }
               }}
             >
-              <Button type="link" style={{ color: '#1976d2' }}>
-                Desarchivar
+              <Button type="link" style={{ color: '#1976d2', padding: 0, height: 'auto' }}>
+                Unarchive
               </Button>
             </Popconfirm>
           )}
           <Popconfirm
-            title="¿Seguro que deseas eliminar esta subtarea?"
-            okText="Sí"
+            title="Are you sure you want to delete this subtask?"
+            okText="Yes"
             cancelText="No"
             onConfirm={async () => {
-              if (!record.id) return message.error('ID de subtarea no válido');
+              if (!record.id) return message.error('Invalid subtask ID');
               try {
                 await taskClientApi.deleteTask(record.id);
-                message.success('Subtarea eliminada correctamente');
+                message.success('Subtask deleted successfully');
                 if (record.archived && selectedProjectId) {
                   setArchivedLoading(true);
                   taskClientApi
@@ -373,12 +384,12 @@ const TaskUser = () => {
                 }
                 handleSuccess();
               } catch (err: any) {
-                message.error(err.response?.data?.detail || err.message || 'Error al eliminar la subtarea');
+                message.error(err.response?.data?.detail || err.message || 'Error deleting subtask');
               }
             }}
           >
-            <Button type="link" danger>
-              Eliminar
+            <Button type="link" danger style={{ padding: 0, height: 'auto' }}>
+              Delete
             </Button>
           </Popconfirm>
         </Space>
@@ -392,23 +403,33 @@ const TaskUser = () => {
       label: (
         <span>
           <UserOutlined style={{ marginRight: 8 }} />
-          Tareas asignadas ({assignedTasks.length + assignedSubTasks.length})
+          Assigned Tasks ({assignedTasks.length + assignedSubTasks.length})
         </span>
       ),
       children: (
         <div>
           <div style={{ marginBottom: '16px' }}>
-            <h4 style={{ color: '#1f2937', marginBottom: '8px' }}> Tareas Principales ({assignedTasks.length})</h4>
-            <Table columns={columns} dataSource={assignedTasks} rowKey="id" loading={loadingAssigned} pagination={{ pageSize: 10 }} />
+            <h4 style={{ color: '#1f2937', marginBottom: '8px' }}> Main Tasks ({assignedTasks.length})</h4>
+            <Table
+              columns={columns}
+              dataSource={assignedTasks}
+              rowKey="id"
+              loading={loadingAssigned}
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 800 }}
+              size="small"
+            />
           </div>
           <div>
-            <h4 style={{ color: '#8e24aa', marginBottom: '8px' }}> Subtareas ({assignedSubTasks.length})</h4>
+            <h4 style={{ color: '#8e24aa', marginBottom: '8px' }}> Subtasks ({assignedSubTasks.length})</h4>
             <Table
               columns={subTaskColumns}
               dataSource={assignedSubTasks}
               rowKey="id"
               loading={loadingAssignedSubTasks}
               pagination={{ pageSize: 10 }}
+              scroll={{ x: 800 }}
+              size="small"
             />
           </div>
         </div>
@@ -419,50 +440,70 @@ const TaskUser = () => {
       label: (
         <span>
           <PlusOutlined style={{ marginRight: 8 }} />
-          Tareas creadas ({createdTasks.length})
+          Created Tasks ({createdTasks.length})
         </span>
       ),
-      children: <Table columns={columns} dataSource={createdTasks} rowKey="id" loading={loadingCreated} pagination={{ pageSize: 10 }} />,
+      children: (
+        <Table
+          columns={columns}
+          dataSource={createdTasks}
+          rowKey="id"
+          loading={loadingCreated}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 800 }}
+          size="small"
+        />
+      ),
     },
     {
       key: 'archived',
       label: (
         <span>
           <CheckCircleOutlined style={{ marginRight: 8 }} />
-          Tareas archivadas
+          Archived Tasks
         </span>
       ),
       children: (
         <div>
-          <span style={{ marginRight: 8, fontWeight: 500 }}>Escoger proyecto:</span>
-          <Select
-            style={{ width: 300, marginBottom: 16 }}
-            value={selectedProjectId}
-            onChange={setSelectedProjectId}
-            placeholder="Selecciona un proyecto"
-          >
-            {assignedProjects.map(p => (
-              <Select.Option key={p.id} value={p.id}>
-                {p.title}
-              </Select.Option>
-            ))}
-          </Select>
-          <Table columns={columns} dataSource={archivedTasks} rowKey="id" loading={archivedLoading} pagination={{ pageSize: 10 }} />
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={{ fontWeight: 500 }}>Select project:</span>
+            <Select
+              style={{ width: '100%', maxWidth: 300 }}
+              value={selectedProjectId}
+              onChange={setSelectedProjectId}
+              placeholder="Select a project"
+            >
+              {assignedProjects.map(p => (
+                <Select.Option key={p.id} value={p.id}>
+                  {p.title}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+          <Table
+            columns={columns}
+            dataSource={archivedTasks}
+            rowKey="id"
+            loading={archivedLoading}
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 800 }}
+            size="small"
+          />
         </div>
       ),
     },
   ];
 
   return (
-    <div>
+    <div style={{ padding: '16px' }}>
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 16, width: '100%', maxWidth: 200 }}
         onClick={() => setShowModal(true)}
         disabled={!hasProjects}
       >
-        Crear tarea
+        Create Task
       </Button>
       <Tabs defaultActiveKey="assigned" items={tabItems} />
       <CreateTaskModal open={showModal} onCancel={() => setShowModal(false)} onSuccess={handleSuccess} />

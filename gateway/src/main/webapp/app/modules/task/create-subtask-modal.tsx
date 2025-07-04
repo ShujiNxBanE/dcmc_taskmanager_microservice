@@ -39,27 +39,27 @@ const CreateSubTaskModal: React.FC<CreateSubTaskModalProps> = ({ open, onCancel,
         statusId: values.statusId,
       };
       await taskClientApi.createSubTask(workGroupId, projectId, parentTaskId, data);
-      message.success('Subtarea creada correctamente');
+      message.success('Subtask created successfully');
       setLoading(false);
       onSuccess();
       onCancel();
     } catch (err: any) {
       setLoading(false);
-      message.error(err.message || 'Error al crear la subtarea');
+      message.error(err.message || 'Error creating the subtask');
     }
   };
 
   return (
-    <Modal open={open} title="Crear nueva subtarea" onCancel={onCancel} footer={null} destroyOnClose>
+    <Modal open={open} title="Create new subtask" onCancel={onCancel} footer={null} destroyOnClose>
       <Form form={form} layout="vertical">
-        <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Ingrese el título' }]}>
+        <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Enter the title' }]}>
           <Input maxLength={100} />
         </Form.Item>
-        <Form.Item name="description" label="Descripción">
+        <Form.Item name="description" label="Description">
           <Input.TextArea maxLength={500} rows={3} />
         </Form.Item>
-        <Form.Item name="priorityId" label="Prioridad" rules={[{ required: true, message: 'Seleccione una prioridad' }]}>
-          <Select placeholder="Seleccione una prioridad">
+        <Form.Item name="priorityId" label="Priority" rules={[{ required: true, message: 'Select a priority' }]}>
+          <Select placeholder="Select a priority">
             {priorities.map(p => (
               <Select.Option key={p.id} value={p.id}>
                 {p.name}
@@ -67,8 +67,8 @@ const CreateSubTaskModal: React.FC<CreateSubTaskModalProps> = ({ open, onCancel,
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="statusId" label="Estado" rules={[{ required: true, message: 'Seleccione un estado' }]}>
-          <Select placeholder="Seleccione un estado">
+        <Form.Item name="statusId" label="Status" rules={[{ required: true, message: 'Select a status' }]}>
+          <Select placeholder="Select a status">
             {statuses.map(s => (
               <Select.Option key={s.id} value={s.id}>
                 {s.name}
@@ -78,7 +78,7 @@ const CreateSubTaskModal: React.FC<CreateSubTaskModalProps> = ({ open, onCancel,
         </Form.Item>
         <Form.Item>
           <Button type="primary" onClick={handleOk} loading={loading} block>
-            Crear subtarea
+            Create subtask
           </Button>
         </Form.Item>
       </Form>

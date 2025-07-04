@@ -116,24 +116,22 @@ const AssignUsersModal = ({ open, onCancel, onSuccess, taskId, workGroupId, proj
 
   return (
     <Modal
-      title="Asignar Usuarios a la Tarea"
+      title="Assign Users to Task"
       open={open}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>
-          Cancelar
+          Cancel
         </Button>,
         <Button key="assign" type="primary" loading={submitting} onClick={handleAssignUsers} disabled={selectedUserIds.length === 0}>
-          Asignar ({selectedUserIds.length})
+          Assign ({selectedUserIds.length})
         </Button>,
       ]}
       width={600}
     >
       <div style={{ marginBottom: 16 }}>
-        <p>Selecciona los usuarios que deseas asignar a esta tarea:</p>
-        {selectedUserIds.length > 0 && (
-          <p style={{ color: '#1890ff', fontWeight: 500 }}>{selectedUserIds.length} usuario(s) seleccionado(s)</p>
-        )}
+        <p>Select the users you want to assign to this task:</p>
+        {selectedUserIds.length > 0 && <p style={{ color: '#1890ff', fontWeight: 500 }}>{selectedUserIds.length} user(s) selected</p>}
       </div>
 
       <Table
@@ -142,7 +140,7 @@ const AssignUsersModal = ({ open, onCancel, onSuccess, taskId, workGroupId, proj
         rowKey="id"
         loading={loading}
         pagination={{ pageSize: 10 }}
-        locale={{ emptyText: 'No hay usuarios disponibles para asignar' }}
+        locale={{ emptyText: 'No users available to assign' }}
         size="small"
       />
     </Modal>

@@ -33,9 +33,9 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ open, onCancel, onSuc
       const values = await form.validateFields();
       setLoading(true);
       const selectedProject = projects.find(p => p.id === values.projectId);
-      if (!selectedProject) throw new Error('Proyecto no encontrado');
+      if (!selectedProject) throw new Error('Project not found');
       const workGroupId = selectedProject.workGroup?.id;
-      if (!workGroupId) throw new Error('El proyecto no tiene WorkGroup asociado');
+      if (!workGroupId) throw new Error('The project does not have a WorkGroup associated');
       const data: TaskCreateDTO = {
         title: values.title,
         description: values.description,
@@ -43,21 +43,21 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ open, onCancel, onSuc
         statusId: values.statusId,
       };
       await taskClientApi.createTask(workGroupId, values.projectId, data);
-      message.success('Tarea creada correctamente');
+      message.success('Task created successfully');
       setLoading(false);
       onSuccess();
       onCancel();
     } catch (err: any) {
       setLoading(false);
-      message.error(err.message || 'Error al crear la tarea');
+      message.error(err.message || 'Error creating task');
     }
   };
 
   return (
-    <Modal open={open} title="Crear nueva tarea" onCancel={onCancel} footer={null} destroyOnClose>
+    <Modal open={open} title="Create new task" onCancel={onCancel} footer={null} destroyOnClose>
       <Form form={form} layout="vertical">
-        <Form.Item name="projectId" label="Proyecto" rules={[{ required: true, message: 'Seleccione un proyecto' }]}>
-          <Select placeholder="Seleccione un proyecto">
+        <Form.Item name="projectId" label="Project" rules={[{ required: true, message: 'Select a project' }]}>
+          <Select placeholder="Select a project">
             {projects.map(p => (
               <Select.Option key={p.id} value={p.id}>
                 {p.title}
@@ -65,14 +65,14 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ open, onCancel, onSuc
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Ingrese el título' }]}>
+        <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Enter the title' }]}>
           <Input maxLength={100} />
         </Form.Item>
-        <Form.Item name="description" label="Descripción">
+        <Form.Item name="description" label="Description">
           <Input.TextArea maxLength={500} rows={3} />
         </Form.Item>
-        <Form.Item name="priorityId" label="Prioridad" rules={[{ required: true, message: 'Seleccione una prioridad' }]}>
-          <Select placeholder="Seleccione una prioridad">
+        <Form.Item name="priorityId" label="Priority" rules={[{ required: true, message: 'Select a priority' }]}>
+          <Select placeholder="Select a priority">
             {priorities.map(p => (
               <Select.Option key={p.id} value={p.id}>
                 {p.name}
@@ -80,8 +80,8 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ open, onCancel, onSuc
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="statusId" label="Estado" rules={[{ required: true, message: 'Seleccione un estado' }]}>
-          <Select placeholder="Seleccione un estado">
+        <Form.Item name="statusId" label="Status" rules={[{ required: true, message: 'Select a status' }]}>
+          <Select placeholder="Select a status">
             {statuses.map(s => (
               <Select.Option key={s.id} value={s.id}>
                 {s.name}
@@ -91,7 +91,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ open, onCancel, onSuc
         </Form.Item>
         <Form.Item>
           <Button type="primary" onClick={handleOk} loading={loading} block>
-            Crear tarea
+            Create task
           </Button>
         </Form.Item>
       </Form>

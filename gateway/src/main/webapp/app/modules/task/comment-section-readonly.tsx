@@ -31,11 +31,11 @@ const CommentSectionReadonly: React.FC<CommentSectionReadonlyProps> = ({ taskId 
   };
 
   return (
-    <Card title={`Comentarios (${comments.length})`}>
+    <Card title={`Comments (${comments.length})`}>
       <List
         loading={loading}
         dataSource={comments}
-        locale={{ emptyText: 'No hay comentarios' }}
+        locale={{ emptyText: 'No comments' }}
         renderItem={comment => (
           <List.Item>
             <div style={{ width: '100%' }}>
@@ -46,7 +46,7 @@ const CommentSectionReadonly: React.FC<CommentSectionReadonlyProps> = ({ taskId 
                     <span style={{ fontWeight: 500 }}>@{comment.creatorLogin}</span>
                     {comment.creatorLogin === currentUser && (
                       <Tag color="blue" style={{ fontSize: '10px' }}>
-                        Tú
+                        You
                       </Tag>
                     )}
                     <span style={{ color: '#8c8c8c', fontSize: '12px' }}>

@@ -34,7 +34,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
       const response = await commentClientApi.getCommentsByTask(taskId);
       setComments(response.data);
     } catch (error: any) {
-      message.error('Error al cargar los comentarios');
+      message.error('Error loading comments');
       console.error('Error loading comments:', error);
     } finally {
       setLoading(false);
@@ -52,12 +52,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
         projectId,
       };
       await commentClientApi.createComment(data);
-      message.success('Comentario creado correctamente');
+      message.success('Comment created successfully');
       form.resetFields();
       loadComments();
       onSuccess?.();
     } catch (error: any) {
-      message.error('Error al crear el comentario');
+      message.error('Error creating comment');
       console.error('Error creating comment:', error);
     } finally {
       setSubmitting(false);
@@ -75,14 +75,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
         projectId: editingComment.projectId,
       };
       await commentClientApi.updateComment(editingComment.id, data);
-      message.success('Comentario actualizado correctamente');
+      message.success('Comment updated successfully');
       setEditModalOpen(false);
       setEditingComment(null);
       editForm.resetFields();
       loadComments();
       onSuccess?.();
     } catch (error: any) {
-      message.error('Error al actualizar el comentario');
+      message.error('Error updating comment');
       console.error('Error updating comment:', error);
     }
   };
@@ -90,11 +90,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
   const handleDelete = async (commentId: number) => {
     try {
       await commentClientApi.deleteComment(commentId);
-      message.success('Comentario eliminado correctamente');
+      message.success('Comment deleted successfully');
       loadComments();
       onSuccess?.();
     } catch (error: any) {
-      message.error('Error al eliminar el comentario');
+      message.error('Error deleting comment');
       console.error('Error deleting comment:', error);
     }
   };
@@ -107,14 +107,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
 
   return (
     <>
-      <Card title={`Comentarios (${comments.length})`}>
+      <Card title={`Comments (${comments.length})`}>
         <Form form={form} onFinish={handleSubmit} style={{ marginBottom: 16 }}>
-          <Form.Item name="content" rules={[{ required: true, message: 'Escribe un comentario' }]}>
-            <TextArea rows={3} placeholder="Escribe un comentario..." maxLength={500} showCount />
+          <Form.Item name="content" rules={[{ required: true, message: 'Write a comment' }]}>
+            <TextArea rows={3} placeholder="Write a comment..." maxLength={500} showCount />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={submitting} icon={<SendOutlined />}>
-              Comentar
+              Comment
             </Button>
           </Form.Item>
         </Form>
@@ -122,7 +122,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
         <List
           loading={loading}
           dataSource={comments}
-          locale={{ emptyText: 'No hay comentarios aún' }}
+          locale={{ emptyText: 'No comments yet' }}
           renderItem={comment => (
             <List.Item>
               <div style={{ width: '100%' }}>
@@ -133,7 +133,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
                       <span style={{ fontWeight: 500 }}>@{comment.creatorLogin}</span>
                       {comment.creatorLogin === currentUser && (
                         <Tag color="blue" style={{ fontSize: '10px' }}>
-                          Tú
+                          You
                         </Tag>
                       )}
                       <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
@@ -144,16 +144,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
                     {comment.creatorLogin === currentUser && (
                       <Space>
                         <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(comment)}>
-                          Editar
+                          Edit
                         </Button>
                         <Popconfirm
-                          title="¿Seguro que deseas eliminar este comentario?"
-                          okText="Sí"
+                          title="Are you sure you want to delete this comment?"
+                          okText="Yes"
                           cancelText="No"
                           onConfirm={() => comment.id && handleDelete(comment.id)}
                         >
                           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                            Eliminar
+                            Delete
                           </Button>
                         </Popconfirm>
                       </Space>
@@ -167,7 +167,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
       </Card>
 
       <Modal
-        title="Editar comentario"
+        title="Edit comment"
         open={editModalOpen}
         onCancel={() => {
           setEditModalOpen(false);
@@ -177,8 +177,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
         footer={null}
       >
         <Form form={editForm} onFinish={handleEdit}>
-          <Form.Item name="content" rules={[{ required: true, message: 'Escribe un comentario' }]}>
-            <TextArea rows={4} placeholder="Escribe tu comentario..." maxLength={500} showCount />
+          <Form.Item name="content" rules={[{ required: true, message: 'Write a comment' }]}>
+            <TextArea rows={4} placeholder="Write your comment..." maxLength={500} showCount />
           </Form.Item>
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
             <Space>
@@ -189,10 +189,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ taskId, projectId, work
                   editForm.resetFields();
                 }}
               >
-                Cancelar
+                Cancel
               </Button>
               <Button type="primary" htmlType="submit">
-                Guardar
+                Save
               </Button>
             </Space>
           </Form.Item>
