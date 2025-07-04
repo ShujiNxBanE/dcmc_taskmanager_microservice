@@ -211,6 +211,24 @@ public class WorkGroupResource {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{groupId}/moderator/{username}/add")
+    public ResponseEntity<Void> addModerator(
+        @PathVariable Long groupId,
+        @PathVariable String username
+    ) {
+        workGroupService.addModerator(groupId, username);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{groupId}/moderator/{username}/delete")
+    public ResponseEntity<Void> removeModerator(
+        @PathVariable Long groupId,
+        @PathVariable String username
+    ) {
+        workGroupService.removeModerator(groupId, username);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{groupId}/leave")
     public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
         LOG.debug("REST request to leave group {}", groupId);

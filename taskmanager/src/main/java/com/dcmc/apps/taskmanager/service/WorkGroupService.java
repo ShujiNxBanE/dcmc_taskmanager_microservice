@@ -194,20 +194,69 @@ public class WorkGroupService {
         workGroupMembershipRepository.save(membership);
     }
 
+    @Transactional
+    public void addModerator(Long groupId, String username) {
+        // Solo el OWNER puede hacer esto
+        securityUtilsService.isOwner(groupId);
+
+        User user = userRepository.findOneByLogin(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        WorkGroup group = workGroupRepository.findById(groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+        Optional<WorkGroupMembership> existingMembership =
+            workGroupMembershipRepository.findByUser_LoginAndWorkGroup_Id(username, groupId);
+
+        WorkGroupMembership membership = existingMembership.orElseGet(WorkGroupMembership::new);
+
+        membership.setUser(user);
+        membership.setWorkGroup(group);
+        membership.setRole(GroupRole.MODERATOR); // ← Asignar directamente como moderador
+        membership.setInGroup(true);
+
+        workGroupMembershipRepository.save(membership);
+    }
+
+    @Transactional
+    public void removeModerator(Long groupId, String username) {
+        // Solo el OWNER puede hacer esto
+        securityUtilsService.isOwner(groupId);
+
+        WorkGroupMembership membership = workGroupMembershipRepository
+            .findByUser_LoginAndWorkGroup_Id(username, groupId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Membership not found"));
+
+        if (!Boolean.TRUE.equals(membership.getInGroup())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not currently in the group");
+        }
+
+        if (membership.getRole() != GroupRole.MODERATOR) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not a moderator");
+        }
+
+        // Eliminar del grupo (sin cambiar el rol)
+        membership.setInGroup(false);
+        workGroupMembershipRepository.save(membership);
+    }
+
 
     @Transactional
     public void leaveGroup(Long groupId) {
+        String currentUser = securityUtilsService.getCurrentUser();
+
         WorkGroupMembership membership = workGroupMembershipRepository
-            .findByUser_LoginAndWorkGroup_Id(securityUtilsService.getCurrentUser(), groupId)
+            .findByUser_LoginAndWorkGroup_Id(currentUser, groupId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "You are not a member of this group."));
 
-        if (membership.getRole() != GroupRole.MEMBER) {
-            throw new AccessDeniedException("Only MEMBERS can leave the group themselves.");
+        if (membership.getRole() == GroupRole.OWNER) {
+            throw new AccessDeniedException("The group OWNER cannot leave the group.");
         }
 
         membership.setInGroup(false);
         workGroupMembershipRepository.save(membership);
     }
+
 
     @Transactional(readOnly = true)
     public List<UserDTO> getActiveMemberByGroup(Long groupId) {

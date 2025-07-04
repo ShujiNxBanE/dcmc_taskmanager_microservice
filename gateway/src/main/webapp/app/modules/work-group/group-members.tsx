@@ -28,6 +28,13 @@ const GroupMembers = () => {
   const [transferModalVisible, setTransferModalVisible] = useState(false);
   const [newOwnerUsername, setNewOwnerUsername] = useState('');
   const [transferring, setTransferring] = useState(false);
+  const [addModeratorModalVisible, setAddModeratorModalVisible] = useState(false);
+  const [newModeratorUsername, setNewModeratorUsername] = useState('');
+  const [addingModerator, setAddingModerator] = useState(false);
+  const [moderatorUserOptions, setModeratorUserOptions] = useState<any[]>([]);
+  const [loadingModeratorUsers, setLoadingModeratorUsers] = useState(false);
+  const [ownerOptions, setOwnerOptions] = useState<any[]>([]);
+  const [loadingOwnerOptions, setLoadingOwnerOptions] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -55,6 +62,44 @@ const GroupMembers = () => {
       setNewUsername('');
     }
   }, [addModalVisible]);
+
+  useEffect(() => {
+    if (addModeratorModalVisible) {
+      setLoadingModeratorUsers(true);
+      WorkGroupClientApi.getAllUsers()
+        .then(res => {
+          setModeratorUserOptions(res.data.map((u: any) => ({ label: `@${u.login}`, value: u.login })));
+        })
+        .catch(() => {
+          message.error('Error al cargar usuarios');
+        })
+        .finally(() => setLoadingModeratorUsers(false));
+    } else {
+      setModeratorUserOptions([]);
+      setNewModeratorUsername('');
+    }
+  }, [addModeratorModalVisible]);
+
+  useEffect(() => {
+    if (transferModalVisible) {
+      setLoadingOwnerOptions(true);
+      WorkGroupClientApi.getActiveMembers(Number(groupId))
+        .then(res => {
+          setOwnerOptions(
+            res.data
+              .filter((m: any) => m.role?.toUpperCase() !== 'OWNER' && m.role?.toUpperCase() !== 'PROPIETARIO')
+              .map((m: any) => ({ label: `@${m.login}`, value: m.login })),
+          );
+        })
+        .catch(() => {
+          message.error('Error al cargar miembros del grupo');
+        })
+        .finally(() => setLoadingOwnerOptions(false));
+    } else {
+      setOwnerOptions([]);
+      setNewOwnerUsername('');
+    }
+  }, [transferModalVisible, groupId]);
 
   const loadMembers = async (id: number) => {
     setLoading(true);
@@ -121,10 +166,16 @@ const GroupMembers = () => {
     );
   };
 
-  // Verifica si el usuario autenticado es MEMBER
+  // Solo los usuarios con rol MEMBER o MODERATOR pueden salirse del grupo
   const canLeaveGroup = () => {
     const user = members.find(m => m.login === currentUser?.login);
-    return user && user.role?.toUpperCase() === 'MEMBER';
+    return (
+      user &&
+      (user.role?.toUpperCase() === 'MEMBER' ||
+        user.role?.toUpperCase() === 'MODERATOR' ||
+        user.role?.toUpperCase() === 'MIEMBRO' ||
+        user.role?.toUpperCase() === 'MODERADOR')
+    );
   };
 
   // Verifica si el usuario autenticado puede transferir propiedad (solo OWNER)
@@ -284,6 +335,42 @@ const GroupMembers = () => {
     });
   };
 
+  const handleAddModerator = async () => {
+    if (!groupId || !newModeratorUsername) return;
+    setAddingModerator(true);
+    try {
+      await WorkGroupClientApi.addModerator(Number(groupId), newModeratorUsername);
+      message.success('Moderador añadido exitosamente');
+      setAddModeratorModalVisible(false);
+      setNewModeratorUsername('');
+      loadMembers(Number(groupId));
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || 'Error al añadir moderador');
+    } finally {
+      setAddingModerator(false);
+    }
+  };
+
+  const handleRemoveModerator = (username: string) => {
+    if (!groupId || !username) return;
+    Modal.confirm({
+      title: '¿Eliminar moderador?',
+      content: `¿Estás seguro de que quieres eliminar a @${username} como moderador del grupo?`,
+      okText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      okButtonProps: { danger: true },
+      async onOk() {
+        try {
+          await WorkGroupClientApi.removeModerator(Number(groupId), username);
+          message.success('Moderador eliminado exitosamente');
+          loadMembers(Number(groupId));
+        } catch (error: any) {
+          message.error(error?.response?.data?.message || 'Error al eliminar moderador');
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: 'Usuario',
@@ -360,6 +447,12 @@ const GroupMembers = () => {
           (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'ADMIN' || user.role?.toUpperCase() === 'PROPIETARIO') &&
           record.role?.toUpperCase() !== 'OWNER' &&
           record.login !== currentUser?.login;
+
+        // Solo OWNER puede eliminar moderadores
+        const canRemoveModerator =
+          user &&
+          (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO') &&
+          record.role?.toUpperCase() === 'MODERATOR';
 
         return (
           <Space size="small">
@@ -458,6 +551,23 @@ const GroupMembers = () => {
             {canTransferOwnership() && (
               <Button
                 type="primary"
+                icon={<SafetyCertificateOutlined />}
+                style={{
+                  backgroundColor: '#10b981',
+                  borderColor: '#10b981',
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)',
+                  border: 'none',
+                }}
+                onClick={() => setAddModeratorModalVisible(true)}
+              >
+                Añadir moderador
+              </Button>
+            )}
+            {canTransferOwnership() && (
+              <Button
+                type="primary"
                 icon={<SwapOutlined />}
                 style={{
                   backgroundColor: '#f59e0b',
@@ -532,11 +642,32 @@ const GroupMembers = () => {
           options={userOptions}
           loading={loadingUsers}
           style={{ width: '100%' }}
-          filterOption={(input, option) =>
-            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-          }
+          filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
           disabled={adding || loadingUsers}
           notFoundContent={loadingUsers ? <Spin size="small" /> : 'No hay usuarios disponibles'}
+        />
+      </Modal>
+
+      <Modal
+        title="Añadir moderador al grupo"
+        open={addModeratorModalVisible}
+        onCancel={() => setAddModeratorModalVisible(false)}
+        onOk={handleAddModerator}
+        confirmLoading={addingModerator}
+        okText="Añadir moderador"
+        cancelText="Cancelar"
+      >
+        <Select
+          showSearch
+          placeholder="Selecciona un usuario"
+          value={newModeratorUsername || undefined}
+          onChange={v => setNewModeratorUsername(v)}
+          options={moderatorUserOptions}
+          loading={loadingModeratorUsers}
+          style={{ width: '100%' }}
+          filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+          disabled={addingModerator || loadingModeratorUsers}
+          notFoundContent={loadingModeratorUsers ? <Spin size="small" /> : 'No hay usuarios disponibles'}
         />
       </Modal>
 
@@ -559,13 +690,17 @@ const GroupMembers = () => {
           </p>
           <p style={{ color: '#ef4444', fontWeight: 500 }}>Esta acción no se puede deshacer.</p>
         </div>
-        <Input
-          placeholder="Nombre de usuario del nuevo propietario"
-          value={newOwnerUsername}
-          onChange={e => setNewOwnerUsername(e.target.value)}
-          onPressEnter={handleTransferOwnership}
-          disabled={transferring}
-          prefix={<SwapOutlined style={{ color: '#f59e0b' }} />}
+        <Select
+          showSearch
+          placeholder="Selecciona el nuevo propietario"
+          value={newOwnerUsername || undefined}
+          onChange={v => setNewOwnerUsername(v)}
+          options={ownerOptions}
+          loading={loadingOwnerOptions}
+          style={{ width: '100%' }}
+          filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+          disabled={transferring || loadingOwnerOptions}
+          notFoundContent={loadingOwnerOptions ? <Spin size="small" /> : 'No hay miembros disponibles'}
         />
       </Modal>
     </div>

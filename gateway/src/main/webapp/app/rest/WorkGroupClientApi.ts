@@ -143,6 +143,20 @@ class WorkGroupClientApi {
     return this.api.get('/api/users');
   }
 
+  /**
+   * Añade un usuario como moderador directamente (solo OWNER).
+   */
+  public addModerator(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.post(`/api/work-groups/${groupId}/moderator/${username}/add`);
+  }
+
+  /**
+   * Elimina a un moderador del grupo (solo OWNER).
+   */
+  public removeModerator(groupId: number, username: string): Promise<AxiosResponse<void>> {
+    return this.api.post(`/api/work-groups/${groupId}/moderator/${username}/delete`);
+  }
+
   // Aquí puedes añadir más métodos en el futuro
 }
 
