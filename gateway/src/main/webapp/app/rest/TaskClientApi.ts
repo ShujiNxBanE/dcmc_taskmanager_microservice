@@ -32,6 +32,14 @@ class TaskClientApi {
   }
 
   /**
+   * Obtiene las subtareas asignadas al usuario actual.
+   * @returns {Promise<AxiosResponse<TaskSimpleDTO[]>>}
+   */
+  public getAssignedSubTasks(): Promise<AxiosResponse<TaskSimpleDTO[]>> {
+    return this.api.get<TaskSimpleDTO[]>('/api/tasks/assigned/subtasks');
+  }
+
+  /**
    * Obtiene las tareas creadas por el usuario actual.
    * @returns {Promise<AxiosResponse<TaskSimpleDTO[]>>}
    */
