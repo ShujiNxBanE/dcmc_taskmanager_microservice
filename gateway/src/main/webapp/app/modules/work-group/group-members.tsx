@@ -54,7 +54,7 @@ const GroupMembers = () => {
           setUserOptions(res.data.map((u: any) => ({ label: `@${u.login}`, value: u.login })));
         })
         .catch(() => {
-          message.error('Error al cargar usuarios');
+          message.error('Error al load users');
         })
         .finally(() => setLoadingUsers(false));
     } else {
@@ -71,7 +71,7 @@ const GroupMembers = () => {
           setModeratorUserOptions(res.data.map((u: any) => ({ label: `@${u.login}`, value: u.login })));
         })
         .catch(() => {
-          message.error('Error al cargar usuarios');
+          message.error('Error al load users');
         })
         .finally(() => setLoadingModeratorUsers(false));
     } else {
@@ -92,7 +92,7 @@ const GroupMembers = () => {
           );
         })
         .catch(() => {
-          message.error('Error al cargar miembros del grupo');
+          message.error('Error al load group members');
         })
         .finally(() => setLoadingOwnerOptions(false));
     } else {
@@ -107,8 +107,8 @@ const GroupMembers = () => {
       const response = await WorkGroupClientApi.getActiveMembers(id);
       setMembers(response.data);
     } catch (error) {
-      console.error('Error al cargar los miembros del grupo:', error);
-      message.error('Error al cargar los miembros del grupo');
+      console.error('Error al load group members:', error);
+      message.error('Error al load group members');
     } finally {
       setLoading(false);
     }
@@ -153,7 +153,7 @@ const GroupMembers = () => {
     return member.currentUser || member.login === currentUser?.login;
   };
 
-  // Verifica si el usuario autenticado es miembro o admin
+  // Verifica si the authenticated user is member or admin
   const canAddMember = () => {
     const user = members.find(m => m.login === currentUser?.login);
     return (
@@ -166,7 +166,7 @@ const GroupMembers = () => {
     );
   };
 
-  // Solo los usuarios con rol MEMBER o MODERATOR pueden salirse del grupo
+  // Only members with role MEMBER or MODERATOR can leave the group
   const canLeaveGroup = () => {
     const user = members.find(m => m.login === currentUser?.login);
     return (
@@ -178,13 +178,13 @@ const GroupMembers = () => {
     );
   };
 
-  // Verifica si el usuario autenticado puede transferir propiedad (solo OWNER)
+  // Verifica si the authenticated user can transfer ownership (only OWNER)
   const canTransferOwnership = () => {
     const user = members.find(m => m.login === currentUser?.login);
     return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
   };
 
-  // Verifica si el usuario autenticado puede promover a moderador (OWNER o MODERATOR)
+  // Verifica si the authenticated user can promote to moderator (OWNER or MODERATOR)
   const canPromoteToModerator = () => {
     const user = members.find(m => m.login === currentUser?.login);
     return (
@@ -196,25 +196,25 @@ const GroupMembers = () => {
     );
   };
 
-  // Verifica si un usuario específico puede ser promovido a moderador
+  // Verifica si a specific user can be promoted to moderator
   const canPromoteUser = (member: GroupMemberDTO) => {
-    // No se puede promover al OWNER ni a sí mismo
+    // Cannot promote to OWNER or to itself
     if (member.role?.toUpperCase() === 'OWNER' || member.role?.toUpperCase() === 'PROPIETARIO' || member.login === currentUser?.login) {
       return false;
     }
-    // Solo se puede promover a usuarios con rol MEMBER
+    // Can only promote to users with MEMBER role
     return member.role?.toUpperCase() === 'MEMBER' || member.role?.toUpperCase() === 'MIEMBRO';
   };
 
-  // Verifica si el usuario autenticado puede degradar moderadores (solo OWNER)
+  // Verifica si the authenticated user can demote moderators (only OWNER)
   const canDemoteModerator = () => {
     const user = members.find(m => m.login === currentUser?.login);
     return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
   };
 
-  // Verifica si un usuario específico puede ser degradado
+  // Verifica if a specific user can be demoted
   const canDemoteUser = (member: GroupMemberDTO) => {
-    // Solo se puede degradar a moderadores
+    // Can only demote to moderators
     return member.role?.toUpperCase() === 'MODERATOR' || member.role?.toUpperCase() === 'MODERADOR';
   };
 
@@ -223,12 +223,12 @@ const GroupMembers = () => {
     setAdding(true);
     try {
       await WorkGroupClientApi.addMember(Number(groupId), newUsername);
-      message.success('Miembro añadido exitosamente');
+      message.success('Member added successfully');
       setAddModalVisible(false);
       setNewUsername('');
       loadMembers(Number(groupId));
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Error al añadir miembro');
+      message.error(error?.response?.data?.message || 'Error adding member');
     } finally {
       setAdding(false);
     }
@@ -237,18 +237,18 @@ const GroupMembers = () => {
   const handleRemoveMember = (username: string) => {
     if (!groupId || !username) return;
     Modal.confirm({
-      title: '¿Estás seguro de que quieres eliminar este miembro?',
-      content: `Esta acción no se puede deshacer. Usuario: ${username}`,
-      okText: 'Sí, eliminar',
-      cancelText: 'Cancelar',
+      title: 'Are you sure you want to remove this member?',
+      content: `This action cannot be undone. User: ${username}`,
+      okText: 'Yes, remove',
+      cancelText: 'Cancel',
       okButtonProps: { danger: true },
       async onOk() {
         try {
           await WorkGroupClientApi.removeMember(Number(groupId), username);
-          message.success('Miembro eliminado exitosamente');
+          message.success('Member removed successfully');
           loadMembers(Number(groupId));
         } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Error al eliminar miembro');
+          message.error(error?.response?.data?.message || 'Error removing member');
         }
       },
     });
@@ -257,18 +257,18 @@ const GroupMembers = () => {
   const handleLeaveGroup = () => {
     if (!groupId) return;
     Modal.confirm({
-      title: '¿Estás seguro de que quieres salir del grupo?',
-      content: 'Perderás acceso a este grupo de trabajo.',
-      okText: 'Sí, salir',
-      cancelText: 'Cancelar',
+      title: 'Are you sure you want to leave the group?',
+      content: 'You will lose access to this work group.',
+      okText: 'Yes, leave',
+      cancelText: 'Cancel',
       okButtonProps: { danger: true },
       async onOk() {
         try {
           await WorkGroupClientApi.leaveGroup(Number(groupId));
-          message.success('Has salido del grupo exitosamente');
+          message.success('You have left the group successfully');
           navigate('/work-group');
         } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Error al salir del grupo');
+          message.error(error?.response?.data?.message || 'Error leaving group');
         }
       },
     });
@@ -279,12 +279,12 @@ const GroupMembers = () => {
     setTransferring(true);
     try {
       await WorkGroupClientApi.transferOwnership(Number(groupId), newOwnerUsername);
-      message.success('Propiedad del grupo transferida exitosamente');
+      message.success('Group ownership transferred successfully');
       setTransferModalVisible(false);
       setNewOwnerUsername('');
       loadMembers(Number(groupId));
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Error al transferir la propiedad del grupo');
+      message.error(error?.response?.data?.message || 'Error transferring group ownership');
     } finally {
       setTransferring(false);
     }
@@ -293,20 +293,20 @@ const GroupMembers = () => {
   const handlePromoteToModerator = (username: string) => {
     if (!groupId || !username) return;
     Modal.confirm({
-      title: '¿Promover a moderador?',
-      content: `¿Estás seguro de que quieres promover a @${username} a moderador del grupo?`,
-      okText: 'Sí, promover',
-      cancelText: 'Cancelar',
+      title: 'Promote to moderator?',
+      content: `Are you sure you want to promote @${username} to moderator of the group?`,
+      okText: 'Yes, promote',
+      cancelText: 'Cancel',
       okButtonProps: {
         style: { backgroundColor: '#10b981', borderColor: '#10b981' },
       },
       async onOk() {
         try {
           await WorkGroupClientApi.promoteToModerator(Number(groupId), username);
-          message.success('Usuario promovido a moderador exitosamente');
+          message.success('User promoted to moderator successfully');
           loadMembers(Number(groupId));
         } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Error al promover usuario');
+          message.error(error?.response?.data?.message || 'Error promoting user');
         }
       },
     });
@@ -315,10 +315,10 @@ const GroupMembers = () => {
   const handleDemoteModerator = (username: string) => {
     if (!groupId || !username) return;
     Modal.confirm({
-      title: '¿Degradar moderador?',
-      content: `¿Estás seguro de que quieres degradar a @${username} de moderador a miembro del grupo?`,
-      okText: 'Sí, degradar',
-      cancelText: 'Cancelar',
+      title: 'Demote moderator?',
+      content: `Are you sure you want to demote @${username} from moderator to member of the group?`,
+      okText: 'Yes, demote',
+      cancelText: 'Cancel',
       okButtonProps: {
         danger: true,
         style: { backgroundColor: '#ef4444', borderColor: '#ef4444' },
@@ -326,10 +326,10 @@ const GroupMembers = () => {
       async onOk() {
         try {
           await WorkGroupClientApi.demoteModerator(Number(groupId), username);
-          message.success('Moderador degradado exitosamente');
+          message.success('Moderator demoted successfully');
           loadMembers(Number(groupId));
         } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Error al degradar moderador');
+          message.error(error?.response?.data?.message || 'Error demoting moderator');
         }
       },
     });
@@ -340,12 +340,12 @@ const GroupMembers = () => {
     setAddingModerator(true);
     try {
       await WorkGroupClientApi.addModerator(Number(groupId), newModeratorUsername);
-      message.success('Moderador añadido exitosamente');
+      message.success('Moderator added successfully');
       setAddModeratorModalVisible(false);
       setNewModeratorUsername('');
       loadMembers(Number(groupId));
     } catch (error: any) {
-      message.error(error?.response?.data?.message || 'Error al añadir moderador');
+      message.error(error?.response?.data?.message || 'Error adding moderator');
     } finally {
       setAddingModerator(false);
     }
@@ -354,18 +354,18 @@ const GroupMembers = () => {
   const handleRemoveModerator = (username: string) => {
     if (!groupId || !username) return;
     Modal.confirm({
-      title: '¿Eliminar moderador?',
-      content: `¿Estás seguro de que quieres eliminar a @${username} como moderador del grupo?`,
-      okText: 'Sí, eliminar',
-      cancelText: 'Cancelar',
+      title: 'Remove moderator?',
+      content: `Are you sure you want to remove @${username} as moderator of the group?`,
+      okText: 'Yes, remove',
+      cancelText: 'Cancel',
       okButtonProps: { danger: true },
       async onOk() {
         try {
           await WorkGroupClientApi.removeModerator(Number(groupId), username);
-          message.success('Moderador eliminado exitosamente');
+          message.success('Moderator removed successfully');
           loadMembers(Number(groupId));
         } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Error al eliminar moderador');
+          message.error(error?.response?.data?.message || 'Error removing moderator');
         }
       },
     });
@@ -373,7 +373,7 @@ const GroupMembers = () => {
 
   const columns = [
     {
-      title: 'Usuario',
+      title: 'User',
       key: 'user',
       render: (_: any, record: GroupMemberDTO) => (
         <div
@@ -408,7 +408,7 @@ const GroupMembers = () => {
               @{record.login}
               {isCurrentUser(record) && (
                 <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>
-                  Tú
+                  You
                 </Tag>
               )}
             </div>
@@ -418,7 +418,7 @@ const GroupMembers = () => {
       ),
     },
     {
-      title: 'Rol',
+      title: 'Role',
       key: 'role',
       render: (_: any, record: GroupMemberDTO) => (
         <Tag
@@ -432,15 +432,15 @@ const GroupMembers = () => {
             gap: 4,
           }}
         >
-          {record.role || 'Sin rol'}
+          {record.role || 'No role'}
         </Tag>
       ),
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render(_: any, record: GroupMemberDTO) {
-        // Solo OWNER, ADMIN o PROPIETARIO pueden eliminar miembros (y nunca al OWNER ni a sí mismos)
+        // Only OWNER, ADMIN or PROPIETARIO can remove members (and never to OWNER or itself)
         const user = members.find(m => m.login === currentUser?.login);
         const canRemove =
           user &&
@@ -448,7 +448,7 @@ const GroupMembers = () => {
           record.role?.toUpperCase() !== 'OWNER' &&
           record.login !== currentUser?.login;
 
-        // Solo OWNER puede eliminar moderadores
+        // Only OWNER can remove moderators
         const canRemoveModerator =
           user &&
           (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO') &&
@@ -460,25 +460,25 @@ const GroupMembers = () => {
               <Button
                 type="text"
                 onClick={() => handlePromoteToModerator(record.login)}
-                title="Promover a moderador"
+                title="Promote to moderator"
                 style={{ color: '#10b981' }}
               >
-                Promover
+                Promote
               </Button>
             )}
             {canDemoteModerator() && canDemoteUser(record) && (
               <Button
                 type="text"
                 onClick={() => handleDemoteModerator(record.login)}
-                title="Degradar de moderador"
+                title="Demote from moderator"
                 style={{ color: '#ef4444' }}
               >
-                Degradar
+                Demote
               </Button>
             )}
             {canRemove && (
-              <Button danger type="text" onClick={() => handleRemoveMember(record.login)} title="Eliminar miembro">
-                Eliminar
+              <Button danger type="text" onClick={() => handleRemoveMember(record.login)} title="Remove member">
+                Remove
               </Button>
             )}
           </Space>
@@ -491,7 +491,7 @@ const GroupMembers = () => {
     <div className="work-group-container">
       <div style={{ marginBottom: 24 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={handleBack} style={{ marginBottom: 16 }} type="text">
-          Volver a Grupos de Trabajo
+          Back to Work Groups
         </Button>
 
         <Card
@@ -505,24 +505,24 @@ const GroupMembers = () => {
           <Row gutter={24}>
             <Col span={12}>
               <div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: 16 }}>
-                <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700 }}>Miembros del Grupo</h1>
+                <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700 }}>Group Members</h1>
               </div>
               <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: 16, color: '#e2e8f0' }}>{groupInfo?.name}</p>
             </Col>
             <Col span={12}>
               <div style={{ textAlign: 'right' }}>
                 <Statistic
-                  title={<span style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 500 }}>Total de miembros</span>}
+                  title={<span style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 500 }}>Total members</span>}
                   value={members.length}
                   valueStyle={{ color: 'white', fontSize: 32, fontWeight: 700 }}
-                  suffix={members.length === 1 ? 'miembro' : 'miembros'}
+                  suffix={members.length === 1 ? 'member' : 'members'}
                 />
               </div>
             </Col>
           </Row>
         </Card>
 
-        {/* Área de botones con nuevo diseño */}
+        {/* Area of buttons with new design */}
         <Card
           style={{
             marginTop: 16,
@@ -545,7 +545,7 @@ const GroupMembers = () => {
                 }}
                 onClick={() => setAddModalVisible(true)}
               >
-                Añadir miembro
+                Add member
               </Button>
             )}
             {canTransferOwnership() && (
@@ -562,7 +562,7 @@ const GroupMembers = () => {
                 }}
                 onClick={() => setAddModeratorModalVisible(true)}
               >
-                Añadir moderador
+                Add moderator
               </Button>
             )}
             {canTransferOwnership() && (
@@ -579,7 +579,7 @@ const GroupMembers = () => {
                 }}
                 onClick={() => setTransferModalVisible(true)}
               >
-                Transferir propiedad
+                Transfer ownership
               </Button>
             )}
             {canLeaveGroup() && (
@@ -595,7 +595,7 @@ const GroupMembers = () => {
                 }}
                 onClick={handleLeaveGroup}
               >
-                Salir del grupo
+                Leave group
               </Button>
             )}
           </div>
@@ -618,25 +618,26 @@ const GroupMembers = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} miembros`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} members`,
           }}
           className="work-group-tables"
           rowClassName={record => (isCurrentUser(record) ? 'current-user-row' : '')}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 
       <Modal
-        title="Añadir miembro al grupo"
+        title="Add member to group"
         open={addModalVisible}
         onCancel={() => setAddModalVisible(false)}
         onOk={handleAddMember}
         confirmLoading={adding}
-        okText="Añadir"
-        cancelText="Cancelar"
+        okText="Add"
+        cancelText="Cancel"
       >
         <Select
           showSearch
-          placeholder="Selecciona un usuario"
+          placeholder="Select a user"
           value={newUsername || undefined}
           onChange={v => setNewUsername(v)}
           options={userOptions}
@@ -644,22 +645,22 @@ const GroupMembers = () => {
           style={{ width: '100%' }}
           filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
           disabled={adding || loadingUsers}
-          notFoundContent={loadingUsers ? <Spin size="small" /> : 'No hay usuarios disponibles'}
+          notFoundContent={loadingUsers ? <Spin size="small" /> : 'No users available'}
         />
       </Modal>
 
       <Modal
-        title="Añadir moderador al grupo"
+        title="Add moderator to group"
         open={addModeratorModalVisible}
         onCancel={() => setAddModeratorModalVisible(false)}
         onOk={handleAddModerator}
         confirmLoading={addingModerator}
-        okText="Añadir moderador"
-        cancelText="Cancelar"
+        okText="Add moderator"
+        cancelText="Cancel"
       >
         <Select
           showSearch
-          placeholder="Selecciona un usuario"
+          placeholder="Select a user"
           value={newModeratorUsername || undefined}
           onChange={v => setNewModeratorUsername(v)}
           options={moderatorUserOptions}
@@ -667,18 +668,18 @@ const GroupMembers = () => {
           style={{ width: '100%' }}
           filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
           disabled={addingModerator || loadingModeratorUsers}
-          notFoundContent={loadingModeratorUsers ? <Spin size="small" /> : 'No hay usuarios disponibles'}
+          notFoundContent={loadingModeratorUsers ? <Spin size="small" /> : 'No users available'}
         />
       </Modal>
 
       <Modal
-        title="Transferir propiedad del grupo"
+        title="Transfer group ownership"
         open={transferModalVisible}
         onCancel={() => setTransferModalVisible(false)}
         onOk={handleTransferOwnership}
         confirmLoading={transferring}
-        okText="Transferir"
-        cancelText="Cancelar"
+        okText="Transfer"
+        cancelText="Cancel"
         okButtonProps={{
           danger: true,
           style: { backgroundColor: '#f59e0b', borderColor: '#f59e0b' },
@@ -686,13 +687,13 @@ const GroupMembers = () => {
       >
         <div style={{ marginBottom: 16 }}>
           <p style={{ color: '#6b7280', marginBottom: 8 }}>
-            Al transferir la propiedad del grupo, perderás tus privilegios de propietario y se los otorgarás al nuevo propietario.
+            When transferring group ownership, you will lose your owner privileges and they will be granted to the new owner.
           </p>
-          <p style={{ color: '#ef4444', fontWeight: 500 }}>Esta acción no se puede deshacer.</p>
+          <p style={{ color: '#ef4444', fontWeight: 500 }}>This action cannot be undone.</p>
         </div>
         <Select
           showSearch
-          placeholder="Selecciona el nuevo propietario"
+          placeholder="Select the new owner"
           value={newOwnerUsername || undefined}
           onChange={v => setNewOwnerUsername(v)}
           options={ownerOptions}
@@ -700,7 +701,7 @@ const GroupMembers = () => {
           style={{ width: '100%' }}
           filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
           disabled={transferring || loadingOwnerOptions}
-          notFoundContent={loadingOwnerOptions ? <Spin size="small" /> : 'No hay miembros disponibles'}
+          notFoundContent={loadingOwnerOptions ? <Spin size="small" /> : 'No members available'}
         />
       </Modal>
     </div>

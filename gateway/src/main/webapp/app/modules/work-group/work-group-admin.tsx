@@ -84,10 +84,10 @@ const WorkGroupAdmin = () => {
   };
 
   const allColumns = [
-    { title: 'Nombre', dataIndex: 'name', key: 'name' },
-    { title: 'Descripción', dataIndex: 'description', key: 'description' },
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: 'Description', dataIndex: 'description', key: 'description' },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: WorkGroupDTO) => (
         <Space size="small">
@@ -96,15 +96,15 @@ const WorkGroupAdmin = () => {
             icon={<TeamOutlined />}
             onClick={() => navigate(`/work-group/members/${record.id}/${encodeURIComponent(record.name)}`)}
             style={{ color: '#10b981' }}
-            title="Ver miembros"
+            title="View members"
           />
           <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ color: '#3b82f6' }} />
           <Popconfirm
-            title="¿Estás seguro de que quieres eliminar este grupo?"
-            description="Esta acción no se puede deshacer."
+            title="Are you sure you want to delete this group?"
+            description="This action cannot be undone."
             onConfirm={() => record.id !== undefined && handleDelete(record.id)}
-            okText="Sí, eliminar"
-            cancelText="Cancelar"
+            okText="Yes, delete"
+            cancelText="Cancel"
             okButtonProps={{ danger: true }}
           >
             <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} />
@@ -115,11 +115,11 @@ const WorkGroupAdmin = () => {
   ];
 
   const myColumns = [
-    { title: 'Nombre', dataIndex: 'groupName', key: 'groupName' },
-    { title: 'Descripción', dataIndex: 'groupDescription', key: 'groupDescription' },
-    { title: 'Rol', dataIndex: 'role', key: 'role' },
+    { title: 'Name', dataIndex: 'groupName', key: 'groupName' },
+    { title: 'Description', dataIndex: 'groupDescription', key: 'groupDescription' },
+    { title: 'Role', dataIndex: 'role', key: 'role' },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: UserGroupViewDTO) => (
         <Space size="small">
@@ -128,7 +128,7 @@ const WorkGroupAdmin = () => {
             icon={<TeamOutlined />}
             onClick={() => navigate(`/work-group/members/${record.groupId}/${encodeURIComponent(record.groupName)}`)}
             style={{ color: '#10b981' }}
-            title="Ver miembros"
+            title="View members"
           />
           {isOwner(record) && (
             <>
@@ -146,11 +146,11 @@ const WorkGroupAdmin = () => {
                 style={{ color: '#3b82f6' }}
               />
               <Popconfirm
-                title="¿Estás seguro de que quieres eliminar este grupo?"
-                description="Esta acción no se puede deshacer."
+                title="Are you sure you want to delete this group?"
+                description="This action cannot be undone."
                 onConfirm={() => record.groupId !== undefined && handleDelete(record.groupId)}
-                okText="Sí, eliminar"
-                cancelText="Cancelar"
+                okText="Yes, delete"
+                cancelText="Cancel"
                 okButtonProps={{ danger: true }}
               >
                 <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} />
@@ -165,29 +165,29 @@ const WorkGroupAdmin = () => {
   const tabItems = [
     {
       key: 'all',
-      label: 'Todos los Grupos',
+      label: 'All Groups',
       children: (
         <div className="work-group-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)} className="create-group-button">
-              Crear Grupo
+              Create Group
             </Button>
           </div>
-          <Table rowKey="id" dataSource={allWorkGroups} columns={allColumns} loading={loadingAll} />
+          <Table rowKey="id" dataSource={allWorkGroups} columns={allColumns} loading={loadingAll} scroll={{ x: 'max-content' }} />
         </div>
       ),
     },
     {
       key: 'my',
-      label: 'Mis Grupos',
+      label: 'My Groups',
       children: (
         <div className="work-group-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)} className="create-group-button">
-              Crear Grupo
+              Create Group
             </Button>
           </div>
-          <Table rowKey="groupId" dataSource={myWorkGroups} columns={myColumns} loading={loadingMy} />
+          <Table rowKey="groupId" dataSource={myWorkGroups} columns={myColumns} loading={loadingMy} scroll={{ x: 'max-content' }} />
         </div>
       ),
     },

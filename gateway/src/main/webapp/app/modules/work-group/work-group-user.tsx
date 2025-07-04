@@ -70,11 +70,11 @@ const WorkGroupUser = () => {
   }, []);
 
   const columns = [
-    { title: 'Nombre', dataIndex: 'groupName', key: 'groupName' },
-    { title: 'Descripción', dataIndex: 'groupDescription', key: 'groupDescription' },
-    { title: 'Rol', dataIndex: 'role', key: 'role' },
+    { title: 'Name', dataIndex: 'groupName', key: 'groupName' },
+    { title: 'Description', dataIndex: 'groupDescription', key: 'groupDescription' },
+    { title: 'Role', dataIndex: 'role', key: 'role' },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render(_: any, record: UserGroupViewDTO) {
         return (
@@ -84,17 +84,17 @@ const WorkGroupUser = () => {
               icon={<TeamOutlined />}
               onClick={() => navigate(`/work-group/members/${record.groupId}/${encodeURIComponent(record.groupName)}`)}
               style={{ color: '#10b981' }}
-              title="Ver miembros"
+              title="View members"
             />
             {isOwner(record) && (
               <>
                 <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ color: '#3b82f6' }} />
                 <Popconfirm
-                  title="¿Estás seguro de que quieres eliminar este grupo?"
-                  description="Esta acción no se puede deshacer."
+                  title="Are you sure you want to delete this group?"
+                  description="This action cannot be undone."
                   onConfirm={() => record.groupId !== undefined && handleDelete(record.groupId)}
-                  okText="Sí, eliminar"
-                  cancelText="Cancelar"
+                  okText="Yes, delete"
+                  cancelText="Cancel"
                   okButtonProps={{ danger: true }}
                 >
                   <Button type="text" icon={<DeleteOutlined />} style={{ color: '#ef4444' }} />
@@ -112,10 +112,10 @@ const WorkGroupUser = () => {
       <div className="work-group-tables">
         <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)} className="create-group-button">
-            Crear Grupo
+            Create Group
           </Button>
         </div>
-        <Table rowKey="groupId" dataSource={workGroups} columns={columns} />
+        <Table rowKey="groupId" dataSource={workGroups} columns={columns} scroll={{ x: 'max-content' }} />
       </div>
       <CreateWorkGroupModal visible={modalVisible} onCancel={() => setModalVisible(false)} onSuccess={handleCreateSuccess} />
       <EditWorkGroupModal

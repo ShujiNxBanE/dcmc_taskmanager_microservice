@@ -25,13 +25,13 @@ const CreateWorkGroupModal: React.FC<CreateWorkGroupModalProps> = ({ visible, on
       };
 
       await WorkGroupClientApi.createWorkGroup(workGroupData);
-      message.success('Grupo de trabajo creado exitosamente');
+      message.success('Work group created successfully');
       form.resetFields();
       onSuccess();
       onCancel();
     } catch (error) {
-      console.error('Error al crear el grupo de trabajo:', error);
-      message.error('Error al crear el grupo de trabajo');
+      console.error('Error creating work group:', error);
+      message.error('Error creating work group');
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ const CreateWorkGroupModal: React.FC<CreateWorkGroupModalProps> = ({ visible, on
 
   return (
     <Modal
-      title="Crear Nuevo Grupo de Trabajo"
+      title="Create New Work Group"
       open={visible}
       onCancel={handleCancel}
       footer={null}
@@ -55,34 +55,30 @@ const CreateWorkGroupModal: React.FC<CreateWorkGroupModalProps> = ({ visible, on
       <Form form={form} layout="vertical" onFinish={handleSubmit} autoComplete="off">
         <div className="form-group">
           <Form.Item
-            label="Nombre del Grupo"
+            label="Work Group Name"
             name="name"
             rules={[
-              { required: true, message: 'Por favor ingresa el nombre del grupo' },
-              { min: 3, message: 'El nombre debe tener al menos 3 caracteres' },
-              { max: 50, message: 'El nombre no puede exceder 50 caracteres' },
+              { required: true, message: 'Please enter the work group name' },
+              { min: 3, message: 'The name must be at least 3 characters' },
+              { max: 50, message: 'The name cannot exceed 50 characters' },
             ]}
           >
-            <Input placeholder="Ingresa el nombre del grupo" />
+            <Input placeholder="Enter the work group name" />
           </Form.Item>
         </div>
 
         <div className="form-group">
-          <Form.Item
-            label="Descripción"
-            name="description"
-            rules={[{ max: 200, message: 'La descripción no puede exceder 200 caracteres' }]}
-          >
-            <Input.TextArea placeholder="Describe el propósito del grupo (opcional)" rows={4} />
+          <Form.Item label="Description" name="description" rules={[{ max: 200, message: 'The description cannot exceed 200 characters' }]}>
+            <Input.TextArea placeholder="Describe the purpose of the group (optional)" rows={4} />
           </Form.Item>
         </div>
 
         <div className="modal-actions">
           <Button onClick={handleCancel} disabled={loading}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="primary" htmlType="submit" loading={loading} icon={<PlusOutlined />}>
-            Crear Grupo
+            Create Group
           </Button>
         </div>
       </Form>
