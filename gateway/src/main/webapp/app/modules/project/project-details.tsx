@@ -147,7 +147,7 @@ const ProjectDetails = () => {
 
   const userColumns = [
     {
-      title: 'Usuario',
+      title: 'User',
       key: 'user',
       render(_: any, record: UserDTO) {
         const isCurrentUser = record.login === accountLogin;
@@ -160,7 +160,7 @@ const ProjectDetails = () => {
             <div>
               <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center' }}>
                 {record.firstName && record.lastName ? `${record.firstName} ${record.lastName}` : record.login}
-                {isCurrentUser && <StarFilled style={{ color: '#fadb14', marginLeft: 6 }} title="Tú" />}
+                {isCurrentUser && <StarFilled style={{ color: '#fadb14', marginLeft: 6 }} title="You" />}
               </div>
               <div style={{ fontSize: 12, color: '#666' }}>@{record.login}</div>
             </div>
@@ -169,12 +169,12 @@ const ProjectDetails = () => {
       },
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render(_: any, record: UserDTO) {
         // Solo mostrar botón de desasignar si el usuario actual es el creador del proyecto
         if (!isProjectCreator) {
-          return <span style={{ color: '#999' }}>Sin permisos</span>;
+          return <span style={{ color: '#999' }}>No permissions</span>;
         }
 
         return (
@@ -182,10 +182,10 @@ const ProjectDetails = () => {
             type="text"
             icon={<UserDeleteOutlined />}
             style={{ color: '#ef4444' }}
-            title="Desasignar usuario"
+            title="Unassign user"
             onClick={() => handleUnassignUser(record)}
           >
-            Desasignar
+            Unassign
           </Button>
         );
       },
@@ -203,9 +203,9 @@ const ProjectDetails = () => {
   if (!project) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <Title level={3}>Proyecto no encontrado</Title>
+        <Title level={3}>Project not found</Title>
         <Button type="primary" onClick={() => navigate('/project')}>
-          Volver a Proyectos
+          Back to Projects
         </Button>
       </div>
     );
@@ -216,7 +216,7 @@ const ProjectDetails = () => {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/project')} style={{ marginBottom: '16px' }}>
-          Volver a Proyectos
+          Back to Projects
         </Button>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -225,58 +225,58 @@ const ProjectDetails = () => {
               {project.title}
             </Title>
             <Text type="secondary" style={{ fontSize: '16px' }}>
-              Proyecto en {project.workGroup?.name}
+              Project in {project.workGroup?.name}
             </Text>
           </div>
 
           <Space>
             <Button type="primary" icon={<EditOutlined />} onClick={handleEditProject}>
-              Editar
+              Edit
             </Button>
             {isProjectCreator && (
               <Button icon={<UserAddOutlined />} onClick={handleAssignUsers}>
-                Asignar Usuarios
+                Assign Users
               </Button>
             )}
             <Button danger icon={<DeleteOutlined />} onClick={handleDeleteProject}>
-              Eliminar
+              Delete
             </Button>
           </Space>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        {/* Detalles del Proyecto */}
-        <Card title="Detalles del Proyecto" style={{ height: 'fit-content' }}>
+      <div className="project-details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        {/* Project Details */}
+        <Card title="Project Details" style={{ height: 'fit-content' }}>
           <Descriptions column={1} size="small">
-            <Descriptions.Item label="Título">
+            <Descriptions.Item label="Title">
               <Text strong>{project.title}</Text>
             </Descriptions.Item>
-            <Descriptions.Item label="Descripción">
-              <Text>{project.description || 'Sin descripción'}</Text>
+            <Descriptions.Item label="Description">
+              <Text>{project.description || 'No description'}</Text>
             </Descriptions.Item>
-            <Descriptions.Item label="Creador">
+            <Descriptions.Item label="Creator">
               <Tag color="blue">@{project.creator?.login}</Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Grupo de Trabajo">
+            <Descriptions.Item label="Work Group">
               <Tag color="purple" style={{ fontWeight: 500 }}>
                 {project.workGroup?.name}
               </Tag>
             </Descriptions.Item>
-            <Descriptions.Item label="Miembros Asignados">
+            <Descriptions.Item label="Assigned Members">
               <Tag color="green" icon={<TeamOutlined />}>
-                {assignedUsers.length} usuarios
+                {assignedUsers.length} users
               </Tag>
             </Descriptions.Item>
           </Descriptions>
         </Card>
 
-        {/* Usuarios Asignados */}
+        {/* Assigned Users */}
         <Card
           title={
             <span>
               <TeamOutlined style={{ marginRight: 8 }} />
-              Usuarios Asignados ({assignedUsers.length})
+              Assigned Users ({assignedUsers.length})
             </span>
           }
         >
@@ -288,7 +288,7 @@ const ProjectDetails = () => {
             rowKey="id"
             size="small"
             locale={{
-              emptyText: 'No hay usuarios asignados a este proyecto',
+              emptyText: 'No users assigned to this project',
             }}
           />
         </Card>

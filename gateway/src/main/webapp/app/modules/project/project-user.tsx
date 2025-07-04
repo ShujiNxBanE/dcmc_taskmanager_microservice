@@ -53,13 +53,13 @@ const ProjectUser = () => {
 
   const assignedColumns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
     },
     {
-      title: 'Descripción',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
@@ -67,16 +67,16 @@ const ProjectUser = () => {
       ),
     },
     {
-      title: 'Grupo de Trabajo',
+      title: 'Work Group',
       key: 'workGroup',
       render: (_: any, record: ProjectDTO) => (
         <Tag color="purple" style={{ fontWeight: 500 }}>
-          {record.workGroup?.name || `Grupo ${record.workGroup?.id}`}
+          {record.workGroup?.name || `Group ${record.workGroup?.id}`}
         </Tag>
       ),
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: ProjectDTO) => (
         <Space size="small">
@@ -85,9 +85,9 @@ const ProjectUser = () => {
             icon={<TeamOutlined />}
             onClick={() => navigate(`/project/${record.id}`)}
             style={{ color: '#10b981' }}
-            title="Ver detalles"
+            title="View details"
           >
-            Ver
+            View
           </Button>
         </Space>
       ),
@@ -96,13 +96,13 @@ const ProjectUser = () => {
 
   const createdColumns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string) => <div style={{ fontWeight: 600, color: '#1f2937' }}>{text}</div>,
     },
     {
-      title: 'Descripción',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
@@ -110,7 +110,7 @@ const ProjectUser = () => {
       ),
     },
     {
-      title: 'Acciones',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: MinimalProjectDTO) => (
         <Space size="small">
@@ -119,22 +119,22 @@ const ProjectUser = () => {
             icon={<TeamOutlined />}
             onClick={() => navigate(`/project/${record.id}`)}
             style={{ color: '#10b981' }}
-            title="Ver detalles"
+            title="View details"
           >
-            Ver
+            View
           </Button>
           <Button
             type="text"
             icon={<EditOutlined />}
             style={{ color: '#3b82f6' }}
-            title="Editar proyecto"
+            title="Edit project"
             onClick={() => handleEditProject(record)}
           />
           <Button
             type="text"
             icon={<DeleteOutlined />}
             style={{ color: '#ef4444' }}
-            title="Eliminar proyecto"
+            title="Delete project"
             onClick={() => handleDeleteProject(record)}
           />
         </Space>
@@ -194,14 +194,14 @@ const ProjectUser = () => {
       label: (
         <span>
           <UserOutlined style={{ marginRight: 8 }} />
-          Proyectos Asignados ({assignedProjects.length})
+          Assigned Projects ({assignedProjects.length})
         </span>
       ),
       children: (
         <div className="project-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
             <Button type="primary" icon={<PlusOutlined />} className="create-project-button" onClick={handleCreateProject}>
-              Crear Proyecto
+              Create Project
             </Button>
           </div>
           <Table
@@ -213,7 +213,7 @@ const ProjectUser = () => {
               pageSize: 10,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} proyectos`,
+              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} projects`,
             }}
           />
         </div>
@@ -224,14 +224,14 @@ const ProjectUser = () => {
       label: (
         <span>
           <PlusOutlined style={{ marginRight: 8 }} />
-          Mis Proyectos Creados ({myCreatedProjects.length})
+          My Created Projects ({myCreatedProjects.length})
         </span>
       ),
       children: (
         <div className="project-tables">
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
             <Button type="primary" icon={<PlusOutlined />} className="create-project-button" onClick={handleCreateProject}>
-              Crear Proyecto
+              Create Project
             </Button>
           </div>
           <Table
@@ -243,7 +243,7 @@ const ProjectUser = () => {
               pageSize: 10,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} proyectos`,
+              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} projects`,
             }}
           />
         </div>

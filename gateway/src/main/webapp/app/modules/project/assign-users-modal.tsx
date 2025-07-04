@@ -52,7 +52,7 @@ const AssignUsersModal: React.FC<AssignUsersModalProps> = ({ visible, projectId,
       title={
         <span>
           <TeamOutlined style={{ marginRight: 8 }} />
-          Asignar Usuario al Proyecto
+          Assign User to Project
         </span>
       }
       open={visible}
@@ -64,15 +64,15 @@ const AssignUsersModal: React.FC<AssignUsersModalProps> = ({ visible, projectId,
     >
       <div style={{ marginBottom: 16 }}>
         <p>
-          <strong>Proyecto:</strong> {projectTitle}
+          <strong>Project:</strong> {projectTitle}
         </p>
-        <p style={{ color: '#666', fontSize: 14 }}>Ingresa el nombre de usuario que deseas asignar al proyecto.</p>
+        <p style={{ color: '#666', fontSize: 14 }}>Enter the username you want to assign to the project.</p>
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Nombre de Usuario:</label>
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Username:</label>
         <Input
-          placeholder="Ej: juan.perez"
+          placeholder="E.g.: john.doe"
           value={username}
           onChange={e => setUsername(e.target.value)}
           prefix={<UserOutlined />}
@@ -83,10 +83,10 @@ const AssignUsersModal: React.FC<AssignUsersModalProps> = ({ visible, projectId,
 
       <div className="modal-actions">
         <Button onClick={handleCancel} disabled={loading}>
-          Cancelar
+          Cancel
         </Button>
         <Button type="primary" loading={loading} icon={<TeamOutlined />} onClick={handleSubmit}>
-          Asignar Usuario
+          Assign User
         </Button>
       </div>
     </Modal>

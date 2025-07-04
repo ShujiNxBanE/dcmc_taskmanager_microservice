@@ -9,6 +9,21 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
     overflow: hidden;
+    
+    // Responsividad para tablas
+    @media (max-width: 768px) {
+      border-radius: 0;
+      box-shadow: none;
+      border: none;
+      overflow-x: auto;
+      .ant-table {
+        font-size: 13px;
+        .ant-table-thead > tr > th,
+        .ant-table-tbody > tr > td {
+          padding: 8px 6px;
+        }
+      }
+    }
 
     .ant-table {
       .ant-table-thead > tr > th {
@@ -40,6 +55,11 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
     }
+    @media (max-width: 480px) {
+      width: 100%;
+      min-width: unset;
+      margin-bottom: 10px;
+    }
   }
 
   .current-user-row {
@@ -48,6 +68,10 @@
     &:hover {
       background-color: #e0f2fe !important;
     }
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px;
   }
 }
 
@@ -143,5 +167,33 @@
         }
       }
     }
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 8px;
+      .ant-btn {
+        width: 100%;
+        min-width: unset;
+      }
+    }
+  }
+
+  @media (max-width: 600px) {
+    .ant-modal {
+      width: 98vw !important;
+      max-width: 98vw !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .ant-modal-content {
+      padding: 10px !important;
+    }
+  }
+}
+
+// Grids y tarjetas responsivas en detalles
+@media (max-width: 900px) {
+  .project-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 } 

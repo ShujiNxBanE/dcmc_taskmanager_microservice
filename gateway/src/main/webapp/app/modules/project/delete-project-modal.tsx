@@ -19,19 +19,19 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({ visible, projec
 
   const handleDelete = async () => {
     if (!project?.id) {
-      message.error('ID del proyecto no encontrado');
+      message.error('ID del project no encontrado');
       return;
     }
 
     setLoading(true);
     try {
       await ProjectClientApi.deleteProject(project.id);
-      message.success('Proyecto eliminado exitosamente');
+      message.success('Project deleted successfully');
       onSuccess();
       onCancel();
     } catch (error) {
-      console.error('Error al eliminar el proyecto:', error);
-      message.error('Error al eliminar el proyecto');
+      console.error('Error al eliminar el project:', error);
+      message.error('Error al eliminar el project');
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({ visible, projec
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: 20 }} />
-          <span>Confirmar Eliminación</span>
+          <span>Confirm Deletion</span>
         </div>
       }
       open={visible}
@@ -58,7 +58,7 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({ visible, projec
     >
       <div style={{ padding: '16px 0' }}>
         <Text>
-          ¿Estás seguro de que quieres eliminar el proyecto{' '}
+          Are you sure you want to delete the project{' '}
           <Text strong style={{ color: '#1f2937' }}>
             &ldquo;{project?.title}&rdquo;
           </Text>
@@ -68,17 +68,17 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({ visible, projec
         <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 6 }}>
           <Text type="danger" style={{ fontSize: 14 }}>
             <ExclamationCircleOutlined style={{ marginRight: 8 }} />
-            Esta acción no se puede deshacer. El proyecto será marcado como inactivo y ya no aparecerá en las listas.
+            This action cannot be undone. The project will be marked as inactive and will no longer appear in the lists.
           </Text>
         </div>
       </div>
 
       <div className="modal-actions">
         <Button onClick={handleCancel} disabled={loading}>
-          Cancelar
+          Cancel
         </Button>
         <Button type="primary" danger loading={loading} icon={<DeleteOutlined />} onClick={handleDelete}>
-          Eliminar Proyecto
+          Delete Project
         </Button>
       </div>
     </Modal>

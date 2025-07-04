@@ -46,7 +46,7 @@ const UnassignUserModal: React.FC<UnassignUserModalProps> = ({ visible, projectI
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: 20 }} />
-          <span>Confirmar Desasignación</span>
+          <span>Confirm Unassignment</span>
         </div>
       }
       open={visible}
@@ -58,25 +58,25 @@ const UnassignUserModal: React.FC<UnassignUserModalProps> = ({ visible, projectI
     >
       <div style={{ padding: '16px 0' }}>
         <p>
-          ¿Estás seguro de que quieres desasignar al usuario{' '}
-          <strong>{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.login}</strong> del proyecto{' '}
+          Are you sure you want to unassign the user{' '}
+          <strong>{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.login}</strong> from the project{' '}
           <strong>&ldquo;{projectTitle}&rdquo;</strong>?
         </p>
 
         <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 6 }}>
           <p style={{ color: '#666', fontSize: 14, margin: 0 }}>
             <ExclamationCircleOutlined style={{ marginRight: 8 }} />
-            El usuario ya no tendrá acceso al proyecto y sus tareas asociadas.
+            The user will no longer have access to the project and its associated tasks.
           </p>
         </div>
       </div>
 
       <div className="modal-actions">
         <Button onClick={handleCancel} disabled={loading}>
-          Cancelar
+          Cancel
         </Button>
         <Button type="primary" danger loading={loading} icon={<UserDeleteOutlined />} onClick={handleUnassign}>
-          Desasignar Usuario
+          Unassign User
         </Button>
       </div>
     </Modal>

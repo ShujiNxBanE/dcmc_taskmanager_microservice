@@ -58,46 +58,34 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ visible, project, o
   };
 
   return (
-    <Modal
-      title="Editar Proyecto"
-      open={visible}
-      onCancel={handleCancel}
-      footer={null}
-      width={500}
-      className="project-modal"
-      destroyOnClose
-    >
+    <Modal title="Edit Project" open={visible} onCancel={handleCancel} footer={null} width={500} className="project-modal" destroyOnClose>
       <Form form={form} layout="vertical" onFinish={handleSubmit} autoComplete="off">
         <div className="form-group">
           <Form.Item
-            label="Título del Proyecto"
+            label="Project Title"
             name="title"
             rules={[
-              { required: true, message: 'Por favor ingresa el título del proyecto' },
-              { min: 3, message: 'El título debe tener al menos 3 caracteres' },
-              { max: 100, message: 'El título no puede exceder 100 caracteres' },
+              { required: true, message: 'Please enter the project title' },
+              { min: 3, message: 'The title must be at least 3 characters' },
+              { max: 100, message: 'The title cannot exceed 100 characters' },
             ]}
           >
-            <Input placeholder="Ingresa el título del proyecto" />
+            <Input placeholder="Enter the project title" />
           </Form.Item>
         </div>
 
         <div className="form-group">
-          <Form.Item
-            label="Descripción"
-            name="description"
-            rules={[{ max: 500, message: 'La descripción no puede exceder 500 caracteres' }]}
-          >
-            <Input.TextArea placeholder="Describe el propósito del proyecto (opcional)" rows={4} />
+          <Form.Item label="Description" name="description" rules={[{ max: 500, message: 'The description cannot exceed 500 characters' }]}>
+            <Input.TextArea placeholder="Describe the purpose of the project (optional)" rows={4} />
           </Form.Item>
         </div>
 
         <div className="modal-actions">
           <Button onClick={handleCancel} disabled={loading}>
-            Cancelar
+            Cancel
           </Button>
           <Button type="primary" htmlType="submit" loading={loading} icon={<EditOutlined />}>
-            Actualizar Proyecto
+            Update Project
           </Button>
         </div>
       </Form>
