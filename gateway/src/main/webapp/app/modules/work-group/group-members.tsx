@@ -4,6 +4,8 @@ import { Table, Avatar, Tag, Button, message, Card, Row, Col, Statistic, Space, 
 import { UserOutlined, ArrowLeftOutlined, CrownOutlined, PlusOutlined, SwapOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import WorkGroupClientApi from 'app/rest/WorkGroupClientApi';
 import { useAppSelector } from 'app/config/store';
+import { hasAnyAuthority } from 'app/shared/auth/private-route';
+import { AUTHORITIES } from 'app/config/constants';
 import './work-group-modal.scss';
 
 interface GroupMemberDTO {
@@ -20,6 +22,8 @@ const GroupMembers = () => {
   const [loading, setLoading] = useState(false);
   const [groupInfo, setGroupInfo] = useState<{ id: number; name: string } | null>(null);
   const currentUser = useAppSelector(state => state.authentication.account);
+  const authorities = useAppSelector(state => state.authentication.account?.authorities ?? []);
+  const isAdmin = hasAnyAuthority(authorities, [AUTHORITIES.ADMIN]);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [adding, setAdding] = useState(false);
@@ -155,6 +159,9 @@ const GroupMembers = () => {
 
   // Verifica si the authenticated user is member or admin
   const canAddMember = () => {
+    // Si es administrador, puede añadir miembros
+    if (isAdmin) return true;
+
     const user = members.find(m => m.login === currentUser?.login);
     return (
       user &&
@@ -180,12 +187,18 @@ const GroupMembers = () => {
 
   // Verifica si the authenticated user can transfer ownership (only OWNER)
   const canTransferOwnership = () => {
+    // Si es administrador, puede transferir propiedad
+    if (isAdmin) return true;
+
     const user = members.find(m => m.login === currentUser?.login);
     return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
   };
 
   // Verifica si the authenticated user can promote to moderator (OWNER or MODERATOR)
   const canPromoteToModerator = () => {
+    // Si es administrador, puede promover a moderador
+    if (isAdmin) return true;
+
     const user = members.find(m => m.login === currentUser?.login);
     return (
       user &&
@@ -208,6 +221,9 @@ const GroupMembers = () => {
 
   // Verifica si the authenticated user can demote moderators (only OWNER)
   const canDemoteModerator = () => {
+    // Si es administrador, puede degradar moderadores
+    if (isAdmin) return true;
+
     const user = members.find(m => m.login === currentUser?.login);
     return user && (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO');
   };
@@ -440,19 +456,19 @@ const GroupMembers = () => {
       title: 'Actions',
       key: 'actions',
       render(_: any, record: GroupMemberDTO) {
-        // Only OWNER, ADMIN or PROPIETARIO can remove members (and never to OWNER or itself)
         const user = members.find(m => m.login === currentUser?.login);
         const canRemove =
-          user &&
-          (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'ADMIN' || user.role?.toUpperCase() === 'PROPIETARIO') &&
-          record.role?.toUpperCase() !== 'OWNER' &&
-          record.login !== currentUser?.login;
-
-        // Only OWNER can remove moderators
-        const canRemoveModerator =
-          user &&
-          (user.role?.toUpperCase() === 'OWNER' || user.role?.toUpperCase() === 'PROPIETARIO') &&
-          record.role?.toUpperCase() === 'MODERATOR';
+          isAdmin ||
+          (user &&
+            // OWNER, ADMIN o PROPIETARIO pueden eliminar a cualquiera menos OWNER y a sí mismos
+            ['OWNER', 'ADMIN', 'PROPIETARIO'].includes(user.role?.toUpperCase()) &&
+            record.role?.toUpperCase() !== 'OWNER' &&
+            record.login !== currentUser?.login) ||
+          (user &&
+            // MODERATOR/MODERADOR solo puede eliminar a MEMBER/MIEMBRO y no a sí mismo
+            ['MODERATOR', 'MODERADOR'].includes(user.role?.toUpperCase()) &&
+            (record.role?.toUpperCase() === 'MEMBER' || record.role?.toUpperCase() === 'MIEMBRO') &&
+            record.login !== currentUser?.login);
 
         return (
           <Space size="small">
@@ -548,7 +564,7 @@ const GroupMembers = () => {
                 Add member
               </Button>
             )}
-            {canTransferOwnership() && (
+            {(canTransferOwnership() || isAdmin) && (
               <Button
                 type="primary"
                 icon={<SafetyCertificateOutlined />}
@@ -565,7 +581,7 @@ const GroupMembers = () => {
                 Add moderator
               </Button>
             )}
-            {canTransferOwnership() && (
+            {(canTransferOwnership() || isAdmin) && (
               <Button
                 type="primary"
                 icon={<SwapOutlined />}

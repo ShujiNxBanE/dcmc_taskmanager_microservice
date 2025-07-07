@@ -41,4 +41,12 @@ public class SecurityUtilsService {
     public String getCurrentUser() {
         return SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new AccessDeniedException("Unauthenticated user"));
     }
+
+    public void assertOwnerModeratorOrAdmin(Long groupId) {
+        if (isCurrentUserAdmin()) {
+            return;
+        }
+        assertOwnerOrModerator(groupId);
+    }
+
 }

@@ -147,7 +147,7 @@ public class WorkGroupService {
 
     @Transactional
     public void addMember(Long groupId, String username) {
-        securityUtilsService.assertOwnerOrModerator(groupId);
+        securityUtilsService.assertOwnerModeratorOrAdmin(groupId);
 
         User user = userRepository.findOneByLogin(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));

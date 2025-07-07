@@ -448,10 +448,6 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only tasks with status DONE can be archived");
         }
 
-        // Verificar que el usuario tenga permisos (OWNER o MODERATOR)
-        Long workGroupId = task.getWorkGroup().getId();
-        securityUtilsService.assertOwnerOrModerator(workGroupId);
-
         // Marcar la tarea como archivada
         task.setArchived(true);
         task.setUpdateTime(Instant.now());
